@@ -3,12 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Nexus Code Forge | Dual AI Collaborative Engine</title>
-  <!-- Google Fonts + Inter & JetBrains Mono -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <!-- Font Awesome 6 -->
+  <title>Nexus Forge | Dual-AI Code Engine</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- Marked.js for optional markdown preview of reasoning -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     * {
@@ -22,52 +19,35 @@
       font-family: 'Inter', sans-serif;
       color: #edf4ff;
       min-height: 100vh;
-      padding: 1.2rem;
       overflow-x: hidden;
     }
 
-    /* animated background mesh */
-    .bg-orb {
+    /* animated aura */
+    .bg-aura {
       position: fixed;
-      width: 80vw;
-      height: 80vw;
-      background: radial-gradient(circle, rgba(0, 180, 255, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
-      top: -20vh;
-      right: -20vw;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at 30% 40%, rgba(0, 180, 255, 0.08), transparent 70%);
       pointer-events: none;
       z-index: 0;
-      filter: blur(70px);
-      animation: floatGlow 18s infinite alternate;
     }
 
-    @keyframes floatGlow {
-      0% { transform: translate(0, 0) scale(1); opacity: 0.4; }
-      100% { transform: translate(-5%, 5%) scale(1.2); opacity: 0.8; }
-    }
-
-    .app-wrapper {
-      max-width: 1600px;
+    .app-container {
+      max-width: 1400px;
       margin: 0 auto;
+      padding: 1.5rem;
       position: relative;
       z-index: 2;
     }
 
     /* header premium */
-    .nexus-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
+    .hero-header {
+      text-align: center;
       margin-bottom: 2rem;
-      background: rgba(8, 16, 28, 0.55);
-      backdrop-filter: blur(16px);
-      border-radius: 2rem;
-      padding: 1rem 2rem;
-      border: 1px solid rgba(0, 255, 255, 0.2);
     }
 
-    .logo h1 {
-      font-size: 1.8rem;
+    .hero-header h1 {
+      font-size: 2.8rem;
       font-weight: 700;
       background: linear-gradient(135deg, #FFFFFF, #7df9ff, #4f9eff);
       background-clip: text;
@@ -76,92 +56,70 @@
       letter-spacing: -0.02em;
     }
 
-    .badge {
-      background: #0ef1;
-      padding: 0.3rem 1rem;
-      border-radius: 50px;
-      font-size: 0.75rem;
-      border: 1px solid #0ef5;
-      font-weight: 500;
+    .hero-header p {
+      opacity: 0.7;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
     }
 
-    /* dual panel architecture (API config + chat) */
-    .dual-layout {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.5rem;
-    }
-
-    .config-panel {
-      flex: 1.2;
-      min-width: 280px;
-      background: rgba(12, 20, 32, 0.6);
-      backdrop-filter: blur(14px);
-      border-radius: 1.8rem;
-      padding: 1.4rem;
-      border: 1px solid rgba(0, 200, 255, 0.25);
-      transition: all 0.2s;
-    }
-
-    .chat-panel {
-      flex: 2.8;
-      min-width: 320px;
+    /* chat main panel */
+    .chat-master {
       background: rgba(8, 14, 24, 0.65);
-      backdrop-filter: blur(14px);
-      border-radius: 1.8rem;
+      backdrop-filter: blur(16px);
+      border-radius: 2rem;
       border: 1px solid rgba(0, 230, 250, 0.3);
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      height: 75vh;
+      box-shadow: 0 25px 40px -15px rgba(0,0,0,0.5);
     }
 
-    .section-title {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      color: #8ecbff;
-      border-left: 3px solid #0ef;
-      padding-left: 0.7rem;
-    }
-
-    .api-card {
-      background: #03060e70;
-      border-radius: 1.2rem;
-      padding: 1rem;
-      margin-bottom: 1.8rem;
-      border: 1px solid rgba(72, 187, 255, 0.2);
-    }
-
-    .input-futuristic {
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid #2c5270;
-      border-radius: 1rem;
-      padding: 0.7rem 1rem;
-      margin-bottom: 0.8rem;
+    .chat-header {
+      padding: 1rem 1.5rem;
+      background: rgba(0, 20, 40, 0.5);
+      border-bottom: 1px solid rgba(0, 255, 255, 0.2);
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 8px;
+      flex-wrap: wrap;
     }
-    .input-futuristic i { color: #4fc3ff; width: 24px; }
-    .input-futuristic input, .input-futuristic select {
-      background: transparent;
-      border: none;
-      width: 100%;
-      color: white;
-      font-family: 'Inter', monospace;
-      outline: none;
-      font-size: 0.85rem;
-    }
-    .input-futuristic input::placeholder { color: #6c8fb0; }
 
-    /* chat area */
-    .messages-container {
+    .dual-badge {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .badge-item {
+      background: #0ef1;
+      padding: 0.3rem 0.9rem;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      border: 1px solid #0ef5;
+    }
+
+    .clear-btn {
+      background: none;
+      border: 1px solid #ff6b6b60;
+      border-radius: 30px;
+      padding: 0.3rem 1rem;
+      color: #ffb7b7;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: 0.2s;
+    }
+
+    .clear-btn:hover {
+      background: #ff6b6b20;
+      border-color: #ff8a8a;
+    }
+
+    /* messages area */
+    .messages-area {
       flex: 1;
-      height: 460px;
       overflow-y: auto;
-      padding: 1rem;
+      padding: 1.2rem;
       display: flex;
       flex-direction: column;
       gap: 1rem;
@@ -174,19 +132,20 @@
     }
 
     @keyframes fadeSlide {
-      from { opacity: 0; transform: translateY(10px); }
+      from { opacity: 0; transform: translateY(12px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
     .avatar {
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       background: linear-gradient(145deg, #1f3b5c, #0b1c2c);
-      border-radius: 12px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
+      flex-shrink: 0;
     }
 
     .bubble {
@@ -197,14 +156,15 @@
       max-width: 85%;
       border: 1px solid rgba(100, 200, 255, 0.2);
       font-size: 0.9rem;
-      line-height: 1.45;
+      line-height: 1.5;
     }
+
     .user-bubble {
       background: #0a2540cc;
       border-left: 3px solid #0ef;
       margin-left: auto;
-      max-width: 85%;
     }
+
     .assistant-bubble pre {
       background: #00000070;
       padding: 0.8rem;
@@ -212,25 +172,26 @@
       overflow-x: auto;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.8rem;
-      margin-top: 0.5rem;
+      margin-top: 0.6rem;
     }
-    .code-block-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.7rem;
-      margin-bottom: 4px;
-      color: #9ec8ff;
+
+    .assistant-bubble code {
+      font-family: 'JetBrains Mono', monospace;
+      background: #00000050;
+      padding: 0.2rem 0.3rem;
+      border-radius: 6px;
     }
 
     /* input area */
-    .input-area {
-      padding: 1rem;
+    .input-panel {
+      padding: 1.2rem;
       border-top: 1px solid #2c527055;
       background: #07111e60;
       display: flex;
       gap: 0.8rem;
       align-items: flex-end;
     }
+
     textarea {
       flex: 1;
       background: #010a15;
@@ -244,20 +205,24 @@
       outline: none;
       transition: 0.2s;
     }
+
     textarea:focus {
       border-color: #0ef;
       box-shadow: 0 0 8px #0ef4;
     }
+
     .send-btn {
       background: linear-gradient(95deg, #0c2c48, #071a2b);
       border: 1px solid #3ec8ff;
       border-radius: 2rem;
-      padding: 0.7rem 1.4rem;
+      padding: 0.7rem 1.8rem;
       color: white;
       font-weight: bold;
       cursor: pointer;
       transition: 0.2s;
+      font-size: 0.9rem;
     }
+
     .send-btn:hover {
       background: #125a86;
       transform: scale(0.96);
@@ -274,302 +239,281 @@
       margin-right: 6px;
       animation: pulse 1.2s infinite;
     }
+
     @keyframes pulse { 0% { opacity: 0.4; } 100% { opacity: 1; } }
 
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: #0a1424; border-radius: 10px; }
     ::-webkit-scrollbar-thumb { background: #0ef6; border-radius: 10px; }
 
-    .btn-clear {
-      background: none;
-      border: 1px solid #ff6b6b40;
-      border-radius: 30px;
-      padding: 0.3rem 0.8rem;
-      color: #ffb7b7;
-      cursor: pointer;
-      font-size: 0.7rem;
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      padding: 0.5rem 1rem;
     }
+    .typing-indicator span {
+      width: 6px;
+      height: 6px;
+      background: #0ef;
+      border-radius: 50%;
+      animation: blink 1.2s infinite;
+    }
+    @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
   </style>
 </head>
 <body>
-<div class="bg-orb"></div>
-<div class="app-wrapper">
-  <div class="nexus-header">
-    <div class="logo"><h1><i class="fas fa-code-branch"></i> NEXUS FORGE</h1></div>
-    <div class="badge"><i class="fas fa-microchip"></i> Dual AI Core • OpenRouter</div>
+<div class="bg-aura"></div>
+<div class="app-container">
+  <div class="hero-header">
+    <h1><i class="fas fa-code-branch"></i> NEXUS FORGE</h1>
+    <p>Dual‑AI engine • Reasoning → Production Code</p>
   </div>
 
-  <div class="dual-layout">
-    <!-- LEFT: Configuration for Two Models (OpenRouter) -->
-    <div class="config-panel">
-      <div class="section-title"><i class="fas fa-brain"></i> REASONING & ORCHESTRATOR (Model A)</div>
-      <div class="api-card">
-        <div class="input-futuristic"><i class="fas fa-link"></i><input type="text" id="modelAEndpoint" placeholder="OpenRouter API URL" value="https://openrouter.ai/api/v1/chat/completions"></div>
-        <div class="input-futuristic"><i class="fas fa-key"></i><input type="password" id="modelAApiKey" placeholder="OpenRouter API Key (Model A)" value="sk-or-v1-demo-reasoning-key-change-me"></div>
-        <div class="input-futuristic"><i class="fas fa-cube"></i><input type="text" id="modelAModel" placeholder="Model name e.g., openai/gpt-4o" value="openai/gpt-3.5-turbo"></div>
-        <div class="input-futuristic"><i class="fas fa-comment"></i><textarea id="systemPromptA" rows="2" placeholder="System prompt for reasoning agent" style="background:transparent; border:none; color:white; resize:none;">You are Architect AI: analyze user requests, plan implementation, define architecture, and output structured guidelines for the code generator. Keep responses concise but detailed for coding.</textarea></div>
+  <div class="chat-master">
+    <div class="chat-header">
+      <div class="dual-badge">
+        <span class="badge-item"><i class="fas fa-brain"></i> Architect AI</span>
+        <span class="badge-item"><i class="fas fa-terminal"></i> Code Generator</span>
       </div>
-
-      <div class="section-title"><i class="fas fa-terminal"></i> CODE GENERATOR (Model B)</div>
-      <div class="api-card">
-        <div class="input-futuristic"><i class="fas fa-link"></i><input type="text" id="modelBEndpoint" placeholder="OpenRouter API URL" value="https://openrouter.ai/api/v1/chat/completions"></div>
-        <div class="input-futuristic"><i class="fas fa-key"></i><input type="password" id="modelBApiKey" placeholder="OpenRouter API Key (Model B)" value="sk-or-v1-demo-codegen-key-change-me"></div>
-        <div class="input-futuristic"><i class="fas fa-cube"></i><input type="text" id="modelBModel" placeholder="Model name e.g., anthropic/claude-3-haiku" value="anthropic/claude-3-haiku"></div>
-        <div class="input-futuristic"><i class="fas fa-drafting-compass"></i><textarea id="systemPromptB" rows="2" placeholder="System prompt for code expert" style="background:transparent; border:none; color:white;">You are Code Expert: only generate production-ready, full implementation code. No placeholders, no TODOs, complete functional code with HTML/CSS/JS or backend. Use best practices.</textarea></div>
-      </div>
-      <button id="saveConfigBtn" class="send-btn" style="width:100%; margin-top:8px;"><i class="fas fa-save"></i> Apply & Test Connection</button>
+      <button id="clearChatBtn" class="clear-btn"><i class="fas fa-trash-alt"></i> Clear chat</button>
     </div>
 
-    <!-- RIGHT: CHAT INTERFACE -->
-    <div class="chat-panel">
-      <div style="padding: 1rem 1rem 0 1rem; display: flex; justify-content: space-between;">
-        <div><span class="status-dot"></span> Dual‑AI active (Reasoning → Code)</div>
-        <button id="clearChatBtn" class="btn-clear"><i class="fas fa-trash-alt"></i> Clear Chat</button>
-      </div>
-      <div class="messages-container" id="chatMessages">
-        <div class="message assistant">
-          <div class="avatar"><i class="fas fa-robot"></i></div>
-          <div class="bubble assistant-bubble">⚡ <strong>Nexus Forge ready.</strong><br>I use two AI models: <span style="color:#0ef;">Architect (reasoning/plan)</span> + <span style="color:#ffaa77;">Code Generator (production code)</span>.<br><br>👉 Set your OpenRouter API keys & models, then start coding.</div>
+    <div class="messages-area" id="chatMessages">
+      <div class="message assistant">
+        <div class="avatar"><i class="fas fa-robot"></i></div>
+        <div class="bubble assistant-bubble">
+          ⚡ <strong>Nexus Forge ready</strong><br>
+          I use <span style="color:#0ef;">two specialized AI models</span> working together:<br>
+          • <strong>Architect AI</strong> → plans architecture & requirements<br>
+          • <strong>Code Generator</strong> → builds production-ready code<br><br>
+          Describe what you want to build (landing page, web app, fullstack tool) and I'll generate complete, functional code.
         </div>
       </div>
-      <div class="input-area">
-        <textarea id="userInput" rows="1" placeholder="Describe your project: 'Create a landing page for AI startup' or 'Fullstack todo app with auth'..."></textarea>
-        <button id="sendChatBtn" class="send-btn"><i class="fas fa-paper-plane"></i> Generate</button>
-      </div>
-      <div style="font-size: 10px; text-align:center; padding:6px; opacity:0.6;"><i class="fas fa-shield-alt"></i> Two‑stage pipeline: Model A defines architecture → Model B writes full code</div>
+    </div>
+
+    <div class="input-panel">
+      <textarea id="userInput" rows="1" placeholder="Example: 'Create a modern AI startup landing page with hero, features, pricing, and newsletter signup' or 'Build a task manager with local storage'..."></textarea>
+      <button id="sendBtn" class="send-btn"><i class="fas fa-paper-plane"></i> Generate</button>
+    </div>
+    <div style="font-size: 0.7rem; text-align: center; padding: 6px; opacity: 0.5;">
+      <i class="fas fa-shield-alt"></i> Dual pipeline: analysis → full-stack code • No API panel • Secure
     </div>
   </div>
 </div>
 
 <script>
-  // DOM elements
-  // Model A (orchestrator)
-  const endpointA = document.getElementById('modelAEndpoint');
-  const apiKeyA = document.getElementById('modelAApiKey');
-  const modelNameA = document.getElementById('modelAModel');
-  const systemA = document.getElementById('systemPromptA');
-  // Model B (code generator)
-  const endpointB = document.getElementById('modelBEndpoint');
-  const apiKeyB = document.getElementById('modelBApiKey');
-  const modelNameB = document.getElementById('modelBModel');
-  const systemB = document.getElementById('systemPromptB');
-
+  // --------------------------------------------------------------
+  // HARDCODED OPENROUTER CONFIGURATION (hidden from UI)
+  // --------------------------------------------------------------
+  const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
+  
+  // Model A (Reasoning & Orchestrator)
+  const MODEL_A_KEY = "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";
+  const MODEL_A_NAME = "openai/gpt-oss-120b:free";
+  
+  // Model B (Code Generation Specialist)
+  const MODEL_B_KEY = "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";
+  const MODEL_B_NAME = "poolside/laguna-m.1:free";
+  
+  // System prompts (internal, optimized for collaboration)
+  const ARCHITECT_SYSTEM = `You are a senior software architect. Your job: analyze user requests, define project scope, technology stack, architecture patterns, and provide a detailed implementation blueprint for a code generator AI. Be specific: mention components, UI/UX requirements (responsive, modern design), data flow, and any APIs or storage. Keep output structured and clear. Do NOT write final code — only specifications and instructions.`;
+  
+  const CODER_SYSTEM = `You are an elite code generation specialist. Based on the architect's blueprint, produce COMPLETE, PRODUCTION-READY code. NEVER use placeholders, TODOs, or mock implementations. Every feature must be fully implemented. Use HTML5, CSS3, modern JavaScript (ES6+), Tailwind if appropriate, React if requested. Ensure responsive design, accessibility, and beautiful UI. Output full files (single HTML or multiple sections). Code must run immediately. Include necessary CSS/JS inside.`;
+  
+  // DOM Elements
   const chatContainer = document.getElementById('chatMessages');
   const userInput = document.getElementById('userInput');
-  const sendBtn = document.getElementById('sendChatBtn');
-  const clearChat = document.getElementById('clearChatBtn');
-  const saveConfig = document.getElementById('saveConfigBtn');
-
-  // Helper to add message to chat
-  function addMessage(role, content, isCodeBlock = false) {
+  const sendButton = document.getElementById('sendBtn');
+  const clearButton = document.getElementById('clearChatBtn');
+  
+  // Helper: format message content with markdown & code highlighting
+  function formatMessageContent(text) {
+    if (!text) return '';
+    try {
+      // Use marked for markdown parsing
+      let html = marked.parse(text);
+      return html;
+    } catch(e) {
+      return text.replace(/\n/g, '<br>');
+    }
+  }
+  
+  // Add message to chat (type: 'user' or 'assistant')
+  function addMessage(role, content, isCodeOutput = false) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${role === 'user' ? 'user' : 'assistant'}`;
     const avatarIcon = role === 'user' ? '<i class="fas fa-user-astronaut"></i>' : '<i class="fas fa-robot"></i>';
-    messageDiv.innerHTML = `
-      <div class="avatar">${avatarIcon}</div>
-      <div class="bubble ${role === 'user' ? 'user-bubble' : 'assistant-bubble'}">
-        ${role === 'assistant' && isCodeBlock ? renderCodeContent(content) : formatContent(content)}
-      </div>
-    `;
+    let bubbleContent = '';
+    if (role === 'assistant') {
+      bubbleContent = `<div class="bubble assistant-bubble">${formatMessageContent(content)}</div>`;
+    } else {
+      bubbleContent = `<div class="bubble user-bubble">${formatMessageContent(content)}</div>`;
+    }
+    messageDiv.innerHTML = `<div class="avatar">${avatarIcon}</div>${bubbleContent}`;
     chatContainer.appendChild(messageDiv);
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
-
-  function formatContent(text) {
-    if (!text) return '';
-    // detect code fences and use markdown-ish
-    if (text.includes('```')) {
-      let html = marked.parse(text);
-      return html;
-    }
-    return text.replace(/\n/g, '<br>');
-  }
-
-  function renderCodeContent(content) {
-    // If content has markdown fences
-    let formatted = marked.parse(content);
-    return `<div class="code-block">${formatted}</div>`;
-  }
-
-  // loading indicator
-  let loadingDiv = null;
-  function showLoading() {
-    if(loadingDiv) return;
-    loadingDiv = document.createElement('div');
-    loadingDiv.className = 'message assistant';
-    loadingDiv.innerHTML = `<div class="avatar"><i class="fas fa-circle-notch fa-spin"></i></div><div class="bubble" style="background:#000000aa;"><i class="fas fa-cogs"></i> Dual AI pipeline: Reasoning & generating code...</div>`;
-    chatContainer.appendChild(loadingDiv);
+  
+  // Loading indicator (non-intrusive)
+  let loadingElement = null;
+  function showLoading(message = "Dual AI pipeline: reasoning & generating code...") {
+    if (loadingElement) removeLoading();
+    loadingElement = document.createElement('div');
+    loadingElement.className = 'message assistant';
+    loadingElement.innerHTML = `
+      <div class="avatar"><i class="fas fa-circle-notch fa-spin"></i></div>
+      <div class="bubble assistant-bubble" style="background:#031020aa;">
+        <div class="typing-indicator"><span></span><span></span><span></span> ${message}</div>
+      </div>
+    `;
+    chatContainer.appendChild(loadingElement);
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
-  function hideLoading() {
-    if(loadingDiv) {
-      loadingDiv.remove();
-      loadingDiv = null;
+  
+  function removeLoading() {
+    if (loadingElement) {
+      loadingElement.remove();
+      loadingElement = null;
     }
   }
-
-  // Core: Call OpenRouter API (generic)
-  async function callOpenRouter(endpoint, apiKey, model, messages, temperature = 0.3) {
-    if(!endpoint || !apiKey || !model) throw new Error("Missing API configuration (endpoint/key/model)");
-    const response = await fetch(endpoint, {
+  
+  // Core function: call OpenRouter API with given model & messages
+  async function callOpenRouter(apiKey, modelName, messages, temperature = 0.35) {
+    const response = await fetch(OPENROUTER_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
         'HTTP-Referer': window.location.origin,
-        'X-Title': 'NexusCodeForge'
+        'X-Title': 'NexusForge'
       },
       body: JSON.stringify({
-        model: model,
+        model: modelName,
         messages: messages,
         temperature: temperature,
-        max_tokens: 2500
+        max_tokens: 3500
       })
     });
-    if(!response.ok) {
-      const errText = await response.text();
-      throw new Error(`OpenRouter error ${response.status}: ${errText.substring(0, 150)}`);
+    
+    if (!response.ok) {
+      let errorDetail = `HTTP ${response.status}`;
+      try {
+        const errJson = await response.json();
+        errorDetail = errJson.error?.message || errJson.message || errorDetail;
+      } catch(e) {}
+      throw new Error(`OpenRouter error: ${errorDetail}`);
     }
+    
     const data = await response.json();
-    if(data.error) throw new Error(data.error.message);
-    if(data.choices && data.choices[0] && data.choices[0].message) {
-      return data.choices[0].message.content;
-    } else {
+    if (data.error) throw new Error(data.error.message);
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
       throw new Error("Invalid API response structure");
     }
+    return data.choices[0].message.content;
   }
-
-  // MAIN PIPELINE: user query -> Model A (reasoning/plan) -> Model B (code generation)
-  async function processWithDualAI(userQuery) {
-    if(!userQuery.trim()) throw new Error("Empty prompt");
-
-    // Fetch fresh config values
-    const aEndpoint = endpointA.value.trim();
-    const aKey = apiKeyA.value.trim();
-    const aModel = modelNameA.value.trim();
-    const aSystem = systemA.value.trim() || "You are an expert software architect. Plan and guide implementation. Provide structured output: requirements, tech stack, architecture, and clear coding instructions.";
+  
+  // Main dual-AI orchestration
+  async function runDualPipeline(userQuery) {
+    if (!userQuery.trim()) throw new Error("Empty prompt");
     
-    const bEndpoint = endpointB.value.trim();
-    const bKey = apiKeyB.value.trim();
-    const bModel = modelNameB.value.trim();
-    const bSystem = systemB.value.trim() || "You are a senior code engineer. Generate complete, production-ready code. No placeholders. Always output fully functional files (HTML/CSS/JS) or appropriate backend. Include explanations in comments if needed but final output must be functional.";
-
-    if(!aEndpoint || !aKey || !aModel) throw new Error("Model A (Orchestrator) endpoint, key, or model missing. Please fill in left panel.");
-    if(!bEndpoint || !bKey || !bModel) throw new Error("Model B (Code Generator) endpoint, key, or model missing.");
-
-    // Step 1: Model A generates architecture & guidelines
+    // Step 1: Model A (Architect) generates implementation blueprint
     const architectMessages = [
-      { role: "system", content: aSystem },
-      { role: "user", content: `User request: ${userQuery}\n\nGenerate a detailed implementation plan, technology choices, architecture, and specific instructions for a code generation AI that will write the complete code. Make sure to specify all needed components, UI/UX requirements, and any special logic. The output must be clear and actionable for the code generator.` }
+      { role: "system", content: ARCHITECT_SYSTEM },
+      { role: "user", content: `User requirement: "${userQuery}"\n\nProvide a comprehensive architectural plan, tech stack suggestions, component breakdown, UI/UX expectations (modern, premium, responsive), and explicit instructions for a code generation AI.` }
     ];
     
-    const reasoningOutput = await callOpenRouter(aEndpoint, aKey, aModel, architectMessages, 0.4);
-    if(!reasoningOutput) throw new Error("Model A did not return a valid plan");
-
-    // show partial reasoning in chat (collapsible style)
-    addMessage("assistant", `🧠 **Architect (Reasoning)**:\n${reasoningOutput.substring(0, 800)}${reasoningOutput.length > 800 ? '…' : ''}\n\n⚙️ *Now generating full code based on this blueprint...*`, false);
-
-    // Step 2: Model B generates full code using the architect's output
-    const codeGenMessages = [
-      { role: "system", content: bSystem + " Follow exactly the implementation plan. Output full code with proper structure. If frontend: HTML/CSS/JS, if full-stack provide Node/Express etc. Ensure beautiful UI, responsive, complete. No TODOs." },
-      { role: "user", content: `Implementation plan from architect AI:\n${reasoningOutput}\n\nUser original request: ${userQuery}\n\nGenerate complete, production-ready, full-stack code or frontend code depending on request. Include all necessary files (single HTML for landing page or separate sections). Ensure modern design and premium UI.` }
+    const architecturePlan = await callOpenRouter(MODEL_A_KEY, MODEL_A_NAME, architectMessages, 0.45);
+    if (!architecturePlan) throw new Error("Architect AI did not return a valid plan");
+    
+    // Optionally show a short summary of reasoning (but not heavy)
+    const shortSummary = architecturePlan.length > 600 ? architecturePlan.substring(0, 600) + "…" : architecturePlan;
+    addMessage("assistant", `🧠 **Architect blueprint ready**\n\n${shortSummary}\n\n⚙️ *Now generating full production code...*`);
+    
+    // Step 2: Model B (Code Generator) uses architecture to write final code
+    const coderMessages = [
+      { role: "system", content: CODER_SYSTEM },
+      { role: "user", content: `Original request: "${userQuery}"\n\nArchitect's implementation plan:\n${architecturePlan}\n\nGenerate complete, production-ready code (HTML/CSS/JS, or backend if needed). Ensure modern styling, no placeholders. Output functional, standalone code.` }
     ];
     
-    const finalCode = await callOpenRouter(bEndpoint, bKey, bModel, codeGenMessages, 0.2);
-    if(!finalCode) throw new Error("Model B did not generate code");
+    const finalCode = await callOpenRouter(MODEL_B_KEY, MODEL_B_NAME, coderMessages, 0.25);
+    if (!finalCode) throw new Error("Code generator did not return any code");
     
-    return { reasoning: reasoningOutput, code: finalCode };
+    return finalCode;
   }
-
-  // send message handler
-  async function onSendMessage() {
+  
+  // Handle send message with pipeline
+  async function handleUserRequest() {
     const query = userInput.value.trim();
-    if(!query) {
-      addMessage("assistant", "⚠️ Please describe what you want to build (landing page, web app, etc.)");
+    if (query === "") {
+      addMessage("assistant", "Please describe what you want to build (landing page, dashboard, fullstack app, etc.)");
       return;
     }
-    // Add user message
+    
+    // Add user message to chat
     addMessage("user", query);
     userInput.value = "";
-    showLoading();
+    userInput.style.height = "auto";
+    
+    showLoading("Architect analyzing requirements → code generator building...");
+    
     try {
-      const result = await processWithDualAI(query);
-      hideLoading();
-      // Display code result with formatting
-      let codeOutput = result.code;
-      // improved display - check if contains code fences
-      addMessage("assistant", `✨ **Generated Code** ✨\n\n${codeOutput}`, true);
-      // optional: ensure we show full output
-    } catch (err) {
-      hideLoading();
-      console.error(err);
-      let errorMsg = err.message;
-      if(errorMsg.includes("API key") || errorMsg.includes("Authorization") || errorMsg.includes("401")) {
-        errorMsg = "Authentication failed. Please verify both OpenRouter API keys in left panel (Model A & Model B). Ensure they are valid and have credits.";
-      } else if(errorMsg.includes("fetch")) {
-        errorMsg = "Network error. Check CORS or OpenRouter endpoint URL. Use proxy or ensure proper endpoint.";
+      const generatedCode = await runDualPipeline(query);
+      removeLoading();
+      
+      // Format output with a nice heading
+      const finalOutput = `✨ **Complete Implementation** ✨\n\n${generatedCode}`;
+      addMessage("assistant", finalOutput);
+      
+    } catch (error) {
+      removeLoading();
+      console.error(error);
+      let friendlyError = error.message;
+      if (friendlyError.includes("API key") || friendlyError.includes("401") || friendlyError.includes("403")) {
+        friendlyError = "API authentication issue. Please check OpenRouter keys (though preconfigured, ensure valid).";
+      } else if (friendlyError.includes("rate limit")) {
+        friendlyError = "Rate limit hit. Free models may have limits. Try again in a moment.";
+      } else if (friendlyError.includes("network")) {
+        friendlyError = "Network error. Check your internet connection or CORS.";
       }
-      addMessage("assistant", `❌ Dual-AI pipeline error: ${errorMsg}\n\nMake sure both API keys and model names are correct in configuration panel.`);
+      addMessage("assistant", `❌ **Dual-AI error**: ${friendlyError}\n\nMake sure you have internet and the OpenRouter models are accessible (free tier). The system uses preconfigured keys.`);
     }
   }
-
-  // save config test: validate both endpoints with simple ping (optional)
-  async function testConfig() {
-    try {
-      const aKey = apiKeyA.value.trim();
-      const aModel = modelNameA.value.trim();
-      const aEndpoint = endpointA.value.trim();
-      if(aKey && aModel && aEndpoint) {
-        // quick test call with minimal token just to verify auth, but may cost little, do a dummy message
-        showLoading();
-        const testMsg = [{ role: "user", content: "test connection, just respond 'ok'" }];
-        await callOpenRouter(aEndpoint, aKey, aModel, testMsg, 0.1);
-        hideLoading();
-        addMessage("assistant", "✅ Model A (Orchestrator) connection successful!");
-      } else {
-        throw new Error("Model A incomplete");
-      }
-      const bKey = apiKeyB.value.trim();
-      const bModel = modelNameB.value.trim();
-      const bEndpoint = endpointB.value.trim();
-      if(bKey && bModel && bEndpoint) {
-        showLoading();
-        const testMsg2 = [{ role: "user", content: "test, respond 'ready'" }];
-        await callOpenRouter(bEndpoint, bKey, bModel, testMsg2, 0.1);
-        hideLoading();
-        addMessage("assistant", "✅ Model B (Code Generator) connection successful! Ready for production.");
-      } else {
-        throw new Error("Model B incomplete");
-      }
-      hideLoading();
-    } catch(e) {
-      hideLoading();
-      addMessage("assistant", `⚠️ Configuration test failed: ${e.message}. Double-check API keys, model names, and OpenRouter endpoint.`);
-    }
-  }
-
-  function clearChatHistory() {
+  
+  // Clear chat history (keep initial welcome)
+  function clearChat() {
     chatContainer.innerHTML = '';
-    addMessage("assistant", "🧹 Chat cleared. Configure API keys and start building.");
+    const welcomeDiv = document.createElement('div');
+    welcomeDiv.className = 'message assistant';
+    welcomeDiv.innerHTML = `
+      <div class="avatar"><i class="fas fa-robot"></i></div>
+      <div class="bubble assistant-bubble">
+        ⚡ <strong>Chat cleared</strong><br>
+        Ready for new project. Describe your idea — I'll use dual AI to generate production code.
+      </div>
+    `;
+    chatContainer.appendChild(welcomeDiv);
   }
-
-  // event listeners
-  sendBtn.addEventListener('click', onSendMessage);
-  clearChat.addEventListener('click', clearChatHistory);
-  saveConfig.addEventListener('click', testConfig);
+  
+  // Auto-resize textarea
+  function autoResizeTextarea() {
+    userInput.style.height = 'auto';
+    userInput.style.height = Math.min(userInput.scrollHeight, 150) + 'px';
+  }
+  
+  // Event bindings
+  sendButton.addEventListener('click', handleUserRequest);
+  clearButton.addEventListener('click', clearChat);
   userInput.addEventListener('keydown', (e) => {
-    if(e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      onSendMessage();
+      handleUserRequest();
     }
   });
-
-  // small initial reminder to fill API keys
-  setTimeout(() => {
-    if(!apiKeyA.value.trim() || apiKeyA.value === "sk-or-v1-demo-reasoning-key-change-me") {
-      addMessage("assistant", "🔐 **Setup Required**: Enter your valid OpenRouter API keys for both Model A (reasoning) and Model B (codegen) in the left panel. Then click 'Apply & Test Connection'. The models will work together to produce high-quality code.");
-    }
-  }, 800);
+  userInput.addEventListener('input', autoResizeTextarea);
+  
+  // small console confirmation (no chat output about connection)
+  console.log("Nexus Forge: Dual AI engine ready | OpenRouter models preconfigured");
 </script>
 </body>
 </html>
