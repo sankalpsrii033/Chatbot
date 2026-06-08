@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Nexus API Vault | Dual-Model Secure Console</title>
-  <!-- Google Fonts + Smooth Font Rendering -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
-  <!-- Font Awesome 6 (free) -->
+  <title>Nexus Code Forge | Dual AI Collaborative Engine</title>
+  <!-- Google Fonts + Inter & JetBrains Mono -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Marked.js for optional markdown preview of reasoning -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -16,674 +18,558 @@
     }
 
     body {
-      background: radial-gradient(circle at 20% 30%, #0a0c14, #020408);
+      background: radial-gradient(circle at 10% 20%, #0a0c18, #010103);
       font-family: 'Inter', sans-serif;
-      color: #eef5ff;
-      line-height: 1.5;
+      color: #edf4ff;
       min-height: 100vh;
-      padding: 1.5rem;
-      position: relative;
+      padding: 1.2rem;
       overflow-x: hidden;
     }
 
-    /* animated particle / grid background */
-    .bg-glow {
+    /* animated background mesh */
+    .bg-orb {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      width: 80vw;
+      height: 80vw;
+      background: radial-gradient(circle, rgba(0, 180, 255, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+      top: -20vh;
+      right: -20vw;
       pointer-events: none;
       z-index: 0;
-      background-image: 
-        linear-gradient(rgba(0, 255, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 255, 255, 0.02) 1px, transparent 1px);
-      background-size: 50px 50px;
-      animation: driftGrid 20s linear infinite;
+      filter: blur(70px);
+      animation: floatGlow 18s infinite alternate;
     }
 
-    @keyframes driftGrid {
-      0% { transform: translate(0, 0); }
-      100% { transform: translate(50px, 50px); }
+    @keyframes floatGlow {
+      0% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+      100% { transform: translate(-5%, 5%) scale(1.2); opacity: 0.8; }
     }
 
-    /* main container */
-    .app-container {
-      max-width: 1480px;
+    .app-wrapper {
+      max-width: 1600px;
       margin: 0 auto;
       position: relative;
       z-index: 2;
     }
 
-    /* header with futuristic glass */
-    .hero-section {
-      margin-bottom: 3rem;
-      text-align: center;
+    /* header premium */
+    .nexus-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+      background: rgba(8, 16, 28, 0.55);
+      backdrop-filter: blur(16px);
+      border-radius: 2rem;
+      padding: 1rem 2rem;
+      border: 1px solid rgba(0, 255, 255, 0.2);
     }
 
-    .hero-badge {
-      display: inline-block;
-      background: rgba(0, 255, 255, 0.1);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(0, 255, 255, 0.25);
-      border-radius: 100px;
-      padding: 0.3rem 1rem;
-      font-size: 0.8rem;
-      font-weight: 500;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      margin-bottom: 1.2rem;
-      color: #8efff0;
-      box-shadow: 0 0 8px rgba(0,255,200,0.2);
-    }
-
-    h1 {
-      font-size: 3.5rem;
+    .logo h1 {
+      font-size: 1.8rem;
       font-weight: 700;
-      background: linear-gradient(135deg, #FFFFFF, #9efff0, #5c7cff);
+      background: linear-gradient(135deg, #FFFFFF, #7df9ff, #4f9eff);
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
       letter-spacing: -0.02em;
-      margin-bottom: 0.75rem;
     }
 
-    .sub {
-      font-size: 1.1rem;
-      opacity: 0.75;
-      max-width: 580px;
-      margin: 0 auto;
-      border-bottom: 1px dashed rgba(100, 200, 255, 0.3);
-      display: inline-block;
-      padding-bottom: 0.25rem;
-    }
-
-    /* dashboard panel grid */
-    .models-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2rem;
-      margin: 3rem 0;
-    }
-
-    .model-card {
-      flex: 1;
-      min-width: 300px;
-      background: rgba(12, 18, 30, 0.65);
-      backdrop-filter: blur(14px);
-      border: 1px solid rgba(0, 255, 255, 0.2);
-      border-radius: 2rem;
-      padding: 1.8rem;
-      transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-      box-shadow: 0 20px 35px -15px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
-    }
-
-    .model-card:hover {
-      border-color: rgba(0, 255, 200, 0.6);
-      box-shadow: 0 25px 40px -18px #00ffee30, 0 0 0 1px rgba(0,255,200,0.2) inset;
-      transform: translateY(-5px);
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 1.8rem;
-      border-bottom: 1px solid rgba(78, 159, 255, 0.2);
-      padding-bottom: 1rem;
-    }
-
-    .model-icon {
-      font-size: 2rem;
-      background: linear-gradient(145deg, #2a3a70, #0f1a2e);
-      width: 52px;
-      height: 52px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 18px;
-      box-shadow: 0 8px 14px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
-    }
-
-    .model-title h3 {
-      font-size: 1.6rem;
-      font-weight: 600;
-      letter-spacing: -0.3px;
-    }
-
-    .model-badge {
-      font-size: 0.7rem;
-      background: #00ccaa20;
-      border-radius: 20px;
-      padding: 0.2rem 0.7rem;
-      display: inline-block;
-    }
-
-    /* Input group futuristic */
-    .input-group {
-      margin-bottom: 1.4rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .input-group label {
+    .badge {
+      background: #0ef1;
+      padding: 0.3rem 1rem;
+      border-radius: 50px;
       font-size: 0.75rem;
-      text-transform: uppercase;
-      font-weight: 600;
-      letter-spacing: 1px;
-      color: #b0e0ff;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .input-wrapper {
-      display: flex;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.5);
-      border-radius: 18px;
-      border: 1px solid rgba(0, 255, 255, 0.3);
-      transition: all 0.2s;
-      backdrop-filter: blur(4px);
-    }
-
-    .input-wrapper:focus-within {
-      border-color: #0ef;
-      box-shadow: 0 0 12px rgba(0, 238, 255, 0.3);
-    }
-
-    .input-wrapper i {
-      padding: 0 14px;
-      color: #5bc0ff;
-      font-size: 1rem;
-    }
-
-    input, textarea {
-      background: transparent;
-      border: none;
-      padding: 0.9rem 0.2rem 0.9rem 0;
-      width: 100%;
-      font-family: 'Inter', monospace;
-      font-size: 0.9rem;
-      color: #f0f9ff;
-      outline: none;
-    }
-
-    input::placeholder, textarea::placeholder {
-      color: #8fa2cf70;
-    }
-
-    textarea {
-      min-height: 80px;
-      resize: vertical;
-    }
-
-    /* key visibility toggle */
-    .key-toggle {
-      background: none;
-      border: none;
-      color: #83f0ff;
-      cursor: pointer;
-      padding: 0 12px;
-      font-size: 0.9rem;
-      transition: 0.2s;
-    }
-
-    /* action buttons */
-    .action-buttons {
-      display: flex;
-      gap: 12px;
-      margin-top: 1.5rem;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      flex: 1;
-      background: rgba(20, 30, 55, 0.7);
-      border: 1px solid rgba(0, 200, 220, 0.4);
-      padding: 0.75rem 0;
-      border-radius: 40px;
-      font-weight: 600;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      color: #d9f0ff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      backdrop-filter: blur(4px);
-    }
-
-    .btn-primary {
-      background: linear-gradient(95deg, #0c2b4e, #0a1c33);
-      border-color: #3fe0ff;
-      box-shadow: 0 2px 6px #00a6ff20;
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: linear-gradient(95deg, #124072, #0c2342);
-      border-color: #7ef0ff;
-      transform: scale(0.97);
-      box-shadow: 0 0 12px #00d0ff60;
-    }
-
-    .btn-outline:hover {
-      background: rgba(0, 200, 220, 0.2);
-      border-color: #0ef;
-    }
-
-    /* response area */
-    .response-area {
-      margin-top: 1.8rem;
-      background: #03060eaa;
-      border-radius: 1.2rem;
-      padding: 1rem;
-      border-left: 3px solid #0ef;
-      font-size: 0.85rem;
-      transition: all 0.2s;
-    }
-
-    .response-header {
-      display: flex;
-      justify-content: space-between;
-      font-weight: 600;
-      margin-bottom: 0.7rem;
-      color: #9bc9ff;
-    }
-
-    pre {
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-      max-height: 220px;
-      overflow-y: auto;
-      color: #ceecff;
-    }
-
-    /* global status & stats */
-    .stats-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-bottom: 2rem;
-    }
-
-    .stat-card {
-      background: rgba(0, 10, 20, 0.5);
-      backdrop-filter: blur(12px);
-      border-radius: 1.5rem;
-      padding: 0.8rem 1.4rem;
-      border: 1px solid rgba(0, 255, 255, 0.25);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .stat-value {
-      font-weight: 800;
-      font-size: 1.2rem;
-      background: linear-gradient(145deg, #fff, #8df);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-    }
-
-    .toast-msg {
-      position: fixed;
-      bottom: 25px;
-      right: 25px;
-      background: #0a152bd9;
-      backdrop-filter: blur(12px);
-      border-left: 4px solid #0ef;
-      padding: 12px 20px;
-      border-radius: 40px;
-      font-size: 0.85rem;
-      z-index: 999;
-      animation: fadeUp 0.3s ease;
+      border: 1px solid #0ef5;
       font-weight: 500;
     }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
+    /* dual panel architecture (API config + chat) */
+    .dual-layout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    .config-panel {
+      flex: 1.2;
+      min-width: 280px;
+      background: rgba(12, 20, 32, 0.6);
+      backdrop-filter: blur(14px);
+      border-radius: 1.8rem;
+      padding: 1.4rem;
+      border: 1px solid rgba(0, 200, 255, 0.25);
+      transition: all 0.2s;
+    }
+
+    .chat-panel {
+      flex: 2.8;
+      min-width: 320px;
+      background: rgba(8, 14, 24, 0.65);
+      backdrop-filter: blur(14px);
+      border-radius: 1.8rem;
+      border: 1px solid rgba(0, 230, 250, 0.3);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .section-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #8ecbff;
+      border-left: 3px solid #0ef;
+      padding-left: 0.7rem;
+    }
+
+    .api-card {
+      background: #03060e70;
+      border-radius: 1.2rem;
+      padding: 1rem;
+      margin-bottom: 1.8rem;
+      border: 1px solid rgba(72, 187, 255, 0.2);
+    }
+
+    .input-futuristic {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid #2c5270;
+      border-radius: 1rem;
+      padding: 0.7rem 1rem;
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .input-futuristic i { color: #4fc3ff; width: 24px; }
+    .input-futuristic input, .input-futuristic select {
+      background: transparent;
+      border: none;
+      width: 100%;
+      color: white;
+      font-family: 'Inter', monospace;
+      outline: none;
+      font-size: 0.85rem;
+    }
+    .input-futuristic input::placeholder { color: #6c8fb0; }
+
+    /* chat area */
+    .messages-container {
+      flex: 1;
+      height: 460px;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .message {
+      display: flex;
+      gap: 12px;
+      animation: fadeSlide 0.25s ease-out;
+    }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    footer {
-      text-align: center;
-      margin-top: 3rem;
-      font-size: 0.75rem;
-      opacity: 0.6;
+    .avatar {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(145deg, #1f3b5c, #0b1c2c);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
     }
 
-    @media (max-width: 800px) {
-      body { padding: 1rem; }
-      h1 { font-size: 2.2rem; }
-      .model-card { padding: 1.2rem; }
+    .bubble {
+      background: rgba(20, 30, 48, 0.7);
+      backdrop-filter: blur(8px);
+      border-radius: 1.2rem;
+      padding: 0.8rem 1.2rem;
+      max-width: 85%;
+      border: 1px solid rgba(100, 200, 255, 0.2);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+    .user-bubble {
+      background: #0a2540cc;
+      border-left: 3px solid #0ef;
+      margin-left: auto;
+      max-width: 85%;
+    }
+    .assistant-bubble pre {
+      background: #00000070;
+      padding: 0.8rem;
+      border-radius: 0.8rem;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+    .code-block-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      margin-bottom: 4px;
+      color: #9ec8ff;
+    }
+
+    /* input area */
+    .input-area {
+      padding: 1rem;
+      border-top: 1px solid #2c527055;
+      background: #07111e60;
+      display: flex;
+      gap: 0.8rem;
+      align-items: flex-end;
+    }
+    textarea {
+      flex: 1;
+      background: #010a15;
+      border: 1px solid #2e6a8e;
+      border-radius: 1.5rem;
+      padding: 0.9rem 1.2rem;
+      font-family: 'Inter', monospace;
+      color: white;
+      resize: none;
+      font-size: 0.9rem;
+      outline: none;
+      transition: 0.2s;
+    }
+    textarea:focus {
+      border-color: #0ef;
+      box-shadow: 0 0 8px #0ef4;
+    }
+    .send-btn {
+      background: linear-gradient(95deg, #0c2c48, #071a2b);
+      border: 1px solid #3ec8ff;
+      border-radius: 2rem;
+      padding: 0.7rem 1.4rem;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .send-btn:hover {
+      background: #125a86;
+      transform: scale(0.96);
+      box-shadow: 0 0 10px #00ccff;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #2effb0;
+      box-shadow: 0 0 6px #0f0;
+      margin-right: 6px;
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse { 0% { opacity: 0.4; } 100% { opacity: 1; } }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #0a1424; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: #0ef6; border-radius: 10px; }
+
+    .btn-clear {
+      background: none;
+      border: 1px solid #ff6b6b40;
+      border-radius: 30px;
+      padding: 0.3rem 0.8rem;
+      color: #ffb7b7;
+      cursor: pointer;
+      font-size: 0.7rem;
     }
   </style>
 </head>
 <body>
-<div class="bg-glow"></div>
-<div class="app-container">
-  <div class="hero-section">
-    <div class="hero-badge"><i class="fas fa-microchip"></i> DUAL AI CORE • SECURE GATEWAY</div>
-    <h1>Nexus<span style="color:#6effe0;">API</span> Vault</h1>
-    <div class="sub">Furnished futuristic control panel — Two AI models, unified orchestration</div>
+<div class="bg-orb"></div>
+<div class="app-wrapper">
+  <div class="nexus-header">
+    <div class="logo"><h1><i class="fas fa-code-branch"></i> NEXUS FORGE</h1></div>
+    <div class="badge"><i class="fas fa-microchip"></i> Dual AI Core • OpenRouter</div>
   </div>
 
-  <div class="stats-row">
-    <div class="stat-card"><i class="fas fa-key"></i><span>Encrypted channels</span><span class="stat-value">TLS 1.3</span></div>
-    <div class="stat-card"><i class="fas fa-shield-alt"></i><span>Key shielding</span><span class="stat-value">AES-256</span></div>
-    <div class="stat-card"><i class="fas fa-sync-alt"></i><span>real-time sync</span><span class="stat-value">dual-models</span></div>
-  </div>
+  <div class="dual-layout">
+    <!-- LEFT: Configuration for Two Models (OpenRouter) -->
+    <div class="config-panel">
+      <div class="section-title"><i class="fas fa-brain"></i> REASONING & ORCHESTRATOR (Model A)</div>
+      <div class="api-card">
+        <div class="input-futuristic"><i class="fas fa-link"></i><input type="text" id="modelAEndpoint" placeholder="OpenRouter API URL" value="https://openrouter.ai/api/v1/chat/completions"></div>
+        <div class="input-futuristic"><i class="fas fa-key"></i><input type="password" id="modelAApiKey" placeholder="OpenRouter API Key (Model A)" value="sk-or-v1-demo-reasoning-key-change-me"></div>
+        <div class="input-futuristic"><i class="fas fa-cube"></i><input type="text" id="modelAModel" placeholder="Model name e.g., openai/gpt-4o" value="openai/gpt-3.5-turbo"></div>
+        <div class="input-futuristic"><i class="fas fa-comment"></i><textarea id="systemPromptA" rows="2" placeholder="System prompt for reasoning agent" style="background:transparent; border:none; color:white; resize:none;">You are Architect AI: analyze user requests, plan implementation, define architecture, and output structured guidelines for the code generator. Keep responses concise but detailed for coding.</textarea></div>
+      </div>
 
-  <div class="models-grid">
-    <!-- MODEL 1 CARD -->
-    <div class="model-card" id="model1Card">
-      <div class="card-header">
-        <div class="model-icon"><i class="fas fa-brain"></i></div>
-        <div class="model-title">
-          <h3>MODEL <span style="color:#0ef;">ALPHA</span></h3>
-          <span class="model-badge"><i class="fas fa-database"></i> primary intelligence</span>
-        </div>
+      <div class="section-title"><i class="fas fa-terminal"></i> CODE GENERATOR (Model B)</div>
+      <div class="api-card">
+        <div class="input-futuristic"><i class="fas fa-link"></i><input type="text" id="modelBEndpoint" placeholder="OpenRouter API URL" value="https://openrouter.ai/api/v1/chat/completions"></div>
+        <div class="input-futuristic"><i class="fas fa-key"></i><input type="password" id="modelBApiKey" placeholder="OpenRouter API Key (Model B)" value="sk-or-v1-demo-codegen-key-change-me"></div>
+        <div class="input-futuristic"><i class="fas fa-cube"></i><input type="text" id="modelBModel" placeholder="Model name e.g., anthropic/claude-3-haiku" value="anthropic/claude-3-haiku"></div>
+        <div class="input-futuristic"><i class="fas fa-drafting-compass"></i><textarea id="systemPromptB" rows="2" placeholder="System prompt for code expert" style="background:transparent; border:none; color:white;">You are Code Expert: only generate production-ready, full implementation code. No placeholders, no TODOs, complete functional code with HTML/CSS/JS or backend. Use best practices.</textarea></div>
       </div>
-      <div class="input-group">
-        <label><i class="fas fa-map-pin"></i> API ENDPOINT</label>
-        <div class="input-wrapper">
-          <i class="fas fa-link"></i>
-          <input type="text" id="model1Endpoint" placeholder="https://api.alpha.ai/v1/chat" value="https://api.futura-model1.example/v1/complete">
-        </div>
-      </div>
-      <div class="input-group">
-        <label><i class="fas fa-key"></i> API KEY <span style="cursor:pointer;" class="key-toggle" data-target="key1"><i class="fas fa-eye-slash"></i></span></label>
-        <div class="input-wrapper">
-          <i class="fas fa-lock"></i>
-          <input type="password" id="model1ApiKey" placeholder="sk-••••••••••••••••" value="alpha_sk_futur3_k3y_8x9z">
-        </div>
-      </div>
-      <div class="input-group">
-        <label><i class="fas fa-comment-dots"></i> PROMPT / MESSAGE</label>
-        <div class="input-wrapper">
-          <i class="fas fa-terminal"></i>
-          <textarea id="model1Prompt" placeholder="Ask or command Model Alpha... e.g., 'Analyze quantum resonance patterns'"></textarea>
-        </div>
-      </div>
-      <div class="action-buttons">
-        <button class="btn btn-primary" id="sendModel1Btn"><i class="fas fa-paper-plane"></i> SEND REQUEST</button>
-        <button class="btn btn-outline" id="clearModel1Btn"><i class="fas fa-eraser"></i> CLEAR</button>
-      </div>
-      <div class="response-area" id="response1Area">
-        <div class="response-header"><span><i class="fas fa-waveform"></i> RESPONSE STREAM</span> <span class="status-badge" id="status1Badge">idle</span></div>
-        <pre id="model1Response">◆ Awaiting transmission.  Ready for secure inference.</pre>
-      </div>
+      <button id="saveConfigBtn" class="send-btn" style="width:100%; margin-top:8px;"><i class="fas fa-save"></i> Apply & Test Connection</button>
     </div>
 
-    <!-- MODEL 2 CARD -->
-    <div class="model-card" id="model2Card">
-      <div class="card-header">
-        <div class="model-icon"><i class="fas fa-network-wired"></i></div>
-        <div class="model-title">
-          <h3>MODEL <span style="color:#ff77aa;">OMEGA</span></h3>
-          <span class="model-badge"><i class="fas fa-chart-line"></i> neural inference</span>
+    <!-- RIGHT: CHAT INTERFACE -->
+    <div class="chat-panel">
+      <div style="padding: 1rem 1rem 0 1rem; display: flex; justify-content: space-between;">
+        <div><span class="status-dot"></span> Dual‑AI active (Reasoning → Code)</div>
+        <button id="clearChatBtn" class="btn-clear"><i class="fas fa-trash-alt"></i> Clear Chat</button>
+      </div>
+      <div class="messages-container" id="chatMessages">
+        <div class="message assistant">
+          <div class="avatar"><i class="fas fa-robot"></i></div>
+          <div class="bubble assistant-bubble">⚡ <strong>Nexus Forge ready.</strong><br>I use two AI models: <span style="color:#0ef;">Architect (reasoning/plan)</span> + <span style="color:#ffaa77;">Code Generator (production code)</span>.<br><br>👉 Set your OpenRouter API keys & models, then start coding.</div>
         </div>
       </div>
-      <div class="input-group">
-        <label><i class="fas fa-map-pin"></i> API ENDPOINT</label>
-        <div class="input-wrapper">
-          <i class="fas fa-link"></i>
-          <input type="text" id="model2Endpoint" placeholder="https://api.omega.ai/v1/completions" value="https://api.omega-neural.example/v2/predict">
-        </div>
+      <div class="input-area">
+        <textarea id="userInput" rows="1" placeholder="Describe your project: 'Create a landing page for AI startup' or 'Fullstack todo app with auth'..."></textarea>
+        <button id="sendChatBtn" class="send-btn"><i class="fas fa-paper-plane"></i> Generate</button>
       </div>
-      <div class="input-group">
-        <label><i class="fas fa-key"></i> API KEY <span style="cursor:pointer;" class="key-toggle" data-target="key2"><i class="fas fa-eye-slash"></i></span></label>
-        <div class="input-wrapper">
-          <i class="fas fa-lock"></i>
-          <input type="password" id="model2ApiKey" placeholder="sk-••••••••••••••••" value="omega_sk_cryp7ic_n3bula_99x">
-        </div>
-      </div>
-      <div class="input-group">
-        <label><i class="fas fa-comment-dots"></i> PROMPT / MESSAGE</label>
-        <div class="input-wrapper">
-          <i class="fas fa-microphone-alt"></i>
-          <textarea id="model2Prompt" placeholder="Command Model Omega... e.g., 'Forecast market volatility & suggest hedge'"></textarea>
-        </div>
-      </div>
-      <div class="action-buttons">
-        <button class="btn btn-primary" id="sendModel2Btn"><i class="fas fa-bolt"></i> SEND REQUEST</button>
-        <button class="btn btn-outline" id="clearModel2Btn"><i class="fas fa-eraser"></i> CLEAR</button>
-      </div>
-      <div class="response-area" id="response2Area">
-        <div class="response-header"><span><i class="fas fa-waveform"></i> RESPONSE STREAM</span> <span class="status-badge" id="status2Badge">idle</span></div>
-        <pre id="model2Response">◆ Awaiting transmission.  Secure tunnel ready.</pre>
-      </div>
+      <div style="font-size: 10px; text-align:center; padding:6px; opacity:0.6;"><i class="fas fa-shield-alt"></i> Two‑stage pipeline: Model A defines architecture → Model B writes full code</div>
     </div>
   </div>
-
-  <!-- Futuristic footer with global actions (mock sync) -->
-  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;">
-    <div style="display: flex; gap: 12px;">
-      <button id="globalTestBtn" class="btn btn-outline" style="background: #112233aa;"><i class="fas fa-globe"></i> Simulate Dual Handshake</button>
-      <button id="resetAllKeysBtn" class="btn btn-outline"><i class="fas fa-sync-alt"></i> Reset demo keys</button>
-    </div>
-    <div style="font-size: 0.7rem; background: #00000040; padding: 5px 12px; border-radius: 30px;"><i class="fas fa-shield-haltered"></i> zero-trust architecture • mock API simulation active</div>
-  </div>
-  <footer>
-    <i class="fas fa-cube"></i> DUAL AI PLATFORM • PRODUCTION-READY SIMULATION • All requests are locally simulated with realistic latency & streaming.
-  </footer>
 </div>
 
 <script>
-  (function() {
-    // ---------- DOM references ----------
-    // Model 1 elements
-    const model1Endpoint = document.getElementById('model1Endpoint');
-    const model1ApiKey = document.getElementById('model1ApiKey');
-    const model1Prompt = document.getElementById('model1Prompt');
-    const sendBtn1 = document.getElementById('sendModel1Btn');
-    const clearBtn1 = document.getElementById('clearModel1Btn');
-    const model1ResponsePre = document.getElementById('model1Response');
-    const status1Badge = document.getElementById('status1Badge');
+  // DOM elements
+  // Model A (orchestrator)
+  const endpointA = document.getElementById('modelAEndpoint');
+  const apiKeyA = document.getElementById('modelAApiKey');
+  const modelNameA = document.getElementById('modelAModel');
+  const systemA = document.getElementById('systemPromptA');
+  // Model B (code generator)
+  const endpointB = document.getElementById('modelBEndpoint');
+  const apiKeyB = document.getElementById('modelBApiKey');
+  const modelNameB = document.getElementById('modelBModel');
+  const systemB = document.getElementById('systemPromptB');
 
-    // Model 2 elements
-    const model2Endpoint = document.getElementById('model2Endpoint');
-    const model2ApiKey = document.getElementById('model2ApiKey');
-    const model2Prompt = document.getElementById('model2Prompt');
-    const sendBtn2 = document.getElementById('sendModel2Btn');
-    const clearBtn2 = document.getElementById('clearModel2Btn');
-    const model2ResponsePre = document.getElementById('model2Response');
-    const status2Badge = document.getElementById('status2Badge');
+  const chatContainer = document.getElementById('chatMessages');
+  const userInput = document.getElementById('userInput');
+  const sendBtn = document.getElementById('sendChatBtn');
+  const clearChat = document.getElementById('clearChatBtn');
+  const saveConfig = document.getElementById('saveConfigBtn');
 
-    // helper toast
-    function showToast(message, isError = false) {
-      const existingToast = document.querySelector('.toast-msg');
-      if(existingToast) existingToast.remove();
-      const toast = document.createElement('div');
-      toast.className = 'toast-msg';
-      toast.innerHTML = `<i class="fas ${isError ? 'fa-circle-exclamation' : 'fa-check-circle'}"></i> ${message}`;
-      toast.style.borderLeftColor = isError ? '#ff5e7e' : '#0ef';
-      document.body.appendChild(toast);
-      setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, 2800);
+  // Helper to add message to chat
+  function addMessage(role, content, isCodeBlock = false) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${role === 'user' ? 'user' : 'assistant'}`;
+    const avatarIcon = role === 'user' ? '<i class="fas fa-user-astronaut"></i>' : '<i class="fas fa-robot"></i>';
+    messageDiv.innerHTML = `
+      <div class="avatar">${avatarIcon}</div>
+      <div class="bubble ${role === 'user' ? 'user-bubble' : 'assistant-bubble'}">
+        ${role === 'assistant' && isCodeBlock ? renderCodeContent(content) : formatContent(content)}
+      </div>
+    `;
+    chatContainer.appendChild(messageDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  function formatContent(text) {
+    if (!text) return '';
+    // detect code fences and use markdown-ish
+    if (text.includes('```')) {
+      let html = marked.parse(text);
+      return html;
     }
+    return text.replace(/\n/g, '<br>');
+  }
 
-    // Toggle key visibility (both inputs)
-    document.querySelectorAll('.key-toggle').forEach(toggle => {
-      toggle.addEventListener('click', (e) => {
-        const targetAttr = toggle.getAttribute('data-target');
-        let inputElem = null;
-        if(targetAttr === 'key1') inputElem = model1ApiKey;
-        else if(targetAttr === 'key2') inputElem = model2ApiKey;
-        if(inputElem) {
-          const type = inputElem.getAttribute('type') === 'password' ? 'text' : 'password';
-          inputElem.setAttribute('type', type);
-          toggle.querySelector('i').classList.toggle('fa-eye-slash');
-          toggle.querySelector('i').classList.toggle('fa-eye');
-        }
-      });
+  function renderCodeContent(content) {
+    // If content has markdown fences
+    let formatted = marked.parse(content);
+    return `<div class="code-block">${formatted}</div>`;
+  }
+
+  // loading indicator
+  let loadingDiv = null;
+  function showLoading() {
+    if(loadingDiv) return;
+    loadingDiv = document.createElement('div');
+    loadingDiv.className = 'message assistant';
+    loadingDiv.innerHTML = `<div class="avatar"><i class="fas fa-circle-notch fa-spin"></i></div><div class="bubble" style="background:#000000aa;"><i class="fas fa-cogs"></i> Dual AI pipeline: Reasoning & generating code...</div>`;
+    chatContainer.appendChild(loadingDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+  function hideLoading() {
+    if(loadingDiv) {
+      loadingDiv.remove();
+      loadingDiv = null;
+    }
+  }
+
+  // Core: Call OpenRouter API (generic)
+  async function callOpenRouter(endpoint, apiKey, model, messages, temperature = 0.3) {
+    if(!endpoint || !apiKey || !model) throw new Error("Missing API configuration (endpoint/key/model)");
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': window.location.origin,
+        'X-Title': 'NexusCodeForge'
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: messages,
+        temperature: temperature,
+        max_tokens: 2500
+      })
     });
-
-    // Helper: update status badge with animation
-    function setStatus(badge, text, loading = false) {
-      badge.innerHTML = loading ? `<i class="fas fa-spinner fa-pulse"></i> ${text}` : text;
-      if(loading) badge.style.opacity = '0.9';
-      else badge.style.opacity = '1';
+    if(!response.ok) {
+      const errText = await response.text();
+      throw new Error(`OpenRouter error ${response.status}: ${errText.substring(0, 150)}`);
     }
-
-    // --- CORE SIMULATED AI REQUEST (PRODUCTION STYLE with advanced mock) ---
-    // Since no real backend, we produce intelligent contextual mock responses.
-    // Simulates network latency, real API structure, error handling & security validation.
-    async function simulateApiCall(endpoint, apiKey, prompt, modelType) {
-      // Input validation - security checks
-      if(!prompt || prompt.trim() === '') {
-        throw new Error('PROMPT_EMPTY: Please provide a message for the model.');
-      }
-      if(!endpoint || endpoint.trim() === '') {
-        throw new Error('ENDPOINT_MISSING: API endpoint address is required.');
-      }
-      if(!apiKey || apiKey.trim() === '') {
-        throw new Error('API_KEY_MISSING: Authentication key is required.');
-      }
-      // Basic sanitization: prevent XSS injection via prompt mock just demonstration of secure handling.
-      const sanitizedPrompt = prompt.replace(/[<>]/g, '');
-
-      // Simulate realistic latency (between 500ms and 1700ms)
-      const latency = 600 + Math.random() * 900;
-      await new Promise(resolve => setTimeout(resolve, latency));
-
-      // Generate smart context-aware mock reply based on model type and prompt keywords
-      const lowerPrompt = sanitizedPrompt.toLowerCase();
-      let replyContent = '';
-      if(modelType === 'alpha') {
-        if(lowerPrompt.includes('quantum') || lowerPrompt.includes('physics')) 
-          replyContent = `🧠 ALPHA CORE: Quantum coherence simulation suggests superposition state at 0.82 decoherence threshold. Further stabilization requires parameter tuning. Confidence: 97%`;
-        else if(lowerPrompt.includes('code') || lowerPrompt.includes('script') || lowerPrompt.includes('function'))
-          replyContent = `⚡ ALPHA GEN: \n\`\`\`javascript\nconst dualPipeline = (req, res) => { \n  return res.json({ status: 'ok', model: 'Alpha-Nexus' });\n};\n\`\`\`\n✅ Production-ready snippet generated.`;
-        else if(lowerPrompt.includes('strategy') || lowerPrompt.includes('plan'))
-          replyContent = `📈 Alpha Strategic Analysis: Recommended dual-model orchestration with fallback routing. Efficiency +34% using dynamic load balancing. Activate shadow deployment?`;
-        else
-          replyContent = `🔮 Alpha Response: Analyzed "${sanitizedPrompt.substring(0, 70)}". Predictive modeling returns optimal vector: align with entropy reduction protocol. (Simulated but fully compliant)`;
-      } else { // omega model
-        if(lowerPrompt.includes('market') || lowerPrompt.includes('forecast') ||
-           lowerPrompt.includes('finance'))
-          replyContent = `📊 Omega Forecast: Volatility index projection +3.2% next 48h. Hedge strategy: accumulate liquid assets with 15% trailing stop. Predictive accuracy 88.4%`;
-        else if(lowerPrompt.includes('security') || lowerPrompt.includes('encrypt'))
-          replyContent = `🔐 Omega Security Vault: Zero-knowledge proof validation passed. Recommend rotating ephemeral keys every 12h. Your key shielding: ACTIVE`;
-        else if(lowerPrompt.includes('creative') || lowerPrompt.includes('design') || lowerPrompt.includes('ui'))
-          replyContent = `✨ Omega Generative Design: Futuristic glassmorphism dashboard, micro-interactions + particle background. Ready to deploy with performance LCP < 1.2s.`;
-        else
-          replyContent = `🌌 Omega Inference: Processed semantic input. Suggested action: align with dual AI meta-learning. Confidence: 0.94. (Mock API response — production ready)`;
-      }
-      
-      // add secure checksum suffix
-      const finalReply = `${replyContent}\n\n🔒 [secured via ${apiKey.substring(0,4)}...] • timestamp ${new Date().toISOString()}`;
-      return { success: true, data: finalReply, endpoint, model: modelType };
+    const data = await response.json();
+    if(data.error) throw new Error(data.error.message);
+    if(data.choices && data.choices[0] && data.choices[0].message) {
+      return data.choices[0].message.content;
+    } else {
+      throw new Error("Invalid API response structure");
     }
+  }
 
-    // universal request handler for both models
-    async function handleModelRequest(modelId) {
-      let endpoint, apiKey, prompt, responsePre, statusBadge, modelType;
-      if(modelId === 1) {
-        endpoint = model1Endpoint.value.trim();
-        apiKey = model1ApiKey.value.trim();
-        prompt = model1Prompt.value;
-        responsePre = model1ResponsePre;
-        statusBadge = status1Badge;
-        modelType = 'alpha';
-      } else {
-        endpoint = model2Endpoint.value.trim();
-        apiKey = model2ApiKey.value.trim();
-        prompt = model2Prompt.value;
-        responsePre = model2ResponsePre;
-        statusBadge = status2Badge;
-        modelType = 'omega';
-      }
+  // MAIN PIPELINE: user query -> Model A (reasoning/plan) -> Model B (code generation)
+  async function processWithDualAI(userQuery) {
+    if(!userQuery.trim()) throw new Error("Empty prompt");
 
-      if(!prompt || prompt.trim() === '') {
-        showToast(`⚠️ Model ${modelId} prompt cannot be empty`, true);
-        return;
-      }
-      // set loading
-      const originalText = responsePre.innerText;
-      responsePre.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Establishing secure tunnel & generating inference...';
-      setStatus(statusBadge, 'processing...', true);
-      
-      try {
-        const result = await simulateApiCall(endpoint, apiKey, prompt, modelType);
-        responsePre.innerHTML = `➤ ${result.data}`;
-        setStatus(statusBadge, '✅ success', false);
-        showToast(`Model ${modelId === 1 ? 'ALPHA' : 'OMEGA'} responded successfully`, false);
-      } catch (err) {
-        let errorMsg = err.message;
-        if(errorMsg.includes('ENDPOINT_MISSING')) errorMsg = '❌ Invalid API endpoint URL.';
-        else if(errorMsg.includes('API_KEY_MISSING')) errorMsg = '❌ API Key is missing or invalid.';
-        else if(errorMsg.includes('PROMPT_EMPTY')) errorMsg = '❌ Please write a prompt before sending.';
-        else errorMsg = `⚠️ API Failure: ${errorMsg}`;
-        responsePre.innerHTML = `⛔ ${errorMsg}\n[Hint: This is a secure mock simulation — ensure fields are filled]`;
-        setStatus(statusBadge, 'failed', false);
-        showToast(errorMsg, true);
-      }
-    }
-
-    // Clear response & prompt helper
-    function clearModel(modelId) {
-      if(modelId === 1) {
-        model1Prompt.value = '';
-        model1ResponsePre.innerHTML = '◆ Cleared. Ready for next secure transmission.';
-        setStatus(status1Badge, 'idle', false);
-      } else {
-        model2Prompt.value = '';
-        model2ResponsePre.innerHTML = '◆ Cleared. Ready for next secure transmission.';
-        setStatus(status2Badge, 'idle', false);
-      }
-      showToast(`Model ${modelId} panel cleared`, false);
-    }
-
-    // Reset demo keys & endpoints (keeps futuristic demo values)
-    function resetDemoCredentials() {
-      model1Endpoint.value = "https://api.futura-model1.example/v1/complete";
-      model1ApiKey.value = "alpha_sk_futur3_k3y_8x9z";
-      model2Endpoint.value = "https://api.omega-neural.example/v2/predict";
-      model2ApiKey.value = "omega_sk_cryp7ic_n3bula_99x";
-      showToast("🔐 Reset to demo credentials (secure mock environment)", false);
-    }
-
-    // Dual handshake: send same prompt (model1 prompt if both? we use model1 & model2 current prompts)
-    async function dualHandshake() {
-      const prompt1 = model1Prompt.value.trim();
-      const prompt2 = model2Prompt.value.trim();
-      if(!prompt1 && !prompt2) {
-        showToast("Enter at least one prompt in Model Alpha or Omega to run dual handshake.", true);
-        return;
-      }
-      if(prompt1) await handleModelRequest(1);
-      if(prompt2) await handleModelRequest(2);
-      else if(prompt1 && !prompt2) showToast("Omega prompt empty, only Alpha invoked.", false);
-      else if(!prompt1 && prompt2) showToast("Alpha prompt empty, only Omega invoked.", false);
-    }
-
-    // Event binding
-    sendBtn1.addEventListener('click', () => handleModelRequest(1));
-    sendBtn2.addEventListener('click', () => handleModelRequest(2));
-    clearBtn1.addEventListener('click', () => clearModel(1));
-    clearBtn2.addEventListener('click', () => clearModel(2));
-    document.getElementById('globalTestBtn').addEventListener('click', dualHandshake);
-    document.getElementById('resetAllKeysBtn').addEventListener('click', resetDemoCredentials);
-
-    // extra: automatically set demo example prompts to showcase power (optional)
-    model1Prompt.placeholder = "e.g., Generate quantum encryption protocol snippet";
-    model2Prompt.placeholder = "e.g., Analyze real-time neural market trends";
-    // Prefill a stylish example for demonstration premium feel but not intrusive
-    if(!model1Prompt.value) model1Prompt.value = "Design a futuristic API gateway architecture with dual load balancing.";
-    if(!model2Prompt.value) model2Prompt.value = "Forecast next-gen AI security threats and provide mitigation.";
+    // Fetch fresh config values
+    const aEndpoint = endpointA.value.trim();
+    const aKey = apiKeyA.value.trim();
+    const aModel = modelNameA.value.trim();
+    const aSystem = systemA.value.trim() || "You are an expert software architect. Plan and guide implementation. Provide structured output: requirements, tech stack, architecture, and clear coding instructions.";
     
-    // initial status update
-    setStatus(status1Badge, 'idle', false);
-    setStatus(status2Badge, 'idle', false);
-  })();
+    const bEndpoint = endpointB.value.trim();
+    const bKey = apiKeyB.value.trim();
+    const bModel = modelNameB.value.trim();
+    const bSystem = systemB.value.trim() || "You are a senior code engineer. Generate complete, production-ready code. No placeholders. Always output fully functional files (HTML/CSS/JS) or appropriate backend. Include explanations in comments if needed but final output must be functional.";
+
+    if(!aEndpoint || !aKey || !aModel) throw new Error("Model A (Orchestrator) endpoint, key, or model missing. Please fill in left panel.");
+    if(!bEndpoint || !bKey || !bModel) throw new Error("Model B (Code Generator) endpoint, key, or model missing.");
+
+    // Step 1: Model A generates architecture & guidelines
+    const architectMessages = [
+      { role: "system", content: aSystem },
+      { role: "user", content: `User request: ${userQuery}\n\nGenerate a detailed implementation plan, technology choices, architecture, and specific instructions for a code generation AI that will write the complete code. Make sure to specify all needed components, UI/UX requirements, and any special logic. The output must be clear and actionable for the code generator.` }
+    ];
+    
+    const reasoningOutput = await callOpenRouter(aEndpoint, aKey, aModel, architectMessages, 0.4);
+    if(!reasoningOutput) throw new Error("Model A did not return a valid plan");
+
+    // show partial reasoning in chat (collapsible style)
+    addMessage("assistant", `🧠 **Architect (Reasoning)**:\n${reasoningOutput.substring(0, 800)}${reasoningOutput.length > 800 ? '…' : ''}\n\n⚙️ *Now generating full code based on this blueprint...*`, false);
+
+    // Step 2: Model B generates full code using the architect's output
+    const codeGenMessages = [
+      { role: "system", content: bSystem + " Follow exactly the implementation plan. Output full code with proper structure. If frontend: HTML/CSS/JS, if full-stack provide Node/Express etc. Ensure beautiful UI, responsive, complete. No TODOs." },
+      { role: "user", content: `Implementation plan from architect AI:\n${reasoningOutput}\n\nUser original request: ${userQuery}\n\nGenerate complete, production-ready, full-stack code or frontend code depending on request. Include all necessary files (single HTML for landing page or separate sections). Ensure modern design and premium UI.` }
+    ];
+    
+    const finalCode = await callOpenRouter(bEndpoint, bKey, bModel, codeGenMessages, 0.2);
+    if(!finalCode) throw new Error("Model B did not generate code");
+    
+    return { reasoning: reasoningOutput, code: finalCode };
+  }
+
+  // send message handler
+  async function onSendMessage() {
+    const query = userInput.value.trim();
+    if(!query) {
+      addMessage("assistant", "⚠️ Please describe what you want to build (landing page, web app, etc.)");
+      return;
+    }
+    // Add user message
+    addMessage("user", query);
+    userInput.value = "";
+    showLoading();
+    try {
+      const result = await processWithDualAI(query);
+      hideLoading();
+      // Display code result with formatting
+      let codeOutput = result.code;
+      // improved display - check if contains code fences
+      addMessage("assistant", `✨ **Generated Code** ✨\n\n${codeOutput}`, true);
+      // optional: ensure we show full output
+    } catch (err) {
+      hideLoading();
+      console.error(err);
+      let errorMsg = err.message;
+      if(errorMsg.includes("API key") || errorMsg.includes("Authorization") || errorMsg.includes("401")) {
+        errorMsg = "Authentication failed. Please verify both OpenRouter API keys in left panel (Model A & Model B). Ensure they are valid and have credits.";
+      } else if(errorMsg.includes("fetch")) {
+        errorMsg = "Network error. Check CORS or OpenRouter endpoint URL. Use proxy or ensure proper endpoint.";
+      }
+      addMessage("assistant", `❌ Dual-AI pipeline error: ${errorMsg}\n\nMake sure both API keys and model names are correct in configuration panel.`);
+    }
+  }
+
+  // save config test: validate both endpoints with simple ping (optional)
+  async function testConfig() {
+    try {
+      const aKey = apiKeyA.value.trim();
+      const aModel = modelNameA.value.trim();
+      const aEndpoint = endpointA.value.trim();
+      if(aKey && aModel && aEndpoint) {
+        // quick test call with minimal token just to verify auth, but may cost little, do a dummy message
+        showLoading();
+        const testMsg = [{ role: "user", content: "test connection, just respond 'ok'" }];
+        await callOpenRouter(aEndpoint, aKey, aModel, testMsg, 0.1);
+        hideLoading();
+        addMessage("assistant", "✅ Model A (Orchestrator) connection successful!");
+      } else {
+        throw new Error("Model A incomplete");
+      }
+      const bKey = apiKeyB.value.trim();
+      const bModel = modelNameB.value.trim();
+      const bEndpoint = endpointB.value.trim();
+      if(bKey && bModel && bEndpoint) {
+        showLoading();
+        const testMsg2 = [{ role: "user", content: "test, respond 'ready'" }];
+        await callOpenRouter(bEndpoint, bKey, bModel, testMsg2, 0.1);
+        hideLoading();
+        addMessage("assistant", "✅ Model B (Code Generator) connection successful! Ready for production.");
+      } else {
+        throw new Error("Model B incomplete");
+      }
+      hideLoading();
+    } catch(e) {
+      hideLoading();
+      addMessage("assistant", `⚠️ Configuration test failed: ${e.message}. Double-check API keys, model names, and OpenRouter endpoint.`);
+    }
+  }
+
+  function clearChatHistory() {
+    chatContainer.innerHTML = '';
+    addMessage("assistant", "🧹 Chat cleared. Configure API keys and start building.");
+  }
+
+  // event listeners
+  sendBtn.addEventListener('click', onSendMessage);
+  clearChat.addEventListener('click', clearChatHistory);
+  saveConfig.addEventListener('click', testConfig);
+  userInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      onSendMessage();
+    }
+  });
+
+  // small initial reminder to fill API keys
+  setTimeout(() => {
+    if(!apiKeyA.value.trim() || apiKeyA.value === "sk-or-v1-demo-reasoning-key-change-me") {
+      addMessage("assistant", "🔐 **Setup Required**: Enter your valid OpenRouter API keys for both Model A (reasoning) and Model B (codegen) in the left panel. Then click 'Apply & Test Connection'. The models will work together to produce high-quality code.");
+    }
+  }, 800);
 </script>
 </body>
 </html>
