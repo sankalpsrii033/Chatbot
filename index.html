@@ -2,840 +2,792 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Nexus Forge | AI Code Engine</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Trade GPT Pro | Institutional Quant Terminal</title>
+  <!-- Marked for MD rendering -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
-
     body {
-      background: radial-gradient(circle at 10% 20%, #0a0c18, #010103);
-      font-family: 'Inter', sans-serif;
-      color: #edf4ff;
+      background: #070b14;
+      color: #e2e8f0;
+      padding: 16px;
       min-height: 100vh;
-      overflow-x: hidden;
     }
-
-    .bg-aura {
-      position: fixed;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(ellipse at 30% 40%, rgba(0, 180, 255, 0.08), transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .app-container {
-      max-width: 1400px;
+    .container {
+      display: grid;
+      grid-template-columns: 320px 1fr 340px;
+      grid-template-rows: auto auto 1fr;
+      gap: 12px;
+      max-width: 1800px;
       margin: 0 auto;
-      padding: 1.5rem;
-      position: relative;
-      z-index: 2;
     }
-
-    .hero-header {
-      text-align: center;
-      margin-bottom: 1.5rem;
+    .header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #111827;
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: 1px solid #1e293b;
     }
-
-    .hero-header h1 {
-      font-size: 2.5rem;
+    .header h1 {
+      font-size: 1.5rem;
       font-weight: 700;
-      background: linear-gradient(135deg, #FFFFFF, #7df9ff, #4f9eff);
-      background-clip: text;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #22c55e, #10b981);
       -webkit-background-clip: text;
-      color: transparent;
-      letter-spacing: -0.02em;
+      -webkit-text-fill-color: transparent;
     }
-
-    .hero-header p {
-      opacity: 0.7;
-      margin-top: 0.3rem;
-      font-size: 0.85rem;
-    }
-
-    /* Simple API Panel */
-    .api-panel {
-      background: rgba(8, 14, 24, 0.8);
-      backdrop-filter: blur(16px);
-      border-radius: 1.5rem;
-      border: 1px solid rgba(0, 230, 250, 0.3);
-      padding: 1rem 1.5rem;
-      margin-bottom: 1.5rem;
+    .header-actions {
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
+      gap: 8px;
     }
-
-    .api-fields {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      flex: 1;
-    }
-
-    .api-field {
-      flex: 1;
-      min-width: 200px;
-    }
-
-    .api-field label {
-      display: block;
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 0.3rem;
-      color: #8ecbff;
-    }
-
-    .api-field input {
-      width: 100%;
-      background: #010a15;
-      border: 1px solid #2e6a8e;
-      border-radius: 0.8rem;
-      padding: 0.6rem 1rem;
-      color: white;
-      font-family: monospace;
-      font-size: 0.8rem;
-      outline: none;
-      transition: 0.2s;
-    }
-
-    .api-field input:focus {
-      border-color: #0ef;
-      box-shadow: 0 0 6px #0ef4;
-    }
-
-    .api-field input:disabled {
-      opacity: 0.6;
-      background: #051020;
-    }
-
-    .api-actions {
-      display: flex;
-      gap: 0.8rem;
-      align-items: center;
-    }
-
-    .edit-btn, .save-btn, .lock-btn {
-      background: linear-gradient(95deg, #0c2c48, #071a2b);
-      border: 1px solid #3ec8ff;
-      border-radius: 2rem;
-      padding: 0.5rem 1.2rem;
-      color: white;
-      cursor: pointer;
-      font-size: 0.8rem;
+    button {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      padding: 8px 14px;
+      border-radius: 8px;
       font-weight: 500;
-      transition: 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .edit-btn:hover, .save-btn:hover, .lock-btn:hover {
-      background: #125a86;
-      transform: scale(0.96);
-    }
-
-    .status-badge {
-      font-size: 0.7rem;
-      padding: 0.3rem 0.8rem;
-      border-radius: 30px;
-      background: #ffaa3310;
-      border: 1px solid #ffaa3350;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .status-badge.live {
-      background: #00ff8810;
-      border-color: #00ff88;
-      color: #7affb0;
-    }
-
-    /* Chat Container */
-    .chat-master {
-      background: rgba(8, 14, 24, 0.65);
-      backdrop-filter: blur(16px);
-      border-radius: 1.5rem;
-      border: 1px solid rgba(0, 230, 250, 0.3);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      height: 60vh;
-    }
-
-    .chat-header {
-      padding: 0.8rem 1.2rem;
-      background: rgba(0, 20, 40, 0.5);
-      border-bottom: 1px solid rgba(0, 255, 255, 0.2);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .ai-badge {
-      display: flex;
-      gap: 0.8rem;
-      align-items: center;
-    }
-
-    .ai-badge span {
-      background: #0ef1;
-      padding: 0.2rem 0.8rem;
-      border-radius: 30px;
-      font-size: 0.7rem;
-      font-weight: 500;
-      border: 1px solid #0ef5;
-    }
-
-    .clear-btn {
-      background: none;
-      border: 1px solid #ff6b6b60;
-      border-radius: 30px;
-      padding: 0.3rem 1rem;
-      color: #ffb7b7;
       cursor: pointer;
-      font-size: 0.7rem;
-      transition: 0.2s;
-    }
-
-    .clear-btn:hover {
-      background: #ff6b6b20;
-    }
-
-    .messages-area {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem;
-    }
-
-    .message {
-      display: flex;
-      gap: 10px;
-      animation: fadeSlide 0.25s ease-out;
-    }
-
-    @keyframes fadeSlide {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .avatar {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(145deg, #1f3b5c, #0b1c2c);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      transition: all 0.2s;
       font-size: 0.9rem;
-      flex-shrink: 0;
     }
-
-    .bubble {
-      background: rgba(20, 30, 48, 0.7);
-      backdrop-filter: blur(8px);
-      border-radius: 1rem;
-      padding: 0.7rem 1rem;
-      max-width: 85%;
-      border: 1px solid rgba(100, 200, 255, 0.2);
-      font-size: 0.85rem;
-      line-height: 1.45;
+    button:hover {
+      background: #334155;
+      border-color: #22c55e;
     }
-
-    .user-bubble {
-      background: #0a2540cc;
-      border-left: 3px solid #0ef;
-      margin-left: auto;
+    button.primary {
+      background: #22c55e;
+      border-color: #22c55e;
+      color: #070b14;
+      font-weight: 600;
     }
-
-    .assistant-bubble pre {
-      background: #00000070;
-      padding: 0.6rem;
-      border-radius: 0.6rem;
-      overflow-x: auto;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem;
-      margin-top: 0.4rem;
+    button.primary:hover {
+      background: #16a34a;
     }
-
-    .input-panel {
-      padding: 1rem;
-      border-top: 1px solid #2c527055;
-      background: #07111e60;
+    .card {
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .left-panel {
       display: flex;
-      gap: 0.8rem;
-      align-items: flex-end;
+      flex-direction: column;
+      gap: 12px;
     }
-
-    textarea {
+    .right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .center-panel {
+      grid-column: 2;
+      grid-row: 2 / 4;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .input-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    input, select {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 0.9rem;
       flex: 1;
-      background: #010a15;
-      border: 1px solid #2e6a8e;
-      border-radius: 1.2rem;
-      padding: 0.7rem 1rem;
-      font-family: 'Inter', monospace;
-      color: white;
-      resize: none;
-      font-size: 0.85rem;
-      outline: none;
+      min-width: 100px;
     }
-
-    textarea:focus {
-      border-color: #0ef;
-    }
-
-    .send-btn {
-      background: linear-gradient(95deg, #0c2c48, #071a2b);
-      border: 1px solid #3ec8ff;
-      border-radius: 2rem;
-      padding: 0.6rem 1.5rem;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .send-btn:hover {
-      background: #125a86;
-      transform: scale(0.96);
-    }
-
-    .status-dot {
+    .signal-badge {
       display: inline-block;
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #2effb0;
-      box-shadow: 0 0 6px #0f0;
-      margin-right: 5px;
-      animation: pulse 1.2s infinite;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.9rem;
     }
-
-    @keyframes pulse { 0% { opacity: 0.4; } 100% { opacity: 1; } }
-
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: #0a1424; }
-    ::-webkit-scrollbar-thumb { background: #0ef6; border-radius: 10px; }
-
-    .password-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(8px);
+    .strong-buy { background: #065f46; color: #6ee7b7; }
+    .buy { background: #14532d; color: #86efac; }
+    .hold { background: #422006; color: #fbbf24; }
+    .sell { background: #7f1d1d; color: #fca5a5; }
+    .strong-sell { background: #4c0519; color: #fda4af; }
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .stat-item {
       display: flex;
-      align-items: center;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      padding: 4px 0;
+      border-bottom: 1px solid #1e293b;
+    }
+    .engine-list {
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    #tv-chart-container {
+      height: 500px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #1e293b;
+    }
+    .report-content {
+      max-height: 400px;
+      overflow-y: auto;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .report-content p { margin-bottom: 8px; }
+    .report-content h3 { color: #22c55e; margin: 10px 0 4px; }
+    .flex { display: flex; gap: 8px; align-items: center; }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
       justify-content: center;
+      align-items: center;
       z-index: 1000;
     }
-
     .modal-content {
-      background: #0a1424;
-      border: 1px solid #0ef;
-      border-radius: 1.5rem;
-      padding: 1.5rem;
-      width: 300px;
-      text-align: center;
-    }
-
-    .modal-content input {
-      width: 100%;
-      background: #010a15;
-      border: 1px solid #2e6a8e;
-      border-radius: 0.8rem;
-      padding: 0.6rem;
-      color: white;
-      margin: 1rem 0;
-      outline: none;
-    }
-
-    .modal-content button {
-      background: #0c2c48;
-      border: 1px solid #0ef;
-      border-radius: 2rem;
-      padding: 0.5rem 1rem;
-      color: white;
-      cursor: pointer;
+      background: #111827;
+      border: 1px solid #22c55e;
+      padding: 24px;
+      border-radius: 16px;
+      width: 400px;
     }
   </style>
 </head>
 <body>
-<div class="bg-aura"></div>
-<div class="app-container">
-  <div class="hero-header">
-    <h1><i class="fas fa-code"></i> NEXUS FORGE</h1>
-    <p>Single AI Model • Production-Ready Code Generation</p>
-  </div>
-
-  <!-- Simple API Panel -->
-  <div class="api-panel" id="apiPanel">
-    <div class="api-fields">
-      <div class="api-field">
-        <label><i class="fas fa-link"></i> OpenRouter Model</label>
-        <input type="text" id="modelAddress" placeholder="e.g., openai/gpt-3.5-turbo" value="openai/gpt-3.5-turbo" disabled>
-      </div>
-      <div class="api-field">
-        <label><i class="fas fa-key"></i> OpenRouter API Key</label>
-        <input type="password" id="apiKey" placeholder="sk-or-v1-..." value="" disabled>
-      </div>
-    </div>
-    <div class="api-actions">
-      <button id="editBtn" class="edit-btn"><i class="fas fa-lock"></i> Edit</button>
-      <button id="saveBtn" class="save-btn" style="display:none;"><i class="fas fa-save"></i> Save</button>
-      <div id="apiStatus" class="status-badge"><i class="fas fa-flask"></i> Demo Mode</div>
+<div class="container">
+  <div class="header">
+    <h1>🔷 TRADE GPT PRO</h1>
+    <div class="header-actions">
+      <button onclick="openSettings()">⚙️ Settings</button>
+      <button onclick="toggleDiagnostics()">📡 Diagnostics</button>
     </div>
   </div>
 
-  <!-- Chat Container -->
-  <div class="chat-master">
-    <div class="chat-header">
-      <div class="ai-badge">
-        <span><i class="fas fa-microchip"></i> CodeGen AI</span>
-        <span><i class="fas fa-bolt"></i> Production Ready</span>
+  <!-- Left Panel: Inputs & Controls -->
+  <div class="left-panel">
+    <div class="card">
+      <div class="input-row">
+        <input type="text" id="symbolInput" placeholder="Symbol (e.g., NVDA, RELIANCE)" value="NVDA">
+        <input type="number" id="capitalInput" placeholder="Capital ($)" value="10000">
+        <input type="number" id="riskInput" placeholder="Risk %" value="1" step="0.1">
       </div>
-      <button id="clearChatBtn" class="clear-btn"><i class="fas fa-trash-alt"></i> Clear</button>
+      <div class="input-row" style="margin-top:8px">
+        <select id="exchangeSelect">
+          <option value="US">🇺🇸 US Market</option>
+          <option value="NSE">🇮🇳 NSE India</option>
+        </select>
+        <select id="timeframeSelect">
+          <option value="D">1 Day</option>
+          <option value="4h">4 Hour</option>
+          <option value="1h">1 Hour</option>
+          <option value="15m">15 Min</option>
+          <option value="5m">5 Min</option>
+        </select>
+        <button class="primary" onclick="runAnalysis()">🔍 Analyze</button>
+      </div>
     </div>
 
-    <div class="messages-area" id="chatMessages">
-      <div class="message assistant">
-        <div class="avatar"><i class="fas fa-robot"></i></div>
-        <div class="bubble assistant-bubble">
-          🤖 <strong>Nexus Forge Ready</strong><br><br>
-          I'm an AI code generator. My goal is to produce <strong>complete, production-ready code</strong> for landing pages, websites, web apps, and fullstack projects.<br><br>
-          ✅ No placeholders, no TODOs — fully functional code.<br>
-          ✅ Modern UI, responsive design, best practices.<br>
-          ✅ Clean HTML/CSS/JS or fullstack implementations.<br><br>
-          <span class="status-dot"></span> <strong>Demo Mode Active</strong> — Enter your OpenRouter API key (password: PROGRESS) for real AI generation.
-        </div>
-      </div>
+    <div class="card" id="signalCard">
+      <div style="font-weight:600; margin-bottom:6px;">📊 SIGNAL</div>
+      <div id="signalDisplay" class="signal-badge hold">HOLD</div>
+      <div class="stat-item"><span>Confidence</span><span id="confidenceDisplay">--</span></div>
+      <div class="stat-item"><span>Confluence Score</span><span id="confluenceScore">--</span></div>
+      <div class="stat-item"><span>Risk:Reward</span><span id="rrRatio">--</span></div>
     </div>
 
-    <div class="input-panel">
-      <textarea id="userInput" rows="1" placeholder="Describe what you want to build... e.g., 'Create a modern SaaS landing page with pricing' or 'Build a task manager app'"></textarea>
-      <button id="sendBtn" class="send-btn"><i class="fas fa-paper-plane"></i> Generate</button>
+    <div class="card">
+      <div style="font-weight:600; margin-bottom:6px;">⏱️ MULTI-TIMEFRAME</div>
+      <div id="mtfAnalysis" class="engine-list"></div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:600; margin-bottom:6px;">📋 WATCHLIST</div>
+      <div class="flex" style="margin-bottom:8px">
+        <input type="text" id="watchlistSymbol" placeholder="Add symbol">
+        <button onclick="addToWatchlist()">+</button>
+      </div>
+      <div id="watchlistItems" class="engine-list"></div>
+    </div>
+  </div>
+
+  <!-- Center: TradingView Chart + Main Display -->
+  <div class="center-panel">
+    <div id="tv-chart-container"></div>
+    <div class="card" style="flex:1; overflow-y:auto;">
+      <div style="font-weight:600; margin-bottom:8px;">🧠 AI DEBATE & INSTITUTIONAL REPORT</div>
+      <div id="aiReport" class="report-content">Run analysis to generate AI debate and full report.</div>
+    </div>
+  </div>
+
+  <!-- Right Panel: Engines, Risk, Journal -->
+  <div class="right-panel">
+    <div class="card">
+      <div style="font-weight:600; margin-bottom:6px;">⚙️ ENGINE SCORES</div>
+      <div id="engineScores" class="engine-list"></div>
+    </div>
+    <div class="card">
+      <div style="font-weight:600; margin-bottom:6px;">🛡️ RISK MANAGEMENT</div>
+      <div id="riskPanel" class="stat-item"><span>Position Size</span><span>--</span></div>
+      <div class="stat-item"><span>Max Loss</span><span id="maxLoss">--</span></div>
+      <div class="stat-item"><span>Stop Loss</span><span id="stopLoss">--</span></div>
+      <div class="stat-item"><span>Targets</span><span id="targetsDisplay">--</span></div>
+    </div>
+    <div class="card">
+      <div style="font-weight:600; margin-bottom:6px;">📓 TRADE JOURNAL</div>
+      <button onclick="logTrade()" style="width:100%">Log Current Trade</button>
+      <div id="journalEntries" style="max-height:150px; overflow-y:auto; margin-top:8px; font-size:0.8rem;"></div>
     </div>
   </div>
 </div>
 
+<!-- Settings Modal -->
+<div id="settingsModal" class="modal">
+  <div class="modal-content">
+    <h3>Settings</h3>
+    <label>OpenRouter API Key</label>
+    <input type="password" id="openRouterKey" placeholder="sk-or-...">
+    <label>Finnhub API Key</label>
+    <input type="password" id="finnhubKey" placeholder="...">
+    <label>Model Name</label>
+    <input type="text" id="modelName" value="deepseek/deepseek-r1:free">
+    <button class="primary" onclick="saveSettings()" style="margin-top:12px; width:100%">Save</button>
+    <button onclick="closeSettings()" style="margin-top:8px; width:100%">Cancel</button>
+  </div>
+</div>
+
+<!-- Diagnostics Modal -->
+<div id="diagModal" class="modal">
+  <div class="modal-content" style="width:500px">
+    <h3>API Diagnostics</h3>
+    <div id="diagContent"></div>
+    <button onclick="closeDiagnostics()" style="margin-top:12px; width:100%">Close</button>
+  </div>
+</div>
+
 <script>
-  // ============================================================
-  // INSTRUCTIONS FOR AI (System Prompt)
-  // ============================================================
-  const AI_SYSTEM_PROMPT = `You are an elite code generation AI. Your ONLY goal is to produce complete, production-ready code for websites, landing pages, web apps, and fullstack applications.
-
-CRITICAL RULES:
-- NEVER use placeholders like "// TODO" or "add your code here"
-- NEVER output incomplete or mock implementations
-- EVERY feature requested must be fully implemented
-- Code must be ready to copy-paste and run immediately
-
-TECHNOLOGY STACK:
-- Frontend: HTML5, CSS3, JavaScript ES6+ (Tailwind CSS optional but recommended for modern UI)
-- Backend (if needed): Node.js + Express
-- Database (if needed): LocalStorage for simplicity or mock API
-
-UI STANDARDS:
-- Responsive design (mobile-first)
-- Modern, premium aesthetics (gradients, glassmorphism, smooth animations)
-- Clean typography using Google Fonts (Inter, Poppins)
-- Accessibility friendly
-
-OUTPUT FORMAT:
-- For frontend: Output complete HTML file with embedded CSS and JavaScript
-- For fullstack: Provide HTML + Node.js backend code with clear instructions
-- Always wrap code in markdown code blocks with language specified
-
-Remember: Your response should contain ONLY the code and minimal necessary explanation. The user needs working software.`;
-
-  // OpenRouter endpoint
-  const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
-  
-  // State
-  let apiKey = "";
-  let modelAddress = "openai/gpt-3.5-turbo";
-  let isLiveMode = false;
-  let isEditing = false;
-  const ADMIN_PASSWORD = "PROGRESS";
-  
-  // DOM Elements
-  const modelAddressInput = document.getElementById('modelAddress');
-  const apiKeyInput = document.getElementById('apiKey');
-  const editBtn = document.getElementById('editBtn');
-  const saveBtn = document.getElementById('saveBtn');
-  const apiStatus = document.getElementById('apiStatus');
-  const chatContainer = document.getElementById('chatMessages');
-  const userInput = document.getElementById('userInput');
-  const sendButton = document.getElementById('sendBtn');
-  const clearButton = document.getElementById('clearChatBtn');
-  
-  // Helper: Format message
-  function formatMessageContent(text) {
-    if (!text) return '';
-    try {
-      return marked.parse(text);
-    } catch(e) {
-      return text.replace(/\n/g, '<br>');
-    }
-  }
-  
-  // Add message to chat
-  function addMessage(role, content) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${role === 'user' ? 'user' : 'assistant'}`;
-    const avatarIcon = role === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
-    messageDiv.innerHTML = `
-      <div class="avatar">${avatarIcon}</div>
-      <div class="bubble ${role === 'user' ? 'user-bubble' : 'assistant-bubble'}">
-        ${formatMessageContent(content)}
-      </div>
-    `;
-    chatContainer.appendChild(messageDiv);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-  }
-  
-  // Loading indicator
-  let loadingDiv = null;
-  function showLoading(message = "Generating code...") {
-    if (loadingDiv) removeLoading();
-    loadingDiv = document.createElement('div');
-    loadingDiv.className = 'message assistant';
-    loadingDiv.innerHTML = `
-      <div class="avatar"><i class="fas fa-circle-notch fa-spin"></i></div>
-      <div class="bubble assistant-bubble" style="background:#031020aa;">
-        <div style="display:flex; gap:6px; align-items:center;"><span class="status-dot"></span> ${message}</div>
-      </div>
-    `;
-    chatContainer.appendChild(loadingDiv);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-  }
-  
-  function removeLoading() {
-    if (loadingDiv) {
-      loadingDiv.remove();
-      loadingDiv = null;
-    }
-  }
-  
-  // Call OpenRouter API (real)
-  async function callOpenRouter(userPrompt) {
-    const messages = [
-      { role: "system", content: AI_SYSTEM_PROMPT },
-      { role: "user", content: userPrompt }
-    ];
-    
-    const response = await fetch(OPENROUTER_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': window.location.origin,
-        'X-Title': 'NexusForge'
-      },
-      body: JSON.stringify({
-        model: modelAddress,
-        messages: messages,
-        temperature: 0.3,
-        max_tokens: 4000
-      })
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMsg = errorData.error?.message || `HTTP ${response.status}`;
-      throw new Error(errorMsg);
-    }
-    
-    const data = await response.json();
-    if (data.error) throw new Error(data.error.message);
-    if (!data.choices?.[0]?.message?.content) {
-      throw new Error("Invalid API response");
-    }
-    return data.choices[0].message.content;
-  }
-  
-  // Mock response (demo mode) - generates actual working code
-  async function mockGeneration(userPrompt) {
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    
-    const lower = userPrompt.toLowerCase();
-    
-    if (lower.includes("landing") || lower.includes("startup") || lower.includes("saas")) {
-      return `✨ **Generated Landing Page** ✨
-
-\`\`\`html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NexusAI | Next-Gen Intelligence</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); }
-        .glass { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 1.5rem; border: 1px solid rgba(255,255,255,0.2); }
-        .glow-text { background: linear-gradient(135deg, #fff, #a0e9ff, #4facfe); -webkit-background-clip: text; background-clip: text; color: transparent; }
-    </style>
-</head>
-<body class="text-white">
-    <nav class="flex justify-between items-center px-6 py-4 max-w-6xl mx-auto">
-        <div class="text-2xl font-bold glow-text">NEXUS<span class="text-cyan-400">AI</span></div>
-        <div class="space-x-6 hidden md:block"><a href="#" class="hover:text-cyan-300">Features</a><a href="#" class="hover:text-cyan-300">Pricing</a><a href="#" class="hover:text-cyan-300">Contact</a></div>
-        <button class="bg-cyan-500 px-5 py-2 rounded-full hover:bg-cyan-600 transition">Get Started</button>
-    </nav>
-    <main class="max-w-6xl mx-auto px-6 py-20 text-center">
-        <h1 class="text-6xl md:text-7xl font-bold mb-6">Shape the <span class="glow-text">Future</span> with AI</h1>
-        <p class="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">Deploy cutting-edge intelligence in minutes. Built for developers, creators, and visionaries.</p>
-        <div class="flex gap-4 justify-center"><button class="bg-white text-black px-8 py-3 rounded-full font-semibold hover:scale-105 transition">Start Building →</button><button class="border border-white px-8 py-3 rounded-full hover:bg-white/10">Watch Demo</button></div>
-        <div class="grid md:grid-cols-3 gap-6 mt-24">
-            <div class="glass p-6"><i class="fas fa-brain text-4xl text-cyan-400 mb-4"></i><h3 class="text-xl font-bold">Neural Core</h3><p class="text-gray-300 mt-2">Advanced reasoning with 99.9% uptime</p></div>
-            <div class="glass p-6"><i class="fas fa-code text-4xl text-cyan-400 mb-4"></i><h3 class="text-xl font-bold">Auto CodeGen</h3><p class="text-gray-300 mt-2">Production-ready code in seconds</p></div>
-            <div class="glass p-6"><i class="fas fa-shield-alt text-4xl text-cyan-400 mb-4"></i><h3 class="text-xl font-bold">Enterprise Security</h3><p class="text-gray-300 mt-2">Bank-grade encryption & compliance</p></div>
-        </div>
-    </main>
-    <footer class="text-center py-8 text-gray-400 text-sm border-t border-white/10 max-w-6xl mx-auto">© 2026 NexusAI — Built with Next-Gen Intelligence</footer>
-    <script src="https://kit.fontawesome.com/a...your-kit.js"></script>
-</body>
-</html>
-\`\`\`
-
-This is a complete, production-ready landing page with hero section, features grid, and responsive design.`;
-    }
-    
-    if (lower.includes("todo") || lower.includes("task")) {
-      return `✨ **Generated Task Manager** ✨
-
-\`\`\`html
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>TaskFlow | Smart Tasks</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"></head>
-<body class="bg-gradient-to-br from-gray-900 to-gray-800 text-white min-h-screen">
-    <div class="max-w-2xl mx-auto px-4 py-12">
-        <div class="text-center mb-10"><h1 class="text-5xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">TaskFlow</h1><p class="text-gray-400 mt-2">Organize your day</p></div>
-        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6"><div class="flex gap-2 mb-6"><input type="text" id="taskInput" placeholder="New task..." class="flex-1 bg-white/20 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-cyan-400"><button id="addBtn" class="bg-cyan-500 px-6 rounded-xl hover:bg-cyan-600">Add</button></div><div id="taskList" class="space-y-2"></div><div class="mt-4 text-sm text-gray-400 flex justify-between"><span id="taskCount">0 tasks</span><button id="clearCompleted" class="text-red-400 hover:text-red-300">Clear completed</button></div></div>
-    </div>
-    <script>let tasks=JSON.parse(localStorage.getItem('tasks')||'[]'); function save(){localStorage.setItem('tasks',JSON.stringify(tasks)); render();} function render(){let html= tasks.map(t=>'<div class="bg-white/10 rounded-xl p-3 flex items-center gap-3"><input type="checkbox" '+(t.completed?'checked':'')+' data-id="'+t.id+'" class="task-checkbox"><span class="flex-1 '+(t.completed?'line-through text-gray-500':'')+'">'+escapeHtml(t.text)+'</span><button data-id="'+t.id+'" class="delete-btn text-red-400">🗑️</button></div>').join(''); document.getElementById('taskList').innerHTML=html||'<div class="text-center text-gray-500 py-4">No tasks yet</div>'; document.getElementById('taskCount').innerHTML=tasks.filter(t=>!t.completed).length+' tasks left'; attachEvents();} function attachEvents(){document.querySelectorAll('.task-checkbox').forEach(cb=>cb.addEventListener('change',(e)=>{let id=parseInt(e.target.closest('.task-checkbox').dataset.id); let task=tasks.find(t=>t.id===id); if(task)task.completed=e.target.checked; save();})); document.querySelectorAll('.delete-btn').forEach(btn=>btn.addEventListener('click',(e)=>{let id=parseInt(e.target.closest('button').dataset.id); tasks=tasks.filter(t=>t.id!==id); save();}));} function escapeHtml(s){return s.replace(/[&<>]/g,function(m){return m==='&'?'&amp;':m==='<'?'&lt;':'&gt;';});} document.getElementById('addBtn').addEventListener('click',()=>{let input=document.getElementById('taskInput'); if(input.value.trim()){tasks.push({id:Date.now(),text:input.value.trim(),completed:false}); save(); input.value='';}}); document.getElementById('clearCompleted').addEventListener('click',()=>{tasks=tasks.filter(t=>!t.completed); save();}); render();</script>
-</body>
-</html>
-\`\`\`
-
-Complete task manager with localStorage persistence, add/delete/complete functions.`;
-    }
-    
-    return `✨ **Generated Code** ✨
-
-\`\`\`html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Application</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #1e1b4b, #0f172a); }</style>
-</head>
-<body class="text-white">
-    <div class="max-w-4xl mx-auto px-4 py-16 text-center">
-        <h1 class="text-5xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent mb-4">Your Project</h1>
-        <p class="text-xl text-gray-300 mb-8">Based on: "${userPrompt.substring(0, 80)}${userPrompt.length > 80 ? '...' : ''}"</p>
-        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-8">
-            <p class="text-gray-300">✅ Production-ready code generated</p>
-            <p class="text-sm text-gray-400 mt-4">Enter your OpenRouter API key (password: PROGRESS) for real AI generation with any model.</p>
-        </div>
-    </div>
-</body>
-</html>
-\`\`\`
-
-Complete HTML/CSS/JS implementation ready to use.`;
-  }
-  
-  // Main generate function
-  async function generateCode() {
-    const prompt = userInput.value.trim();
-    if (!prompt) {
-      addMessage("assistant", "Please describe what you want to build.");
-      return;
-    }
-    
-    addMessage("user", prompt);
-    userInput.value = "";
-    userInput.style.height = "auto";
-    
-    if (isLiveMode && apiKey && modelAddress) {
-      showLoading("Calling OpenRouter API...");
-      try {
-        const result = await callOpenRouter(prompt);
-        removeLoading();
-        addMessage("assistant", result);
-      } catch (error) {
-        removeLoading();
-        addMessage("assistant", `❌ **API Error**: ${error.message}\n\nCheck your API key and model address. Falling back to demo mode.`);
-        // Fallback to mock
-        const mockResult = await mockGeneration(prompt);
-        addMessage("assistant", mockResult);
-      }
-    } else {
-      showLoading("Demo mode: generating code...");
-      const mockResult = await mockGeneration(prompt);
-      removeLoading();
-      addMessage("assistant", mockResult);
-    }
-  }
-  
-  // Password modal for editing
-  function showPasswordModal(callback) {
-    const modal = document.createElement('div');
-    modal.className = 'password-modal';
-    modal.innerHTML = `
-      <div class="modal-content">
-        <i class="fas fa-lock" style="font-size: 2rem; color: #0ef;"></i>
-        <h3 style="margin: 0.5rem 0">Admin Access</h3>
-        <input type="password" id="adminPassInput" placeholder="Enter password">
-        <div style="display: flex; gap: 0.5rem; justify-content: center;">
-          <button id="modalConfirm">Confirm</button>
-          <button id="modalCancel">Cancel</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-    
-    document.getElementById('modalConfirm').onclick = () => {
-      const pass = document.getElementById('adminPassInput').value;
-      if (pass === ADMIN_PASSWORD) {
-        modal.remove();
-        callback(true);
-      } else {
-        alert("Wrong password!");
-        modal.remove();
-        callback(false);
-      }
-    };
-    document.getElementById('modalCancel').onclick = () => {
-      modal.remove();
-      callback(false);
-    };
-  }
-  
-  // Enable editing
-  function enableEditing() {
-    showPasswordModal((success) => {
-      if (success) {
-        modelAddressInput.disabled = false;
-        apiKeyInput.disabled = false;
-        editBtn.style.display = 'none';
-        saveBtn.style.display = 'flex';
-        isEditing = true;
-        addMessage("assistant", "🔓 Edit mode enabled. Update your OpenRouter model and API key, then click Save.");
-      } else {
-        addMessage("assistant", "🔒 Incorrect password. Edit access denied.");
-      }
-    });
-  }
-  
-  // Save configuration
-  function saveConfig() {
-    modelAddress = modelAddressInput.value.trim();
-    const newApiKey = apiKeyInput.value.trim();
-    
-    if (!modelAddress) {
-      addMessage("assistant", "Please enter a valid OpenRouter model address.");
-      return;
-    }
-    
-    if (newApiKey) {
-      apiKey = newApiKey;
-      isLiveMode = true;
-      apiStatus.innerHTML = '<i class="fas fa-check-circle"></i> Live Mode';
-      apiStatus.className = 'status-badge live';
-      addMessage("assistant", `✅ API configured! Using model: ${modelAddress}\n\nNow generating real AI code.`);
-    } else {
-      isLiveMode = false;
-      apiKey = "";
-      apiStatus.innerHTML = '<i class="fas fa-flask"></i> Demo Mode';
-      apiStatus.className = 'status-badge';
-      addMessage("assistant", "⚠️ No API key provided. Staying in Demo Mode with mock responses.");
-    }
-    
-    modelAddressInput.disabled = true;
-    apiKeyInput.disabled = true;
-    editBtn.style.display = 'flex';
-    saveBtn.style.display = 'none';
-    isEditing = false;
-  }
-  
-  // Clear chat
-  function clearChat() {
-    chatContainer.innerHTML = '';
-    addMessage("assistant", "✨ Chat cleared. Ready for your next project!");
-  }
-  
-  // Auto-resize textarea
-  function autoResize() {
-    userInput.style.height = 'auto';
-    userInput.style.height = Math.min(userInput.scrollHeight, 120) + 'px';
-  }
-  
-  // Event listeners
-  sendButton.addEventListener('click', generateCode);
-  clearButton.addEventListener('click', clearChat);
-  editBtn.addEventListener('click', enableEditing);
-  saveBtn.addEventListener('click', saveConfig);
-  userInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      generateCode();
-    }
-  });
-  userInput.addEventListener('input', autoResize);
-  
-  // Load saved values if any
-  const savedKey = localStorage.getItem('nexus_api_key');
-  const savedModel = localStorage.getItem('nexus_model');
-  if (savedKey && savedModel) {
-    apiKey = savedKey;
-    modelAddress = savedModel;
-    modelAddressInput.value = modelAddress;
-    apiKeyInput.value = '••••••••••••••••';
-    isLiveMode = true;
-    apiStatus.innerHTML = '<i class="fas fa-check-circle"></i> Live Mode';
-    apiStatus.className = 'status-badge live';
-  }
-  
-  // Save to localStorage on successful config
-  function saveToLocalStorage() {
-    if (apiKey && modelAddress) {
-      localStorage.setItem('nexus_api_key', apiKey);
-      localStorage.setItem('nexus_model', modelAddress);
-    }
-  }
-  
-  // Override saveConfig to also save
-  const originalSave = saveConfig;
-  window.saveConfig = function() {
-    originalSave();
-    if (apiKey && modelAddress) saveToLocalStorage();
+  // ---------- GLOBAL STATE ----------
+  const state = {
+    symbol: 'NVDA',
+    exchange: 'US',
+    timeframe: 'D',
+    capital: 10000,
+    riskPercent: 1,
+    openRouterKey: localStorage.getItem('openRouterKey') || '',
+    finnhubKey: localStorage.getItem('finnhubKey') || '',
+    model: localStorage.getItem('model') || 'deepseek/deepseek-r1:free',
+    watchlist: JSON.parse(localStorage.getItem('watchlist') || '["NVDA","AAPL"]'),
+    journal: JSON.parse(localStorage.getItem('tradeJournal') || '[]'),
+    lastAnalysis: null
   };
-  saveConfig = window.saveConfig;
-  
-  console.log("Nexus Forge ready — Admin password: PROGRESS");
+
+  // Populate UI from state
+  document.getElementById('symbolInput').value = state.symbol;
+  document.getElementById('exchangeSelect').value = state.exchange;
+  document.getElementById('timeframeSelect').value = state.timeframe;
+  document.getElementById('capitalInput').value = state.capital;
+  document.getElementById('riskInput').value = state.riskPercent;
+  if(state.openRouterKey) document.getElementById('openRouterKey').value = state.openRouterKey;
+  if(state.finnhubKey) document.getElementById('finnhubKey').value = state.finnhubKey;
+  document.getElementById('modelName').value = state.model;
+  renderWatchlist();
+  renderJournal();
+
+  // ---------- TRADINGVIEW CHART ----------
+  let tvWidget;
+  function initTradingView(symbol, timeframe) {
+    const container = document.getElementById('tv-chart-container');
+    container.innerHTML = '';
+    const widgetDiv = document.createElement('div');
+    widgetDiv.id = 'tv_chart_widget';
+    widgetDiv.style.height = '100%';
+    container.appendChild(widgetDiv);
+
+    const mappedSymbol = mapSymbolToTV(symbol);
+    const interval = mapTimeframeToTV(timeframe);
+
+    if (tvWidget) {
+      try { tvWidget.remove(); } catch(e) {}
+    }
+    tvWidget = new TradingView.widget({
+      container_id: 'tv_chart_widget',
+      symbol: mappedSymbol,
+      interval: interval,
+      theme: 'dark',
+      style: '1',
+      locale: 'en',
+      toolbar_bg: '#111827',
+      enable_publishing: false,
+      hide_top_toolbar: false,
+      hide_side_toolbar: false,
+      allow_symbol_change: false,
+      save_image: false,
+      height: '100%',
+      width: '100%',
+    });
+  }
+
+  function mapSymbolToTV(sym) {
+    const upper = sym.toUpperCase().trim();
+    const manual = {
+      'RELIANCE': 'NSE:RELIANCE',
+      'TCS': 'NSE:TCS',
+      'INFY': 'NSE:INFY',
+      'HDFCBANK': 'NSE:HDFCBANK',
+    };
+    if (manual[upper]) return manual[upper];
+    if (document.getElementById('exchangeSelect').value === 'NSE') return `NSE:${upper}`;
+    return `NASDAQ:${upper}`; // default US
+  }
+
+  function mapTimeframeToTV(tf) {
+    const map = { '5m':'5', '15m':'15', '1h':'60', '4h':'240', 'D':'D' };
+    return map[tf] || 'D';
+  }
+
+  // Initialize chart on load
+  window.onload = function() {
+    initTradingView(state.symbol, state.timeframe);
+  };
+
+  // Update chart when symbol/timeframe changes
+  document.getElementById('symbolInput').addEventListener('change', function(e){
+    state.symbol = e.target.value.toUpperCase();
+    initTradingView(state.symbol, state.timeframe);
+  });
+  document.getElementById('timeframeSelect').addEventListener('change', function(e){
+    state.timeframe = e.target.value;
+    initTradingView(state.symbol, state.timeframe);
+  });
+  document.getElementById('exchangeSelect').addEventListener('change', function(e){
+    state.exchange = e.target.value;
+    initTradingView(state.symbol, state.timeframe);
+  });
+
+  // ---------- FINNHUB DATA FETCHING ----------
+  async function fetchFinnhubCandles(symbol, resolution, count = 100) {
+    if (!state.finnhubKey) throw new Error('Finnhub API key missing');
+    const from = Math.floor(Date.now()/1000) - count * intervalToSeconds(resolution);
+    const to = Math.floor(Date.now()/1000);
+    const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${state.finnhubKey}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (data.s !== 'ok') throw new Error(data.s || 'Finnhub error');
+    return data; // {c,h,l,o,t,v}
+  }
+
+  async function fetchQuote(symbol) {
+    if (!state.finnhubKey) throw new Error('Finnhub API key missing');
+    const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${state.finnhubKey}`;
+    const resp = await fetch(url);
+    return await resp.json();
+  }
+
+  async function fetchProfile(symbol) {
+    if (!state.finnhubKey) throw new Error('Finnhub API key missing');
+    const url = `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${state.finnhubKey}`;
+    const resp = await fetch(url);
+    return await resp.json();
+  }
+
+  function intervalToSeconds(res) {
+    const m = { '5':300, '15':900, '60':3600, '240':14400, 'D':86400 };
+    return m[res] || 86400;
+  }
+
+  // ---------- ENGINE COMPUTATIONS ----------
+  function computeEMA(data, period) {
+    const k = 2/(period+1);
+    let ema = data[0];
+    for (let i=1; i<data.length; i++) ema = data[i]*k + ema*(1-k);
+    return ema;
+  }
+
+  function detectSwingPoints(highs, lows, lookback=5) {
+    const swings = { hh:[], hl:[], lh:[], ll:[] };
+    for (let i=lookback; i<highs.length-lookback; i++) {
+      let isHigh = true, isLow = true;
+      for (let j=1; j<=lookback; j++) {
+        if (highs[i] <= highs[i-j] || highs[i] <= highs[i+j]) isHigh = false;
+        if (lows[i] >= lows[i-j] || lows[i] >= lows[i+j]) isLow = false;
+      }
+      if (isHigh) swings.hh.push({idx:i, price:highs[i]});
+      if (isLow) swings.ll.push({idx:i, price:lows[i]});
+    }
+    return swings;
+  }
+
+  // Main analysis engine
+  async function runFullAnalysis() {
+    state.symbol = document.getElementById('symbolInput').value.toUpperCase();
+    state.capital = parseFloat(document.getElementById('capitalInput').value);
+    state.riskPercent = parseFloat(document.getElementById('riskInput').value);
+    state.timeframe = document.getElementById('timeframeSelect').value;
+    state.exchange = document.getElementById('exchangeSelect').value;
+
+    updateDiagnostics('Fetching data...');
+    const resolution = state.timeframe === 'D' ? 'D' : state.timeframe.replace('m','');
+    const finnSymbol = state.symbol;
+    try {
+      const candles = await fetchFinnhubCandles(finnSymbol, resolution, 200);
+      const quote = await fetchQuote(finnSymbol);
+      const profile = await fetchProfile(finnSymbol);
+      
+      const c = candles.c, h = candles.h, l = candles.l, o = candles.o, v = candles.v;
+      const currentPrice = c[c.length-1];
+      const ema20 = computeEMA(c, 20);
+      const ema50 = computeEMA(c, 50);
+      const ema200 = c.length >= 200 ? computeEMA(c, 200) : ema50;
+
+      // Engine 1: Data Collection
+      const vwap = computeVWAP(candles);
+      const prevDayHigh = h.length>1 ? h[h.length-2] : h[h.length-1];
+      const prevDayLow = l.length>1 ? l[l.length-2] : l[l.length-1];
+
+      // Engine 2: Market Structure
+      const swings = detectSwingPoints(h, l, 5);
+      let structure = 'Range';
+      if (swings.hh.length>=2 && swings.ll.length>=2) {
+        const lastHH = swings.hh[swings.hh.length-1].price;
+        const prevHH = swings.hh[swings.hh.length-2].price;
+        const lastLL = swings.ll[swings.ll.length-1].price;
+        const prevLL = swings.ll[swings.ll.length-2].price;
+        if (lastHH > prevHH && lastLL > prevLL) structure = 'Bullish';
+        else if (lastHH < prevHH && lastLL < prevLL) structure = 'Bearish';
+      }
+
+      // Engine 3: Liquidity Pools
+      const eqHighs = findEqualLevels(h, 0.002);
+      const eqLows = findEqualLevels(l, 0.002);
+      const buyLiq = eqLows.length > 0;
+      const sellLiq = eqHighs.length > 0;
+
+      // Engine 4: Liquidity Sweep (simplified)
+      let sweepBull = false, sweepBear = false;
+      if (currentPrice > prevDayHigh && c[c.length-2] <= prevDayHigh) sweepBull = true;
+      if (currentPrice < prevDayLow && c[c.length-2] >= prevDayLow) sweepBear = true;
+
+      // Engine 5: MSS
+      let mss = 'None';
+      if (structure === 'Bullish' && c[c.length-1] > prevDayHigh) mss = 'Bullish MSS';
+      if (structure === 'Bearish' && c[c.length-1] < prevDayLow) mss = 'Bearish MSS';
+
+      // Engine 6: FVG
+      const fvg = detectFVG(o, h, l, c);
+      
+      // Engine 7: VWAP
+      const vwapRelation = currentPrice > vwap ? 'Above VWAP' : 'Below VWAP';
+
+      // Engine 8: Volume
+      const avgVol = v.reduce((a,b)=>a+b,0)/v.length;
+      const volExpansion = v[v.length-1] > avgVol * 1.5;
+      const buyPressure = c[c.length-1] > o[o.length-1] && volExpansion;
+      const sellPressure = c[c.length-1] < o[o.length-1] && volExpansion;
+
+      // Engine 9: Trend Alignment
+      let trendAlign = 'Neutral';
+      if (ema20 > ema50 && ema50 > ema200) trendAlign = 'Bullish';
+      else if (ema20 < ema50 && ema50 < ema200) trendAlign = 'Bearish';
+
+      // Engine 10: News (basic)
+      const newsScore = profile.name ? 50 : 30; // placeholder
+
+      // Engine 11: Risk Management
+      const atr = computeATR(h, l, c, 14);
+      const stopDistance = atr * 1.5;
+      const riskAmount = state.capital * (state.riskPercent/100);
+      const positionSize = riskAmount / stopDistance;
+      const stopLoss = currentPrice - stopDistance;
+      const targets = [currentPrice + atr*2, currentPrice + atr*4, currentPrice + atr*6];
+
+      // Engine 12: Confluence Score
+      let confluence = 50;
+      if (structure === 'Bullish') confluence += 15;
+      if (structure === 'Bearish') confluence -= 15;
+      if (trendAlign === 'Bullish') confluence += 10;
+      if (trendAlign === 'Bearish') confluence -= 10;
+      if (vwapRelation === 'Above VWAP') confluence += 5;
+      else confluence -= 5;
+      if (buyPressure) confluence += 8;
+      if (sellPressure) confluence -= 8;
+      if (mss.includes('Bullish')) confluence += 12;
+      if (mss.includes('Bearish')) confluence -= 12;
+      confluence = Math.min(100, Math.max(0, confluence));
+
+      // Signal
+      let signal, signalClass;
+      if (confluence >= 90) { signal='STRONG BUY'; signalClass='strong-buy'; }
+      else if (confluence >= 75) { signal='BUY'; signalClass='buy'; }
+      else if (confluence >= 45) { signal='HOLD'; signalClass='hold'; }
+      else if (confluence >= 25) { signal='SELL'; signalClass='sell'; }
+      else { signal='STRONG SELL'; signalClass='strong-sell'; }
+
+      // Multi-timeframe
+      const mtfResults = await multiTimeframeAnalysis(finnSymbol);
+
+      // Update UI
+      document.getElementById('signalDisplay').textContent = signal;
+      document.getElementById('signalDisplay').className = `signal-badge ${signalClass}`;
+      document.getElementById('confidenceDisplay').textContent = (confluence).toFixed(0)+'%';
+      document.getElementById('confluenceScore').textContent = confluence.toFixed(0);
+      document.getElementById('rrRatio').textContent = `1:${(targets[0]-currentPrice)/(currentPrice-stopLoss) > 0 ? ((targets[0]-currentPrice)/(currentPrice-stopLoss)).toFixed(1) : 'N/A'}`;
+      renderEngineScores({structure, vwapRelation, trendAlign, buyPressure, sellPressure, mss, fvg, confluence});
+      renderMTF(mtfResults);
+      document.getElementById('maxLoss').textContent = '$'+riskAmount.toFixed(2);
+      document.getElementById('stopLoss').textContent = '$'+stopLoss.toFixed(2);
+      document.getElementById('targetsDisplay').textContent = targets.map(t=>'$'+t.toFixed(2)).join(' / ');
+      document.getElementById('riskPanel').innerHTML = `<div class="stat-item"><span>Position Size</span><span>${positionSize.toFixed(0)} shares</span></div>`;
+
+      state.lastAnalysis = {
+        symbol: state.symbol, currentPrice, signal, confluence, stopLoss, targets, riskAmount, positionSize
+      };
+
+      // AI Debate & Report
+      generateAIReport(finnSymbol, currentPrice, structure, confluence);
+
+    } catch (error) {
+      alert('Error: ' + error.message);
+      updateDiagnostics('Error: ' + error.message);
+    }
+  }
+
+  function findEqualLevels(prices, tolerance) {
+    const levels = [];
+    for (let i=0; i<prices.length; i++) {
+      for (let j=i+1; j<prices.length; j++) {
+        if (Math.abs(prices[i]-prices[j])/prices[i] < tolerance) {
+          levels.push(prices[i]);
+          break;
+        }
+      }
+    }
+    return [...new Set(levels)];
+  }
+
+  function detectFVG(o, h, l, c) {
+    const fvg = [];
+    for (let i=2; i<o.length; i++) {
+      if (c[i-1] > o[i-1] && l[i] > h[i-2]) fvg.push({type:'Bullish', idx:i});
+      if (c[i-1] < o[i-1] && h[i] < l[i-2]) fvg.push({type:'Bearish', idx:i});
+    }
+    return fvg;
+  }
+
+  function computeATR(high, low, close, period=14) {
+    if (high.length < period+1) return 0;
+    let tr = [];
+    for (let i=1; i<high.length; i++) {
+      tr.push(Math.max(high[i]-low[i], Math.abs(high[i]-close[i-1]), Math.abs(low[i]-close[i-1])));
+    }
+    return tr.slice(-period).reduce((a,b)=>a+b,0)/period;
+  }
+
+  function computeVWAP(candles) {
+    if (!candles) return candles.c[candles.c.length-1];
+    const {h,l,c,v} = candles;
+    let cumPV = 0, cumV = 0;
+    for (let i=0; i<c.length; i++) {
+      const typical = (h[i]+l[i]+c[i])/3;
+      cumPV += typical * v[i];
+      cumV += v[i];
+    }
+    return cumV > 0 ? cumPV/cumV : c[c.length-1];
+  }
+
+  async function multiTimeframeAnalysis(symbol) {
+    const timeframes = ['5','15','60','240','D'];
+    const results = {};
+    for (let tf of timeframes) {
+      try {
+        const candles = await fetchFinnhubCandles(symbol, tf, 100);
+        const c = candles.c;
+        const ema20 = computeEMA(c, 20);
+        const ema50 = computeEMA(c, 50);
+        let trend = 'Neutral';
+        if (ema20 > ema50) trend = 'Buy';
+        else if (ema20 < ema50) trend = 'Sell';
+        results[tf] = trend;
+      } catch(e) { results[tf] = 'Error'; }
+    }
+    return results;
+  }
+
+  function renderEngineScores(data) {
+    const html = `
+      <div class="stat-item"><span>Market Structure</span><span>${data.structure}</span></div>
+      <div class="stat-item"><span>VWAP Relation</span><span>${data.vwapRelation}</span></div>
+      <div class="stat-item"><span>Trend Alignment</span><span>${data.trendAlign}</span></div>
+      <div class="stat-item"><span>Buy/Sell Pressure</span><span>${data.buyPressure?'Buy':data.sellPressure?'Sell':'Neutral'}</span></div>
+      <div class="stat-item"><span>MSS</span><span>${data.mss}</span></div>
+      <div class="stat-item"><span>FVGs Found</span><span>${data.fvg.length}</span></div>
+      <div class="stat-item"><span>Confluence</span><span>${data.confluence.toFixed(0)}</span></div>
+    `;
+    document.getElementById('engineScores').innerHTML = html;
+  }
+
+  function renderMTF(mtf) {
+    const tfNames = {'5':'5m','15':'15m','60':'1h','240':'4h','D':'1D'};
+    let html = '';
+    for (let [tf, signal] of Object.entries(mtf)) {
+      html += `<div class="stat-item"><span>${tfNames[tf]}</span><span>${signal}</span></div>`;
+    }
+    document.getElementById('mtfAnalysis').innerHTML = html;
+  }
+
+  // ---------- AI DEBATE & REPORT ----------
+  async function generateAIReport(symbol, price, structure, confluence) {
+    if (!state.openRouterKey) {
+      document.getElementById('aiReport').innerHTML = '<p>Set OpenRouter API key to enable AI analysis.</p>';
+      return;
+    }
+    document.getElementById('aiReport').innerHTML = '<p>Generating institutional analysis...</p>';
+    try {
+      const prompt = `You are an elite institutional quant. Provide a trading debate and final report for ${symbol} at $${price}. Market structure: ${structure}, Confluence score: ${confluence}. 
+Respond ONLY with a JSON object like this:
+{
+  "bull": "Bull analyst reasoning...",
+  "bear": "Bear analyst reasoning...",
+  "neutral": "Neutral view...",
+  "report": "Markdown formatted final institutional report with entry, stop loss, targets, and risk."
+}`;
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${state.openRouterKey}`,
+          'HTTP-Referer': window.location.href,
+          'X-Title': 'TradeGPTPro',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: state.model,
+          messages: [{role:'user', content: prompt}],
+          temperature: 0.3
+        })
+      });
+      const data = await response.json();
+      if (data.error) throw new Error(data.error.message);
+      const content = data.choices[0].message.content;
+      const parsed = JSON.parse(content);
+      const debateHtml = `
+        <h3>🐂 Bull Analyst</h3><p>${parsed.bull}</p>
+        <h3>🐻 Bear Analyst</h3><p>${parsed.bear}</p>
+        <h3>⚖️ Neutral Analyst</h3><p>${parsed.neutral}</p>
+        <hr/><div>${marked.parse(parsed.report)}</div>
+      `;
+      document.getElementById('aiReport').innerHTML = debateHtml;
+    } catch (e) {
+      document.getElementById('aiReport').innerHTML = `<p>AI Error: ${e.message}</p>`;
+    }
+  }
+
+  // ---------- WATCHLIST ----------
+  function addToWatchlist() {
+    const sym = document.getElementById('watchlistSymbol').value.toUpperCase().trim();
+    if (sym && !state.watchlist.includes(sym)) {
+      state.watchlist.push(sym);
+      saveWatchlist();
+      renderWatchlist();
+    }
+  }
+  function removeFromWatchlist(sym) {
+    state.watchlist = state.watchlist.filter(s => s !== sym);
+    saveWatchlist();
+    renderWatchlist();
+  }
+  function saveWatchlist() {
+    localStorage.setItem('watchlist', JSON.stringify(state.watchlist));
+  }
+  function renderWatchlist() {
+    const container = document.getElementById('watchlistItems');
+    container.innerHTML = state.watchlist.map(s => 
+      `<div class="flex" style="justify-content:space-between"><span>${s}</span><button onclick="removeFromWatchlist('${s}')">✕</button></div>`
+    ).join('');
+  }
+
+  // ---------- TRADE JOURNAL ----------
+  function logTrade() {
+    if (!state.lastAnalysis) return alert('Run analysis first');
+    const entry = {
+      date: new Date().toISOString(),
+      ticker: state.lastAnalysis.symbol,
+      entry: state.lastAnalysis.currentPrice,
+      sl: state.lastAnalysis.stopLoss,
+      targets: state.lastAnalysis.targets,
+      result: '',
+      notes: ''
+    };
+    state.journal.push(entry);
+    localStorage.setItem('tradeJournal', JSON.stringify(state.journal));
+    renderJournal();
+  }
+  function renderJournal() {
+    const container = document.getElementById('journalEntries');
+    container.innerHTML = state.journal.slice(-5).reverse().map(e => 
+      `<div>${new Date(e.date).toLocaleDateString()} - ${e.ticker} @ $${e.entry.toFixed(2)}</div>`
+    ).join('');
+  }
+
+  // ---------- SETTINGS & DIAGNOSTICS ----------
+  function openSettings() {
+    document.getElementById('settingsModal').style.display = 'flex';
+  }
+  function closeSettings() {
+    document.getElementById('settingsModal').style.display = 'none';
+  }
+  function saveSettings() {
+    state.openRouterKey = document.getElementById('openRouterKey').value;
+    state.finnhubKey = document.getElementById('finnhubKey').value;
+    state.model = document.getElementById('modelName').value;
+    localStorage.setItem('openRouterKey', state.openRouterKey);
+    localStorage.setItem('finnhubKey', state.finnhubKey);
+    localStorage.setItem('model', state.model);
+    closeSettings();
+  }
+
+  function toggleDiagnostics() {
+    const modal = document.getElementById('diagModal');
+    modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+    updateDiagnostics('Idle');
+  }
+  function closeDiagnostics() {
+    document.getElementById('diagModal').style.display = 'none';
+  }
+  function updateDiagnostics(msg) {
+    document.getElementById('diagContent').innerHTML = `
+      <p>OpenRouter: ${state.openRouterKey ? 'Key set' : 'Missing'}</p>
+      <p>Finnhub: ${state.finnhubKey ? 'Key set' : 'Missing'}</p>
+      <p>Model: ${state.model}</p>
+      <p>Last status: ${msg}</p>
+    `;
+  }
+
+  function runAnalysis() {
+    runFullAnalysis();
+  }
+
+  // Initial chart and diagnostics
+  updateDiagnostics('Ready');
 </script>
+<!-- TradingView library -->
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 </body>
 </html>
