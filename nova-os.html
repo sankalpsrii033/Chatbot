@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NOVA OS — Intelligence, Unified</title>
+
+<!-- ============ FONTS ============ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- ============ LIBS (CDN) ============ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.3/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://js.puter.com/v2/"></script>
+
+<style>
+/* =====================================================================
+   NOVA OS — DESIGN TOKENS
+   Signature element: "The Core" — a rotating tri-ring holographic orb
+   that acts as the boot mark, thinking indicator and idle brand mark.
+   Typography: Space Grotesk (display / instrument), Manrope (body),
+   JetBrains Mono (data / code / telemetry).
+   ===================================================================== */
+:root{
+  --font-display:'Space Grotesk',sans-serif;
+  --font-body:'Manrope',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+
+  --radius-sm:10px; --radius-md:16px; --radius-lg:24px;
+  --ease:cubic-bezier(.16,.8,.24,1);
+
+  /* THEME: Hyper Black (default) */
+  --bg-0:#050608; --bg-1:#0b0d11; --bg-2:#121419; --bg-3:#1b1e26;
+  --line:rgba(255,255,255,.08);
+  --ink-0:#f2f4f8; --ink-1:#a9afbc; --ink-2:#676e7d;
+  --accent-1:#7dd3fc; --accent-2:#a78bfa; --accent-3:#f472b6;
+  --glow:0 0 40px rgba(125,211,252,.25);
+  --grad-core:linear-gradient(135deg,#7dd3fc,#a78bfa 55%,#f472b6);
+}
+html[data-theme="cyber-blue"]{
+  --bg-0:#03070d; --bg-1:#060d18; --bg-2:#0a1524; --bg-3:#0f1e33;
+  --line:rgba(90,180,255,.14);
+  --ink-0:#eaf4ff; --ink-1:#8fb6de; --ink-2:#5779a0;
+  --accent-1:#38bdf8; --accent-2:#3b82f6; --accent-3:#22d3ee;
+  --glow:0 0 40px rgba(56,189,248,.3);
+  --grad-core:linear-gradient(135deg,#22d3ee,#3b82f6 60%,#38bdf8);
+}
+html[data-theme="neon-purple"]{
+  --bg-0:#0a0510; --bg-1:#120a1c; --bg-2:#1a1028; --bg-3:#241638;
+  --line:rgba(196,120,255,.16);
+  --ink-0:#f6efff; --ink-1:#c3a8e8; --ink-2:#83699e;
+  --accent-1:#c084fc; --accent-2:#e879f9; --accent-3:#818cf8;
+  --glow:0 0 40px rgba(192,132,252,.32);
+  --grad-core:linear-gradient(135deg,#e879f9,#c084fc 55%,#818cf8);
+}
+html[data-theme="matrix-green"]{
+  --bg-0:#020805; --bg-1:#050f0a; --bg-2:#081a10; --bg-3:#0c2416;
+  --line:rgba(74,222,128,.16);
+  --ink-0:#eafff1; --ink-1:#8fd6a8; --ink-2:#4f8c66;
+  --accent-1:#4ade80; --accent-2:#22c55e; --accent-3:#a3e635;
+  --glow:0 0 40px rgba(74,222,128,.3);
+  --grad-core:linear-gradient(135deg,#a3e635,#4ade80 55%,#22c55e);
+}
+html[data-theme="solar-gold"]{
+  --bg-0:#0a0704; --bg-1:#130d07; --bg-2:#1c130a; --bg-3:#271a0d;
+  --line:rgba(250,190,90,.16);
+  --ink-0:#fff6e8; --ink-1:#e0bd8b; --ink-2:#95744a;
+  --accent-1:#fbbf24; --accent-2:#f97316; --accent-3:#fde047;
+  --glow:0 0 40px rgba(251,191,36,.3);
+  --grad-core:linear-gradient(135deg,#fde047,#fbbf24 55%,#f97316);
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  font-family:var(--font-body);
+  background:
+    radial-gradient(1200px 800px at 15% -10%, color-mix(in srgb, var(--accent-2) 10%, transparent), transparent 60%),
+    radial-gradient(1000px 700px at 110% 10%, color-mix(in srgb, var(--accent-1) 8%, transparent), transparent 60%),
+    var(--bg-0);
+  color:var(--ink-0);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  transition:background .6s var(--ease);
+}
+::selection{background:color-mix(in srgb, var(--accent-1) 40%, transparent);}
+::-webkit-scrollbar{width:8px; height:8px;}
+::-webkit-scrollbar-thumb{background:var(--bg-3); border-radius:8px;}
+::-webkit-scrollbar-thumb:hover{background:var(--accent-2);}
+button{font-family:inherit; cursor:pointer;}
+input,textarea,select{font-family:inherit;}
+a{color:var(--accent-1);}
+
+.glass{
+  background:color-mix(in srgb, var(--bg-2) 78%, transparent);
+  backdrop-filter:blur(22px) saturate(140%);
+  -webkit-backdrop-filter:blur(22px) saturate(140%);
+  border:1px solid var(--line);
+}
+
+/* ================= BOOT SCREEN ================= */
+#boot{
+  position:fixed; inset:0; z-index:9999;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:28px;
+  background:var(--bg-0);
+  transition:opacity .8s var(--ease), visibility .8s var(--ease);
+}
+#boot.hide{opacity:0; visibility:hidden; pointer-events:none;}
+.core{position:relative; width:120px; height:120px;}
+.core .ring{position:absolute; inset:0; border-radius:50%; border:2px solid transparent;}
+.core .ring:nth-child(1){border-top-color:var(--accent-1); border-right-color:var(--accent-1); animation:spin 2.6s linear infinite;}
+.core .ring:nth-child(2){inset:14px; border-bottom-color:var(--accent-2); border-left-color:var(--accent-2); animation:spin 1.8s linear infinite reverse;}
+.core .ring:nth-child(3){inset:28px; border-top-color:var(--accent-3); border-left-color:var(--accent-3); animation:spin 1.2s linear infinite;}
+.core .dot{position:absolute; inset:0; margin:auto; width:14px; height:14px; border-radius:50%; background:var(--grad-core); box-shadow:var(--glow); animation:pulse 1.6s ease-in-out infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes pulse{0%,100%{transform:scale(1); opacity:1;} 50%{transform:scale(1.35); opacity:.7;}}
+#boot .brand{font-family:var(--font-display); letter-spacing:.35em; font-size:13px; color:var(--ink-1); text-transform:uppercase;}
+#boot .sub{font-family:var(--font-mono); font-size:11px; color:var(--ink-2); min-height:16px;}
+
+/* ================= APP SHELL ================= */
+#app{display:flex; height:100vh; width:100vw; overflow:hidden;}
+
+/* ---- Sidebar ---- */
+#sidebar{
+  width:280px; min-width:280px; display:flex; flex-direction:column;
+  border-right:1px solid var(--line);
+  background:color-mix(in srgb, var(--bg-1) 85%, transparent);
+  transition:transform .35s var(--ease), width .35s var(--ease);
+  z-index:60;
+}
+.brandbar{display:flex; align-items:center; gap:10px; padding:18px 18px 14px;}
+.brandbar .core-mini{position:relative; width:26px; height:26px; flex-shrink:0;}
+.brandbar .core-mini .r{position:absolute; inset:0; border-radius:50%; border:1.5px solid transparent; border-top-color:var(--accent-1); border-right-color:var(--accent-2); animation:spin 3s linear infinite;}
+.brandbar h1{font-family:var(--font-display); font-size:17px; font-weight:700; letter-spacing:.06em;}
+.brandbar .ver{font-family:var(--font-mono); font-size:9px; color:var(--ink-2); background:var(--bg-3); padding:2px 6px; border-radius:20px; margin-left:auto;}
+
+.newchat-btn{
+  margin:4px 14px 10px; padding:11px 14px; border-radius:var(--radius-sm); border:1px solid var(--line);
+  background:var(--grad-core); color:#04060a; font-weight:700; font-size:13px;
+  display:flex; align-items:center; gap:8px; transition:transform .2s var(--ease), box-shadow .2s var(--ease);
+}
+.newchat-btn:hover{transform:translateY(-1px); box-shadow:var(--glow);}
+
+.search-wrap{margin:0 14px 10px; position:relative;}
+.search-wrap input{
+  width:100%; padding:9px 12px 9px 32px; border-radius:var(--radius-sm); border:1px solid var(--line);
+  background:var(--bg-2); color:var(--ink-0); font-size:12.5px; outline:none;
+}
+.search-wrap input:focus{border-color:var(--accent-1);}
+.search-wrap svg{position:absolute; left:10px; top:50%; transform:translateY(-50%); opacity:.5; width:14px; height:14px;}
+
+.side-scroll{flex:1; overflow-y:auto; padding:2px 10px;}
+.side-section-label{font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.12em; color:var(--ink-2); padding:12px 8px 6px;}
+.chat-item{
+  display:flex; align-items:center; gap:8px; padding:9px 10px; border-radius:var(--radius-sm); font-size:12.8px;
+  color:var(--ink-1); cursor:pointer; position:relative; transition:background .15s;
+}
+.chat-item:hover{background:var(--bg-2); color:var(--ink-0);}
+.chat-item.active{background:var(--bg-3); color:var(--ink-0); box-shadow:inset 2px 0 0 var(--accent-1);}
+.chat-item .title{flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.chat-item .del{opacity:0; font-size:14px; color:var(--ink-2);}
+.chat-item:hover .del{opacity:1;}
+.chat-item .del:hover{color:var(--accent-3);}
+
+.mode-pill-row{display:flex; flex-direction:column; gap:6px; padding:0 4px;}
+.mode-pill{
+  display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:var(--radius-sm);
+  border:1px solid var(--line); background:var(--bg-2); font-size:12px; color:var(--ink-1); transition:.2s;
+}
+.mode-pill .dot{width:7px; height:7px; border-radius:50%; background:var(--ink-2);}
+.mode-pill.active{border-color:var(--accent-1); color:var(--ink-0); background:color-mix(in srgb, var(--accent-1) 10%, var(--bg-2));}
+.mode-pill.active .dot{background:var(--accent-1); box-shadow:0 0 8px var(--accent-1);}
+.mode-pill small{margin-left:auto; color:var(--ink-2); font-family:var(--font-mono); font-size:9.5px;}
+
+#sidebar-footer{padding:12px 14px 16px; border-top:1px solid var(--line); display:flex; gap:8px;}
+.icon-btn{
+  width:38px; height:38px; border-radius:var(--radius-sm); border:1px solid var(--line); background:var(--bg-2);
+  display:flex; align-items:center; justify-content:center; color:var(--ink-1); transition:.2s;
+}
+.icon-btn:hover{color:var(--ink-0); border-color:var(--accent-1); background:var(--bg-3);}
+.icon-btn.grow{flex:1;}
+.icon-btn svg{width:16px; height:16px;}
+
+/* ---- Main column ---- */
+#main{flex:1; display:flex; flex-direction:column; min-width:0; position:relative;}
+#topbar{
+  display:flex; align-items:center; gap:12px; padding:12px 20px; border-bottom:1px solid var(--line);
+  background:color-mix(in srgb, var(--bg-1) 60%, transparent);
+}
+#menu-toggle{display:none;}
+.topbar-title{font-family:var(--font-display); font-size:14px; font-weight:600;}
+.topbar-badge{
+  font-family:var(--font-mono); font-size:10.5px; padding:4px 9px; border-radius:20px; border:1px solid var(--line);
+  color:var(--ink-1); background:var(--bg-2); display:flex; align-items:center; gap:6px;
+}
+.topbar-badge .pulse{width:6px; height:6px; border-radius:50%; background:var(--accent-1); animation:pulse 1.4s infinite;}
+.topbar-stats{margin-left:auto; display:flex; gap:8px; align-items:center;}
+.topbar-stats span{font-family:var(--font-mono); font-size:10.5px; color:var(--ink-2);}
+.theme-swatches{display:flex; gap:6px; margin-left:10px;}
+.swatch{width:18px; height:18px; border-radius:50%; border:2px solid transparent; cursor:pointer; transition:.2s;}
+.swatch.active{border-color:var(--ink-0); transform:scale(1.1);}
+
+/* ---- Chat area ---- */
+#chat-scroll{flex:1; overflow-y:auto; padding:26px 0 10px;}
+#chat-inner{max-width:860px; margin:0 auto; padding:0 24px; display:flex; flex-direction:column; gap:22px;}
+
+.empty-state{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; height:100%; gap:18px; padding-top:6vh;}
+.empty-state h2{font-family:var(--font-display); font-size:26px; font-weight:700;}
+.empty-state p{color:var(--ink-1); max-width:420px; font-size:13.5px; line-height:1.6;}
+.suggest-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; max-width:560px; margin-top:6px;}
+.suggest-card{
+  text-align:left; padding:13px 15px; border-radius:var(--radius-md); border:1px solid var(--line); background:var(--bg-2);
+  font-size:12.3px; color:var(--ink-1); transition:.2s;
+}
+.suggest-card:hover{border-color:var(--accent-1); transform:translateY(-2px); color:var(--ink-0);}
+.suggest-card b{display:block; color:var(--ink-0); font-family:var(--font-display); font-size:12.8px; margin-bottom:3px;}
+
+.msg{display:flex; gap:13px; animation:rise .4s var(--ease);}
+@keyframes rise{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+.msg .avatar{
+  width:30px; height:30px; border-radius:9px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-size:11px; font-weight:700;
+}
+.msg.user .avatar{background:var(--bg-3); color:var(--ink-1);}
+.msg.assistant .avatar{background:var(--grad-core); color:#04060a; box-shadow:var(--glow);}
+.msg-body{flex:1; min-width:0;}
+.msg-meta{display:flex; align-items:center; gap:8px; margin-bottom:5px;}
+.msg-meta .name{font-family:var(--font-display); font-size:12.5px; font-weight:600;}
+.msg-meta .tag{font-family:var(--font-mono); font-size:9.5px; color:var(--ink-2); background:var(--bg-2); padding:2px 7px; border-radius:20px; border:1px solid var(--line);}
+.msg-content{
+  font-size:14px; line-height:1.72; color:var(--ink-0); word-wrap:break-word;
+}
+.msg.user .msg-content{
+  background:var(--bg-2); border:1px solid var(--line); border-radius:var(--radius-md); padding:12px 16px; display:inline-block;
+}
+.msg-content p{margin:.5em 0;}
+.msg-content h1,.msg-content h2,.msg-content h3{font-family:var(--font-display); margin:1em 0 .45em; line-height:1.3;}
+.msg-content h1{font-size:20px;} .msg-content h2{font-size:17px;} .msg-content h3{font-size:14.5px; color:var(--accent-1);}
+.msg-content ul,.msg-content ol{margin:.4em 0 .4em 1.3em;}
+.msg-content li{margin:.25em 0;}
+.msg-content blockquote{border-left:3px solid var(--accent-2); padding:4px 14px; margin:.6em 0; color:var(--ink-1); background:var(--bg-2); border-radius:0 8px 8px 0;}
+.msg-content code{font-family:var(--font-mono); background:var(--bg-2); padding:2px 5px; border-radius:5px; font-size:12.5px;}
+.msg-content pre{background:#0a0c10; border:1px solid var(--line); border-radius:var(--radius-md); overflow:hidden; margin:.7em 0; position:relative;}
+.msg-content pre code{background:none; padding:0; display:block; overflow-x:auto; padding:14px 16px; font-size:12.6px;}
+.code-head{display:flex; justify-content:space-between; align-items:center; padding:7px 14px; background:var(--bg-2); border-bottom:1px solid var(--line); font-family:var(--font-mono); font-size:10.5px; color:var(--ink-2);}
+.code-head button{background:none; border:none; color:var(--ink-2); font-size:10.5px;}
+.code-head button:hover{color:var(--accent-1);}
+.msg-content table{width:100%; border-collapse:collapse; margin:.8em 0; font-size:12.8px; overflow:hidden; border-radius:var(--radius-sm);}
+.msg-content th,.msg-content td{border:1px solid var(--line); padding:8px 11px; text-align:left;}
+.msg-content th{background:var(--bg-2); font-family:var(--font-display); font-weight:600; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em;}
+.msg-content tr:nth-child(even) td{background:color-mix(in srgb, var(--bg-2) 40%, transparent);}
+.mermaid-box{background:var(--bg-2); border:1px solid var(--line); border-radius:var(--radius-md); padding:16px; margin:.7em 0; overflow-x:auto;}
+.chart-box{background:var(--bg-2); border:1px solid var(--line); border-radius:var(--radius-md); padding:16px; margin:.7em 0;}
+.note-box{border-left:3px solid var(--accent-1); background:color-mix(in srgb, var(--accent-1) 8%, var(--bg-2)); padding:10px 14px; border-radius:0 var(--radius-sm) var(--radius-sm) 0; margin:.6em 0; font-size:13px;}
+hr{border:none; border-top:1px solid var(--line); margin:1.1em 0;}
+
+.msg-actions{display:flex; gap:6px; margin-top:8px;}
+.msg-actions button{
+  background:var(--bg-2); border:1px solid var(--line); border-radius:8px; padding:5px 9px; font-size:11px; color:var(--ink-2);
+  display:flex; align-items:center; gap:5px; transition:.2s;
+}
+.msg-actions button:hover{color:var(--ink-0); border-color:var(--accent-1);}
+
+.thinking-row{display:flex; align-items:center; gap:9px; color:var(--ink-2); font-family:var(--font-mono); font-size:12px;}
+.think-dots span{display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--accent-1); margin-right:3px; animation:tdot 1.2s infinite;}
+.think-dots span:nth-child(2){animation-delay:.15s;} .think-dots span:nth-child(3){animation-delay:.3s;}
+@keyframes tdot{0%,60%,100%{opacity:.25;} 30%{opacity:1;}}
+
+.attach-chip{display:inline-flex; align-items:center; gap:7px; background:var(--bg-2); border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-size:11.5px; color:var(--ink-1); margin:3px 4px 3px 0;}
+.attach-chip svg{width:13px; height:13px; opacity:.7;}
+
+/* ---- Composer ---- */
+#composer-wrap{padding:14px 24px 20px;}
+#composer{
+  max-width:860px; margin:0 auto; border-radius:var(--radius-lg); border:1px solid var(--line);
+  background:var(--bg-2); padding:10px 10px 10px 16px; transition:border-color .2s, box-shadow .2s;
+}
+#composer:focus-within{border-color:var(--accent-1); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent-1) 15%, transparent);}
+#drop-preview{display:flex; flex-wrap:wrap; padding:6px 0;}
+.composer-row{display:flex; align-items:flex-end; gap:8px;}
+#prompt-input{
+  flex:1; background:none; border:none; outline:none; color:var(--ink-0); resize:none; max-height:200px;
+  font-size:14px; line-height:1.55; padding:8px 0; font-family:var(--font-body);
+}
+#prompt-input::placeholder{color:var(--ink-2);}
+.composer-btn{
+  width:38px; height:38px; border-radius:12px; border:none; background:var(--bg-3); color:var(--ink-1); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; transition:.2s;
+}
+.composer-btn:hover{color:var(--ink-0); background:var(--bg-1);}
+.composer-btn.active{background:var(--grad-core); color:#04060a;}
+#send-btn{background:var(--grad-core); color:#04060a; box-shadow:var(--glow);}
+#send-btn:hover{transform:scale(1.05);}
+#send-btn.stop{background:var(--accent-3);}
+.tool-row{display:flex; gap:6px; padding:8px 2px 2px; flex-wrap:wrap;}
+.tool-toggle{
+  font-size:11px; padding:6px 10px; border-radius:20px; border:1px solid var(--line); background:var(--bg-1); color:var(--ink-2);
+  display:flex; align-items:center; gap:6px; transition:.2s;
+}
+.tool-toggle svg{width:12px; height:12px;}
+.tool-toggle.on{color:#04060a; background:var(--grad-core); border-color:transparent;}
+.composer-hint{text-align:center; font-size:10.5px; color:var(--ink-2); margin-top:8px; font-family:var(--font-mono);}
+
+/* ---- Right dock (workspace/canvas/memory/images) ---- */
+#dock{
+  width:0; overflow:hidden; border-left:1px solid var(--line); background:color-mix(in srgb, var(--bg-1) 88%, transparent);
+  transition:width .35s var(--ease); display:flex; flex-direction:column;
+}
+#dock.open{width:380px;}
+.dock-head{display:flex; align-items:center; padding:16px 18px; border-bottom:1px solid var(--line); gap:10px;}
+.dock-head h3{font-family:var(--font-display); font-size:14px;}
+.dock-head button{margin-left:auto;}
+.dock-body{flex:1; overflow-y:auto; padding:16px 18px;}
+.mem-item{background:var(--bg-2); border:1px solid var(--line); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:9px; font-size:12.3px;}
+.mem-item .mtop{display:flex; justify-content:space-between; margin-bottom:4px;}
+.mem-item .mtop span{font-family:var(--font-mono); font-size:9.5px; color:var(--ink-2);}
+.mem-item button{color:var(--ink-2); background:none; border:none; font-size:11px;}
+.gallery-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+.gallery-grid img{width:100%; border-radius:10px; border:1px solid var(--line); cursor:pointer; aspect-ratio:1; object-fit:cover;}
+
+/* ---- Modal ---- */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(2,3,6,.65); backdrop-filter:blur(6px); z-index:200;
+  display:flex; align-items:center; justify-content:center; opacity:0; visibility:hidden; transition:.25s;
+}
+.modal-overlay.show{opacity:1; visibility:visible;}
+.modal{
+  width:560px; max-width:92vw; max-height:86vh; overflow-y:auto; border-radius:var(--radius-lg);
+  padding:0; transform:scale(.96) translateY(10px); transition:transform .3s var(--ease);
+}
+.modal-overlay.show .modal{transform:scale(1) translateY(0);}
+.modal-head{display:flex; align-items:center; padding:20px 24px; border-bottom:1px solid var(--line); position:sticky; top:0; background:inherit; z-index:2;}
+.modal-head h2{font-family:var(--font-display); font-size:16px;}
+.modal-head button{margin-left:auto; width:30px; height:30px; border-radius:8px; border:1px solid var(--line); background:var(--bg-2); color:var(--ink-1);}
+.modal-body{padding:22px 24px;}
+.field{margin-bottom:16px;}
+.field label{display:flex; justify-content:space-between; font-size:12px; color:var(--ink-1); margin-bottom:6px; font-family:var(--font-mono);}
+.field input,.field select{
+  width:100%; padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--line); background:var(--bg-2);
+  color:var(--ink-0); font-size:12.8px; outline:none;
+}
+.field input:focus,.field select:focus{border-color:var(--accent-1);}
+.field .hint{font-size:10.8px; color:var(--ink-2); margin-top:5px;}
+.settings-tabs{display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap;}
+.settings-tab{font-size:11.5px; padding:7px 12px; border-radius:20px; border:1px solid var(--line); background:var(--bg-2); color:var(--ink-2);}
+.settings-tab.active{background:var(--grad-core); color:#04060a; border-color:transparent;}
+.tab-pane{display:none;} .tab-pane.active{display:block;}
+.btn{
+  padding:10px 16px; border-radius:var(--radius-sm); border:1px solid var(--line); background:var(--bg-2); color:var(--ink-0);
+  font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:7px;
+}
+.btn.primary{background:var(--grad-core); color:#04060a; border:none;}
+.btn.danger{border-color:var(--accent-3); color:var(--accent-3);}
+.row{display:flex; gap:10px;}
+.theme-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:10px;}
+.theme-opt{border-radius:var(--radius-sm); border:2px solid var(--line); padding:10px 6px; text-align:center; cursor:pointer;}
+.theme-opt.active{border-color:var(--ink-0);}
+.theme-opt .prev{width:100%; height:34px; border-radius:8px; margin-bottom:6px;}
+.theme-opt span{font-size:9.5px; color:var(--ink-1); font-family:var(--font-mono);}
+
+/* Image studio */
+.imgstudio-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; margin-top:14px;}
+.imgstudio-grid img{width:100%; border-radius:var(--radius-sm); border:1px solid var(--line); aspect-ratio:1; object-fit:cover; cursor:pointer;}
+
+/* Toasts */
+#toasts{position:fixed; bottom:20px; right:20px; z-index:500; display:flex; flex-direction:column; gap:8px;}
+.toast{padding:11px 16px; border-radius:var(--radius-sm); font-size:12.5px; display:flex; align-items:center; gap:9px; animation:toastin .3s var(--ease);}
+@keyframes toastin{from{opacity:0; transform:translateX(20px);} to{opacity:1; transform:translateX(0);}}
+.toast.err{border-left:3px solid var(--accent-3);}
+.toast.ok{border-left:3px solid var(--accent-1);}
+
+.sidebar-scrim{display:none;}
+
+@media (max-width:880px){
+  #sidebar{position:fixed; inset:0 auto 0 0; transform:translateX(-100%);}
+  #sidebar.open{transform:translateX(0);}
+  #menu-toggle{display:flex;}
+  #dock{position:fixed; inset:0 0 0 auto; z-index:70;}
+  #dock.open{width:100%;}
+  .sidebar-scrim{display:block; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:55; opacity:0; visibility:hidden; transition:.3s;}
+  .sidebar-scrim.show{opacity:1; visibility:visible;}
+  .suggest-grid{grid-template-columns:1fr;}
+  #chat-inner{padding:0 14px;}
+  #composer-wrap{padding:10px 12px 14px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= BOOT SCREEN ================= -->
+<div id="boot">
+  <div class="core"><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="dot"></div></div>
+  <div class="brand">NOVA OS</div>
+  <div class="sub" id="boot-line">initializing core systems…</div>
+</div>
+
+<div class="sidebar-scrim" id="scrim"></div>
+
+<div id="app">
+  <!-- ================= SIDEBAR ================= -->
+  <aside id="sidebar">
+    <div class="brandbar">
+      <div class="core-mini"><div class="r"></div></div>
+      <h1>NOVA</h1>
+      <span class="ver">OS 1.0</span>
+    </div>
+
+    <button class="newchat-btn" id="new-chat-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      New Session
+    </button>
+
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="chat-search" placeholder="Search conversations…">
+    </div>
+
+    <div class="side-section-label">Nova Models</div>
+    <div class="mode-pill-row" id="mode-pills"></div>
+
+    <div class="side-section-label">History</div>
+    <div class="side-scroll" id="chat-list"></div>
+
+    <div id="sidebar-footer">
+      <button class="icon-btn" id="memory-btn" title="Memory">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a5 5 0 0 0-5 5v2a5 5 0 0 0 0 10h10a5 5 0 0 0 0-10V7a5 5 0 0 0-5-5Z"/></svg>
+      </button>
+      <button class="icon-btn" id="images-btn" title="Image Studio">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
+      </button>
+      <button class="icon-btn grow" id="settings-btn" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        <span style="margin-left:6px;font-size:12px;">Settings</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main id="main">
+    <div id="topbar">
+      <button class="icon-btn" id="menu-toggle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="topbar-title" id="topbar-title">Untitled Session</div>
+      <div class="topbar-badge" id="active-model-badge"><span class="pulse"></span> Nova 1.1</div>
+      <div class="topbar-stats">
+        <span id="stat-tokens">0 tok</span>
+        <span id="stat-timer">0.0s</span>
+      </div>
+      <div class="theme-swatches" id="theme-swatches"></div>
+    </div>
+
+    <div id="chat-scroll"><div id="chat-inner"></div></div>
+
+    <div id="composer-wrap">
+      <div id="composer">
+        <div id="drop-preview"></div>
+        <div class="composer-row">
+          <button class="composer-btn" id="attach-btn" title="Attach files">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.4 11.5-9 9a5 5 0 0 1-7-7l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 1 1-3-3l8-8"/></svg>
+          </button>
+          <textarea id="prompt-input" rows="1" placeholder="Message NOVA… (Shift+Enter for new line)"></textarea>
+          <button class="composer-btn" id="send-btn" title="Send">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="m22 2-7 20-4-9-9-4Z"/></svg>
+          </button>
+        </div>
+        <div class="tool-row" id="tool-row"></div>
+      </div>
+      <div class="composer-hint">NOVA can make mistakes. Verify important information · Smart Router active</div>
+    </div>
+    <input type="file" id="file-input" multiple hidden accept=".txt,.md,.json,.csv,.html,.css,.js,.java,.py,.cpp,.c,.pdf,image/*">
+  </main>
+
+  <!-- ================= RIGHT DOCK ================= -->
+  <aside id="dock">
+    <div class="dock-head">
+      <h3 id="dock-title">Panel</h3>
+      <button class="icon-btn" id="dock-close">✕</button>
+    </div>
+    <div class="dock-body" id="dock-body"></div>
+  </aside>
+</div>
+
+<!-- ================= SETTINGS MODAL ================= -->
+<div class="modal-overlay" id="settings-overlay">
+  <div class="modal glass">
+    <div class="modal-head"><h2>Settings</h2><button id="settings-close">✕</button></div>
+    <div class="modal-body">
+      <div class="settings-tabs">
+        <button class="settings-tab active" data-tab="keys">API Keys</button>
+        <button class="settings-tab" data-tab="appearance">Appearance</button>
+        <button class="settings-tab" data-tab="memory">Memory</button>
+        <button class="settings-tab" data-tab="data">Data</button>
+      </div>
+
+      <div class="tab-pane active" id="tab-keys">
+        <div class="field">
+          <label>OpenRouter API Key <span id="or-status" style="color:var(--ink-2)">not set</span></label>
+          <input type="password" id="key-openrouter" placeholder="OPENROUTER_API_KEY_PLACEHOLDER">
+          <div class="hint">Powers all Nova models via OpenRouter's unified endpoint. Get one at openrouter.ai/keys.</div>
+        </div>
+        <div class="field">
+          <label>Gemini API Key</label>
+          <input type="password" id="key-gemini" placeholder="GEMINI_API_KEY_PLACEHOLDER">
+          <div class="hint">Optional — used for image understanding and as a long-context fallback.</div>
+        </div>
+        <div class="field">
+          <label>Unsplash Access Key</label>
+          <input type="password" id="key-unsplash" placeholder="UNSPLASH_API_KEY_PLACEHOLDER">
+          <div class="hint">Optional — enables high-quality photo search/illustration suggestions.</div>
+        </div>
+        <div class="field">
+          <label>PDF Service Key</label>
+          <input type="password" id="key-pdf" placeholder="PDF_API_KEY_PLACEHOLDER">
+          <div class="hint">Optional. PDF text-extraction works locally via pdf.js without this key; reserved for advanced cloud PDF features.</div>
+        </div>
+        <button class="btn primary" id="save-keys-btn" style="width:100%; justify-content:center;">Save Keys</button>
+      </div>
+
+      <div class="tab-pane" id="tab-appearance">
+        <div class="field"><label>Theme</label>
+          <div class="theme-grid" id="theme-grid-settings"></div>
+        </div>
+        <div class="field"><label>Animations</label>
+          <select id="anim-level"><option value="full">Full — premium motion</option><option value="reduced">Reduced motion</option></select>
+        </div>
+      </div>
+
+      <div class="tab-pane" id="tab-memory">
+        <div class="field"><label>Long-term memory</label>
+          <select id="mem-toggle"><option value="on">Enabled — NOVA remembers facts across sessions</option><option value="off">Disabled</option></select>
+        </div>
+        <div class="field"><label>Response formatting</label>
+          <select id="format-level">
+            <option value="rich">Rich — headings, tables, diagrams (recommended)</option>
+            <option value="compact">Compact — lighter structure</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="tab-pane" id="tab-data">
+        <div class="field">
+          <label>Chats</label>
+          <div class="row">
+            <button class="btn" id="export-chats-btn">Export chats (.json)</button>
+            <button class="btn" id="import-chats-btn">Import chats</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Memory</label>
+          <div class="row">
+            <button class="btn" id="export-mem-btn">Export memory</button>
+            <button class="btn" id="import-mem-btn">Import memory</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Reset</label>
+          <button class="btn danger" id="wipe-btn">Wipe all local NOVA data</button>
+        </div>
+        <input type="file" id="import-file-input" hidden accept=".json">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= IMAGE STUDIO MODAL ================= -->
+<div class="modal-overlay" id="imgstudio-overlay">
+  <div class="modal glass" style="width:640px;">
+    <div class="modal-head"><h2>Image Studio</h2><button id="imgstudio-close">✕</button></div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Prompt</label>
+        <input id="imgstudio-prompt" placeholder="A holographic city skyline at dusk, cyan and violet light trails…">
+      </div>
+      <div class="row">
+        <button class="btn primary" id="imgstudio-generate" style="flex:1; justify-content:center;">Generate</button>
+        <button class="btn" id="imgstudio-unsplash" style="flex:1; justify-content:center;">Search Unsplash</button>
+      </div>
+      <div class="imgstudio-grid" id="imgstudio-results"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+/* =====================================================================
+   NOVA OS — MODULAR JAVASCRIPT ARCHITECTURE
+   Modules: Utils, Store, Themes, Memory, Chats, Router, Providers,
+            Formatter, Files, Images, UI (bootstraps everything)
+   ===================================================================== */
+(function(){
+"use strict";
+
+/* ---------------------------------------------------------------- UTILS */
+const Utils = {
+  uid: () => 'x'+Math.random().toString(36).slice(2,10)+Date.now().toString(36),
+  esc: (s='') => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
+  fmtTime(ms){ return (ms/1000).toFixed(1)+'s'; },
+  approxTokens(str=''){ return Math.max(1, Math.round(str.length/4)); },
+  download(filename, content, mime='application/json'){
+    const blob = new Blob([content], {type:mime});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+  },
+  debounce(fn, ms){ let t; return (...a)=>{clearTimeout(t); t=setTimeout(()=>fn(...a),ms);}; },
+  toast(msg, type='ok'){
+    const el = document.createElement('div');
+    el.className = 'toast glass '+type;
+    el.textContent = msg;
+    document.getElementById('toasts').appendChild(el);
+    setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(20px)'; setTimeout(()=>el.remove(),300); }, 3200);
+  }
+};
+
+/* ---------------------------------------------------------------- STORE (localStorage wrapper) */
+const Store = {
+  ns: 'nova_',
+  get(key, fallback=null){
+    try{ const v = localStorage.getItem(this.ns+key); return v===null ? fallback : JSON.parse(v); }
+    catch(e){ return fallback; }
+  },
+  set(key, val){ try{ localStorage.setItem(this.ns+key, JSON.stringify(val)); }catch(e){ Utils.toast('Storage quota exceeded','err'); } },
+  remove(key){ localStorage.removeItem(this.ns+key); },
+  wipeAll(){
+    Object.keys(localStorage).filter(k=>k.startsWith(this.ns)).forEach(k=>localStorage.removeItem(k));
+  }
+};
+
+/* ---------------------------------------------------------------- THEMES */
+const THEMES = [
+  {id:'hyper-black', name:'Hyper Black', c:'#7dd3fc'},
+  {id:'cyber-blue', name:'Cyber Blue', c:'#38bdf8'},
+  {id:'neon-purple', name:'Neon Purple', c:'#c084fc'},
+  {id:'matrix-green', name:'Matrix Green', c:'#4ade80'},
+  {id:'solar-gold', name:'Solar Gold', c:'#fbbf24'},
+];
+const Themes = {
+  current(){ return Store.get('theme','hyper-black'); },
+  apply(id){
+    document.documentElement.setAttribute('data-theme', id==='hyper-black' ? 'hyper-black':id);
+    Store.set('theme', id);
+    this.renderSwatches();
+  },
+  renderSwatches(){
+    const cur = this.current();
+    const top = document.getElementById('theme-swatches');
+    const modal = document.getElementById('theme-grid-settings');
+    top.innerHTML=''; modal.innerHTML='';
+    THEMES.forEach(t=>{
+      const sw = document.createElement('div');
+      sw.className = 'swatch'+(t.id===cur?' active':'');
+      sw.style.background = t.c; sw.title = t.name;
+      sw.onclick = ()=>this.apply(t.id);
+      top.appendChild(sw);
+
+      const opt = document.createElement('div');
+      opt.className='theme-opt'+(t.id===cur?' active':'');
+      opt.innerHTML = `<div class="prev" style="background:${t.c}"></div><span>${t.name}</span>`;
+      opt.onclick = ()=>{ this.apply(t.id); this.renderSwatches(); };
+      modal.appendChild(opt);
+    });
+  }
+};
+
+/* ---------------------------------------------------------------- MEMORY */
+const Memory = {
+  all(){ return Store.get('memory', []); },
+  add(content, type='long', pinned=false){
+    const items = this.all();
+    items.unshift({id:Utils.uid(), content, type, pinned, ts:Date.now()});
+    Store.set('memory', items.slice(0,500));
+    return items;
+  },
+  remove(id){ Store.set('memory', this.all().filter(m=>m.id!==id)); },
+  togglePin(id){ const items=this.all(); const m=items.find(x=>x.id===id); if(m) m.pinned=!m.pinned; Store.set('memory', items); },
+  search(q){ q=q.toLowerCase(); return this.all().filter(m=>m.content.toLowerCase().includes(q)); },
+  contextString(){
+    const enabled = Store.get('memEnabled','on') !== 'off';
+    if(!enabled) return '';
+    const items = this.all().filter(m=>m.pinned).slice(0,12);
+    if(!items.length) return '';
+    return 'Known long-term memory about the user (use only if relevant, never fabricate beyond this):\n' + items.map(i=>'- '+i.content).join('\n');
+  },
+  exportJSON(){ return JSON.stringify(this.all(), null, 2); },
+  importJSON(json){ try{ const arr = JSON.parse(json); if(Array.isArray(arr)){ Store.set('memory', arr); return true; } }catch(e){} return false; }
+};
+
+/* ---------------------------------------------------------------- CHATS */
+const Chats = {
+  state: { conversations: [], activeId: null },
+  load(){
+    this.state.conversations = Store.get('conversations', []);
+    this.state.activeId = Store.get('activeId', null);
+    if(!this.state.conversations.length) this.createNew(false);
+    if(!this.getActive()) this.state.activeId = this.state.conversations[0].id;
+  },
+  persist(){
+    Store.set('conversations', this.state.conversations);
+    Store.set('activeId', this.state.activeId);
+  },
+  createNew(persist=true){
+    const convo = {id:Utils.uid(), title:'Untitled Session', messages:[], createdAt:Date.now(), mode:'nova1.1'};
+    this.state.conversations.unshift(convo);
+    this.state.activeId = convo.id;
+    if(persist) this.persist();
+    return convo;
+  },
+  getActive(){ return this.state.conversations.find(c=>c.id===this.state.activeId); },
+  setActive(id){ this.state.activeId = id; this.persist(); },
+  remove(id){
+    this.state.conversations = this.state.conversations.filter(c=>c.id!==id);
+    if(this.state.activeId===id){
+      if(!this.state.conversations.length) this.createNew(false);
+      this.state.activeId = this.state.conversations[0].id;
+    }
+    this.persist();
+  },
+  renameFromFirstMessage(convo, text){
+    if(convo.title==='Untitled Session'){ convo.title = text.slice(0,42) + (text.length>42?'…':''); this.persist(); }
+  },
+  exportJSON(){ return JSON.stringify(this.state.conversations, null, 2); },
+  importJSON(json){
+    try{ const arr = JSON.parse(json); if(Array.isArray(arr)){ this.state.conversations = arr.concat(this.state.conversations); this.persist(); return true; } }catch(e){}
+    return false;
+  }
+};
+
+/* ---------------------------------------------------------------- SMART ROUTER */
+const NOVA_MODES = {
+  nova1_1:   {key:'nova1.1',   label:'Nova 1.1',    models:['google/gemma-4-31b-it:free','openai/gpt-oss-20b:free'], desc:'Daily · Chat · Study'},
+  novaExtend:{key:'novaExtend',label:'Nova Extend',  models:['nvidia/nemotron-3-ultra-550b-a55b:free','cohere/north-mini-code:free'], desc:'Math · Code · Logic'},
+  novaHyper: {key:'novaHyper', label:'Nova HyperOS', models:['poolside/laguna-m.1:free','tencent/hunyuan-hy3:free'], desc:'Research · Trading · Reports'}
+};
+const ALL_MODELS_FALLBACK = ['google/gemma-4-31b-it:free','openai/gpt-oss-20b:free','nvidia/nemotron-3-ultra-550b-a55b:free','cohere/north-mini-code:free','poolside/laguna-m.1:free','tencent/hunyuan-hy3:free'];
+
+const Router = {
+  analyze(text){
+    const t = text.toLowerCase();
+    const has = (...words) => words.some(w=>t.includes(w));
+
+    let mode = NOVA_MODES.nova1_1;
+    let template = 'general';
+    const flags = {chart:false, table:false, mermaid:false, math:false, deep:false, image:false, pdf:false};
+
+    if(has('draw','generate an image','create an image','wallpaper','logo','poster','illustration','anime image','picture of')) flags.image = true;
+
+    if(has('code','function','bug','debug','algorithm','python','javascript','refactor','compile','stack trace','regex')){
+      mode = NOVA_MODES.novaExtend; template='coding'; flags.mermaid=true;
+    }
+    if(has('solve','integral','derivative','equation','theorem','probability','matrix','calculus','algebra')){
+      mode = NOVA_MODES.novaExtend; template='math'; flags.math=true;
+    }
+    if(has('trade','trading','stock','portfolio','crypto','candlestick','market analysis','risk management','forex')){
+      mode = NOVA_MODES.novaHyper; template='trading'; flags.table=true; flags.chart=true;
+    }
+    if(has('startup','business plan','swot','market size','revenue model','pitch deck','go-to-market','tam sam som')){
+      mode = NOVA_MODES.novaHyper; template='business'; flags.table=true;
+    }
+    if(has('research','deep dive','report','analyze in depth','comprehensive','literature review','whitepaper')){
+      mode = NOVA_MODES.novaHyper; template='research'; flags.deep=true; flags.table=true;
+    }
+    if(has('compare','vs','versus','pros and cons')) flags.table = true;
+    if(has('flow','process','pipeline','architecture','sequence diagram','steps to')) flags.mermaid = true;
+    if(has('trend','over time','growth chart','statistics','data visualization')) flags.chart = true;
+
+    return {mode, template, flags};
+  },
+  modePillHTML(activeKey){
+    return Object.values(NOVA_MODES).map(m=>`
+      <div class="mode-pill${m.key===activeKey?' active':''}" data-mode="${m.key}">
+        <span class="dot"></span> ${m.label} <small>${m.desc}</small>
+      </div>`).join('');
+  }
+};
+
+/* ---------------------------------------------------------------- SYSTEM PROMPT BUILDER */
+function buildSystemPrompt(routed){
+  const templates = {
+    general: `Structure your answer with clear headings and bullet points where useful. Keep it organized and scannable.`,
+    coding: `Structure your answer as: ## Explanation, ## Algorithm (numbered steps), a \`\`\`mermaid flowchart of the logic when it aids understanding, ## Code (fenced code block with language tag), ## Time Complexity, ## Space Complexity, ## Improvements. Never return code with no explanation.`,
+    math: `Structure your answer as: ## Formula (use LaTeX with $...$ or $$...$$), ## Step-by-Step Solution, ## Explanation, ## Alternative Method if one exists. Show all work.`,
+    trading: `Structure your answer as: ## Analysis, a markdown ## Data Table when numeric comparisons help, a \`\`\`chart fenced block (see chart spec) when a trend/visual aids understanding, ## Risk Management, ## Summary. Always include risk disclaimers and never present this as financial advice.`,
+    business: `Structure your answer as: ## Market Analysis, ## Revenue Model, ## SWOT Analysis (as a table), ## Future Scope, ## Risks.`,
+    research: `Structure your answer as a structured report: ## Executive Summary, ## Deep Analysis (subheadings as needed), tables for comparative data, ## Key Findings, ## Conclusion. Be thorough and rigorous.`
+  };
+  return `You are NOVA, the core intelligence of NOVA OS — a premium, futuristic AI operating system. You are precise, warm, and highly organized.
+
+CRITICAL FORMATTING RULES (never break these):
+- NEVER answer in plain unformatted text. Always use Markdown: headings (##/###), bold, bullet/numbered lists, and tables where they clarify data.
+- For mathematical notation use LaTeX delimited by $...$ (inline) or $$...$$ (block).
+- For diagrams, flowcharts, or architecture, emit a fenced \`\`\`mermaid code block with valid Mermaid syntax (flowchart TD, sequenceDiagram, etc).
+- For charts/graphs, when a visual trend or comparison would help, emit a fenced \`\`\`chart code block containing ONLY valid JSON shaped like: {"type":"bar|line|pie|doughnut|radar","labels":["..."],"datasets":[{"label":"...","data":[1,2,3]}], "title":"..."}. Only do this when it truly adds value, not for every answer.
+- Use "> Note:" style callouts or a final "## Summary" section for longer answers.
+- Current routing: Nova mode = ${routed.mode.label}. Template = ${routed.template}.
+
+${templates[routed.template] || templates.general}
+
+Be accurate. If uncertain or the question needs live/current information you cannot verify, say so plainly rather than fabricating facts.`;
+}
+
+/* ---------------------------------------------------------------- PROVIDERS (OpenRouter / Gemini) */
+const Providers = {
+  async streamOpenRouter({models, messages, onToken, signal}){
+    const key = Store.get('key_openrouter','');
+    if(!key) throw {code:'NO_KEY', message:'No OpenRouter API key set. Add one in Settings → API Keys.'};
+    let lastErr = null;
+    for(const model of models){
+      try{
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method:'POST',
+          headers:{
+            'Content-Type':'application/json',
+            'Authorization':'Bearer '+key,
+            'HTTP-Referer': location.href,
+            'X-Title':'NOVA OS'
+          },
+          body: JSON.stringify({ model, messages, stream:true, temperature:0.7 }),
+          signal
+        });
+        if(!res.ok){
+          const errText = await res.text().catch(()=> '');
+          throw new Error('HTTP '+res.status+' '+errText.slice(0,180));
+        }
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let full = '';
+        while(true){
+          const {done, value} = await reader.read();
+          if(done) break;
+          buffer += decoder.decode(value, {stream:true});
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+          for(const line of lines){
+            const l = line.trim();
+            if(!l.startsWith('data:')) continue;
+            const data = l.slice(5).trim();
+            if(data==='[DONE]') continue;
+            try{
+              const json = JSON.parse(data);
+              const delta = json.choices?.[0]?.delta?.content || '';
+              if(delta){ full += delta; onToken(delta, full, model); }
+            }catch(e){ /* ignore partial json */ }
+          }
+        }
+        return {full, model};
+      }catch(e){
+        if(e.name === 'AbortError') throw e;
+        lastErr = e;
+        continue; // fallback to next model in chain
+      }
+    }
+    throw lastErr || {message:'All fallback models failed.'};
+  }
+};
+
+/* ---------------------------------------------------------------- RESPONSE FORMATTER (markdown -> rich DOM) */
+marked.setOptions({ breaks:true, gfm:true });
+let mermaidId = 0;
+
+const Formatter = {
+  init(){
+    if(window.mermaid){
+      mermaid.initialize({ startOnLoad:false, theme:'dark', securityLevel:'loose',
+        themeVariables:{ background:'transparent' } });
+    }
+  },
+  renderMath(html){
+    // block math
+    html = html.replace(/\$\$([\s\S]+?)\$\$/g, (m, expr)=>{
+      try{ return katex.renderToString(expr, {displayMode:true, throwOnError:false}); }catch(e){ return m; }
+    });
+    // inline math (avoid matching code spans roughly)
+    html = html.replace(/\$([^\$\n]+?)\$/g, (m, expr)=>{
+      try{ return katex.renderToString(expr, {displayMode:false, throwOnError:false}); }catch(e){ return m; }
+    });
+    return html;
+  },
+  async render(rawMarkdown, container){
+    // Extract mermaid & chart fenced blocks before marked parses them, replace with placeholders
+    const mermaidBlocks = [];
+    const chartBlocks = [];
+    let src = rawMarkdown
+      .replace(/```mermaid\n([\s\S]*?)```/g, (m, code)=>{ mermaidBlocks.push(code); return `[[MERMAID_${mermaidBlocks.length-1}]]`; })
+      .replace(/```chart\n([\s\S]*?)```/g, (m, code)=>{ chartBlocks.push(code); return `[[CHART_${chartBlocks.length-1}]]`; });
+
+    src = this.renderMath(src);
+    let html = marked.parse(src);
+    html = html.replace(/\[\[MERMAID_(\d+)\]\]/g, (m, i)=>`<div class="mermaid-box" data-mermaid-idx="${i}"></div>`);
+    html = html.replace(/\[\[CHART_(\d+)\]\]/g, (m, i)=>`<div class="chart-box" data-chart-idx="${i}"><canvas></canvas></div>`);
+
+    container.innerHTML = html;
+
+    // syntax highlight + code header w/ copy
+    container.querySelectorAll('pre code').forEach(block=>{
+      hljs.highlightElement(block);
+      const pre = block.parentElement;
+      if(!pre.parentElement.classList.contains('code-wrap')){
+        const lang = (block.className.match(/language-(\w+)/)||[])[1] || 'text';
+        const head = document.createElement('div');
+        head.className='code-head';
+        head.innerHTML = `<span>${lang}</span><button type="button">Copy</button>`;
+        head.querySelector('button').onclick = ()=>{ navigator.clipboard.writeText(block.textContent); Utils.toast('Code copied'); };
+        pre.parentNode.insertBefore(head, pre);
+      }
+    });
+
+    // mermaid render
+    container.querySelectorAll('[data-mermaid-idx]').forEach(async el=>{
+      const idx = el.getAttribute('data-mermaid-idx');
+      const code = mermaidBlocks[idx];
+      const id = 'mmd-'+(mermaidId++);
+      try{
+        const {svg} = await mermaid.render(id, code);
+        el.innerHTML = svg;
+      }catch(e){ el.innerHTML = '<em style="color:var(--ink-2)">Diagram could not be rendered.</em>'; }
+    });
+
+    // chart.js render
+    container.querySelectorAll('[data-chart-idx]').forEach(el=>{
+      const idx = el.getAttribute('data-chart-idx');
+      let spec;
+      try{ spec = JSON.parse(chartBlocks[idx]); }catch(e){ el.innerHTML='<em style="color:var(--ink-2)">Chart spec invalid.</em>'; return; }
+      const canvas = el.querySelector('canvas');
+      const palette = ['#7dd3fc','#a78bfa','#f472b6','#4ade80','#fbbf24','#38bdf8'];
+      (spec.datasets||[]).forEach((d,i)=>{ d.borderColor = d.borderColor||palette[i%palette.length]; d.backgroundColor = d.backgroundColor||palette[i%palette.length]+'55'; });
+      new Chart(canvas, {
+        type: spec.type||'bar',
+        data: { labels: spec.labels||[], datasets: spec.datasets||[] },
+        options: { responsive:true, plugins:{ legend:{labels:{color:'#a9afbc'}}, title:{display:!!spec.title, text:spec.title||'', color:'#f2f4f8'} },
+          scales: spec.type==='pie'||spec.type==='doughnut' ? {} : { x:{ticks:{color:'#676e7d'},grid:{color:'rgba(255,255,255,.05)'}}, y:{ticks:{color:'#676e7d'},grid:{color:'rgba(255,255,255,.05)'}} } }
+      });
+    });
+  }
+};
+
+/* ---------------------------------------------------------------- FILES */
+const Files = {
+  pending: [], // attachments for next send
+  async handleFiles(fileList){
+    for(const file of fileList){
+      const item = {id:Utils.uid(), name:file.name, type:file.type, size:file.size, text:'', isImage:file.type.startsWith('image/'), dataUrl:null};
+      if(item.isImage){
+        item.dataUrl = await this.readAsDataURL(file);
+      } else if(file.type==='application/pdf' || file.name.endsWith('.pdf')){
+        try{ item.text = await this.extractPdf(file); }catch(e){ item.text = '[Could not extract PDF text]'; }
+      } else {
+        try{ item.text = await this.readAsText(file); }catch(e){ item.text=''; }
+      }
+      this.pending.push(item);
+    }
+    UI.renderAttachments();
+  },
+  readAsText(file){ return new Promise((res,rej)=>{ const r = new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsText(file); }); },
+  readAsDataURL(file){ return new Promise((res,rej)=>{ const r = new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); },
+  async extractPdf(file){
+    if(!window.pdfjsLib) return '[pdf.js unavailable]';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({data:buf}).promise;
+    let text = '';
+    const maxPages = Math.min(pdf.numPages, 25);
+    for(let p=1;p<=maxPages;p++){
+      const page = await pdf.getPage(p);
+      const content = await page.getTextContent();
+      text += content.items.map(i=>i.str).join(' ') + '\n\n';
+    }
+    return text.slice(0, 20000);
+  },
+  clear(){ this.pending = []; UI.renderAttachments(); },
+  contextBlock(){
+    if(!this.pending.length) return '';
+    return this.pending.filter(f=>!f.isImage).map(f=>`\n\n[Attached file: ${f.name}]\n${f.text.slice(0,8000)}`).join('');
+  }
+};
+
+/* ---------------------------------------------------------------- IMAGES */
+const Images = {
+  history(){ return Store.get('imageHistory', []); },
+  addToHistory(url, prompt){
+    const h = this.history(); h.unshift({url, prompt, ts:Date.now()}); Store.set('imageHistory', h.slice(0,60));
+  },
+  async generate(prompt){
+    if(!window.puter || !puter.ai || !puter.ai.txt2img) throw new Error('Image generation engine unavailable.');
+    const img = await puter.ai.txt2img(prompt);
+    let url = img;
+    if(img instanceof HTMLImageElement) url = img.src;
+    this.addToHistory(url, prompt);
+    return url;
+  },
+  async searchUnsplash(query){
+    const key = Store.get('key_unsplash','');
+    if(!key) throw {code:'NO_KEY', message:'No Unsplash key set. Add one in Settings → API Keys.'};
+    const res = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=8`, {
+      headers:{ 'Authorization':'Client-ID '+key }
+    });
+    if(!res.ok) throw new Error('Unsplash HTTP '+res.status);
+    const data = await res.json();
+    return (data.results||[]).map(r=>({url:r.urls.small, full:r.urls.regular, alt:r.alt_description||query}));
+  }
+};
+
+/* ==================================================================================
+   UI CONTROLLER — wires DOM, drives conversation flow
+   ================================================================================== */
+const UI = {
+  activeMode: 'nova1_1',
+  toolState: { deep:false, research:false, websearch:false, image:false },
+  streaming: false,
+  abortCtrl: null,
+
+  init(){
+    Themes.apply(Themes.current());
+    Chats.load();
+    Formatter.init();
+    this.renderModePills();
+    this.renderToolRow();
+    this.renderChatList();
+    this.renderConversation();
+    this.bindEvents();
+    this.loadKeysIntoSettings();
+    this.bootSequence();
+  },
+
+  bootSequence(){
+    const lines = ['initializing core systems…','loading smart router…','calibrating nova models…','establishing secure memory…','NOVA OS ready.'];
+    let i=0;
+    const line = document.getElementById('boot-line');
+    const iv = setInterval(()=>{
+      i++; if(i<lines.length){ line.textContent = lines[i]; }
+      else { clearInterval(iv); document.getElementById('boot').classList.add('hide'); }
+    }, 340);
+  },
+
+  renderModePills(){
+    const el = document.getElementById('mode-pills');
+    el.innerHTML = Router.modePillHTML(this.activeMode);
+    el.querySelectorAll('.mode-pill').forEach(p=>{
+      p.onclick = ()=>{ this.activeMode = p.dataset.mode; this.renderModePills(); this.updateTopbarBadge(); };
+    });
+    this.updateTopbarBadge();
+  },
+  updateTopbarBadge(){
+    const m = Object.values(NOVA_MODES).find(x=>x.key===this.activeMode);
+    document.getElementById('active-model-badge').innerHTML = `<span class="pulse"></span> ${m.label}`;
+  },
+
+  renderToolRow(){
+    const tools = [
+      {id:'deep', label:'Deep Analysis'},
+      {id:'research', label:'Research Mode'},
+      {id:'websearch', label:'Web Search'},
+      {id:'image', label:'Image Mode'},
+    ];
+    const el = document.getElementById('tool-row');
+    el.innerHTML = tools.map(t=>`<button type="button" class="tool-toggle${this.toolState[t.id]?' on':''}" data-tool="${t.id}">${t.label}</button>`).join('');
+    el.querySelectorAll('.tool-toggle').forEach(b=>{
+      b.onclick = ()=>{
+        const id = b.dataset.tool;
+        this.toolState[id] = !this.toolState[id];
+        if(id==='websearch' && this.toolState[id]) Utils.toast('Web Search uses the model’s built-in knowledge — no live browsing key is configured.', 'ok');
+        this.renderToolRow();
+      };
+    });
+  },
+
+  renderChatList(){
+    const q = (document.getElementById('chat-search').value||'').toLowerCase();
+    const el = document.getElementById('chat-list');
+    const list = Chats.state.conversations.filter(c=>c.title.toLowerCase().includes(q));
+    el.innerHTML = list.map(c=>`
+      <div class="chat-item${c.id===Chats.state.activeId?' active':''}" data-id="${c.id}">
+        <span class="title">${Utils.esc(c.title)}</span>
+        <span class="del" data-del="${c.id}">✕</span>
+      </div>`).join('') || `<div style="padding:14px;color:var(--ink-2);font-size:12px;">No sessions found.</div>`;
+    el.querySelectorAll('.chat-item').forEach(item=>{
+      item.onclick = (e)=>{
+        if(e.target.dataset.del) return;
+        Chats.setActive(item.dataset.id); this.renderChatList(); this.renderConversation();
+        if(window.innerWidth<=880) this.closeSidebar();
+      };
+    });
+    el.querySelectorAll('[data-del]').forEach(d=>{
+      d.onclick = (e)=>{ e.stopPropagation(); Chats.remove(d.dataset.del); this.renderChatList(); this.renderConversation(); };
+    });
+  },
+
+  renderConversation(){
+    const convo = Chats.getActive();
+    document.getElementById('topbar-title').textContent = convo.title;
+    const inner = document.getElementById('chat-inner');
+    if(!convo.messages.length){
+      inner.innerHTML = `
+        <div class="empty-state">
+          <div class="core" style="width:80px;height:80px;"><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="dot"></div></div>
+          <h2>What can NOVA help you build today?</h2>
+          <p>Smart Router auto-selects the right Nova model, tools, and response format for every request.</p>
+          <div class="suggest-grid">
+            <button class="suggest-card" data-p="Design a REST API for a task manager and diagram the request flow"><b>Coding</b>Design + flowchart a REST API</button>
+            <button class="suggest-card" data-p="Give me a SWOT analysis and revenue model for an AI fitness startup"><b>Startup</b>SWOT + revenue model</button>
+            <button class="suggest-card" data-p="Explain the derivative of x^3 sin(x) step by step"><b>Mathematics</b>Step-by-step derivative</button>
+            <button class="suggest-card" data-p="Generate a holographic cyberpunk city wallpaper"><b>Image Studio</b>Generate a wallpaper</button>
+          </div>
+        </div>`;
+      inner.querySelectorAll('.suggest-card').forEach(c=>{
+        c.onclick = ()=>{ document.getElementById('prompt-input').value = c.dataset.p; this.autoGrow(); this.sendMessage(); };
+      });
+      return;
+    }
+    inner.innerHTML = '';
+    convo.messages.forEach(m => inner.appendChild(this.buildMessageEl(m)));
+    this.scrollToBottom();
+  },
+
+  buildMessageEl(m){
+    const wrap = document.createElement('div');
+    wrap.className = 'msg '+m.role;
+    wrap.dataset.id = m.id;
+    const avatar = m.role==='user' ? 'YOU' : 'N';
+    wrap.innerHTML = `
+      <div class="avatar">${avatar}</div>
+      <div class="msg-body">
+        <div class="msg-meta">
+          <span class="name">${m.role==='user'?'You':'NOVA'}</span>
+          ${m.modelTag ? `<span class="tag">${Utils.esc(m.modelTag)}</span>`:''}
+        </div>
+        <div class="msg-content"></div>
+        ${m.role==='assistant' ? `<div class="msg-actions">
+            <button data-act="copy">Copy</button>
+            <button data-act="regen">Regenerate</button>
+          </div>`:''}
+      </div>`;
+    const contentEl = wrap.querySelector('.msg-content');
+    if(m.role==='user'){
+      contentEl.innerHTML = Utils.esc(m.content).replace(/\n/g,'<br>') + (m.attachHtml||'');
+    } else {
+      Formatter.render(m.content||'', contentEl);
+    }
+    if(m.role==='assistant'){
+      wrap.querySelector('[data-act="copy"]').onclick = ()=>{ navigator.clipboard.writeText(m.content); Utils.toast('Response copied'); };
+      wrap.querySelector('[data-act="regen"]').onclick = ()=> this.regenerate(m.id);
+    }
+    return wrap;
+  },
+
+  renderAttachments(){
+    const el = document.getElementById('drop-preview');
+    el.innerHTML = Files.pending.map(f=>`
+      <span class="attach-chip" data-id="${f.id}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/></svg>
+        ${Utils.esc(f.name)} <span data-rm="${f.id}" style="cursor:pointer;opacity:.6;margin-left:2px;">✕</span>
+      </span>`).join('');
+    el.querySelectorAll('[data-rm]').forEach(x=>{
+      x.onclick = ()=>{ Files.pending = Files.pending.filter(f=>f.id!==x.dataset.rm); this.renderAttachments(); };
+    });
+  },
+
+  autoGrow(){
+    const ta = document.getElementById('prompt-input');
+    ta.style.height='auto'; ta.style.height = Math.min(ta.scrollHeight,200)+'px';
+  },
+  scrollToBottom(){
+    const el = document.getElementById('chat-scroll');
+    requestAnimationFrame(()=> el.scrollTop = el.scrollHeight);
+  },
+
+  async sendMessage(){
+    if(this.streaming) return this.stopGeneration();
+    const input = document.getElementById('prompt-input');
+    const text = input.value.trim();
+    if(!text && !Files.pending.length) return;
+    const convo = Chats.getActive();
+
+    const attachHtml = Files.pending.filter(f=>f.isImage).map(f=>`<div style="margin-top:8px"><img src="${f.dataUrl}" style="max-width:220px;border-radius:12px;border:1px solid var(--line)"></div>`).join('')
+      + Files.pending.filter(f=>!f.isImage).map(f=>`<span class="attach-chip">📎 ${Utils.esc(f.name)}</span>`).join('');
+
+    const userMsg = {id:Utils.uid(), role:'user', content:text, attachHtml};
+    convo.messages.push(userMsg);
+    Chats.renameFromFirstMessage(convo, text || 'Attachment');
+    input.value=''; this.autoGrow();
+    this.renderConversation(); this.renderChatList();
+
+    // Image generation intent short-circuit
+    const routed = Router.analyze(text);
+    if(routed.flags.image || this.toolState.image){
+      this.appendThinking();
+      try{
+        const url = await Images.generate(text);
+        this.replaceThinkingWith({role:'assistant', id:Utils.uid(), content:`Here's your generated image:\n\n![generated](${url})\n\n> Note: Saved to Image Studio history.`, modelTag:'Image Engine'});
+      }catch(e){
+        this.replaceThinkingWith({role:'assistant', id:Utils.uid(), content:`I couldn't generate the image: ${Utils.esc(e.message||String(e))}`, modelTag:'Image Engine'});
+      }
+      convo.messages = convo.messages; Store.set('conversations', Chats.state.conversations);
+      Files.clear();
+      return;
+    }
+
+    Files.clear();
+    await this.runAssistantTurn(convo, routed);
+  },
+
+  appendThinking(){
+    const inner = document.getElementById('chat-inner');
+    const el = document.createElement('div');
+    el.className = 'msg assistant'; el.id = 'thinking-row';
+    el.innerHTML = `<div class="avatar">N</div><div class="msg-body"><div class="thinking-row">NOVA is thinking <span class="think-dots"><span></span><span></span><span></span></span></div></div>`;
+    inner.appendChild(el); this.scrollToBottom();
+  },
+  replaceThinkingWith(msg){
+    const el = document.getElementById('thinking-row');
+    const convo = Chats.getActive();
+    convo.messages.push(msg);
+    if(el){ const newEl = this.buildMessageEl(msg); el.replaceWith(newEl); }
+    else document.getElementById('chat-inner').appendChild(this.buildMessageEl(msg));
+    this.scrollToBottom();
+    Chats.persist();
+  },
+
+  async runAssistantTurn(convo, routed){
+    this.activeMode = routed.mode.key === 'nova1.1' ? 'nova1_1' : routed.mode.key;
+    this.renderModePills();
+    this.appendThinking();
+
+    const modeObj = Object.values(NOVA_MODES).find(m=>m.key===this.activeMode) || NOVA_MODES.nova1_1;
+    const systemPrompt = buildSystemPrompt({mode:modeObj, template:routed.template});
+    const memCtx = Memory.contextString();
+    const fileCtx = Files.contextBlock();
+
+    const history = convo.messages.filter(m=>m.role==='user'||m.role==='assistant').slice(-16)
+      .map(m=>({role:m.role, content:m.content}));
+    if(fileCtx){ history[history.length-1] = {...history[history.length-1], content: history[history.length-1].content + fileCtx}; }
+
+    const messages = [
+      {role:'system', content: systemPrompt + (memCtx ? '\n\n'+memCtx : '')},
+      ...history
+    ];
+
+    const start = performance.now();
+    this.streaming = true;
+    this.setSendBtnStop(true);
+    this.abortCtrl = new AbortController();
+    let tokenCount = 0;
+    let liveEl = null;
+    let liveContentEl = null;
+
+    const ensureLiveEl = ()=>{
+      if(liveEl) return;
+      const thinking = document.getElementById('thinking-row');
+      const msg = {id:Utils.uid(), role:'assistant', content:'', modelTag:modeObj.label};
+      liveEl = this.buildMessageEl(msg);
+      liveEl.dataset.pending = '1';
+      if(thinking) thinking.replaceWith(liveEl); else document.getElementById('chat-inner').appendChild(liveEl);
+      liveContentEl = liveEl.querySelector('.msg-content');
+      this._pendingMsg = msg;
+    };
+
+    try{
+      const result = await Providers.streamOpenRouter({
+        models: modeObj.models.concat(ALL_MODELS_FALLBACK.filter(m=>!modeObj.models.includes(m))),
+        messages,
+        signal: this.abortCtrl.signal,
+        onToken: (delta, full)=>{
+          ensureLiveEl();
+          tokenCount = Utils.approxTokens(full);
+          this._pendingMsg.content = full;
+          Formatter.render(full, liveContentEl);
+          document.getElementById('stat-tokens').textContent = tokenCount+' tok';
+          document.getElementById('stat-timer').textContent = Utils.fmtTime(performance.now()-start);
+          this.scrollToBottom();
+        }
+      });
+      ensureLiveEl();
+      this._pendingMsg.content = result.full || '_(empty response)_';
+      this._pendingMsg.modelTag = result.model;
+      Formatter.render(this._pendingMsg.content, liveContentEl);
+      convo.messages.push(this._pendingMsg);
+      Chats.persist();
+    }catch(e){
+      const msg = { id:Utils.uid(), role:'assistant', modelTag:'error',
+        content: e.name==='AbortError' ? '_Generation stopped._' :
+          `## Connection issue\nI couldn't reach NOVA's models: **${Utils.esc(e.message||String(e))}**\n\n> Double-check your OpenRouter API key in Settings, and confirm the model IDs are still active on OpenRouter — free-tier model availability rotates.` };
+      this.replaceThinkingWith(msg);
+      const thinking = document.getElementById('thinking-row'); if(thinking) thinking.remove();
+      if(liveEl) liveEl.remove();
+      document.getElementById('chat-inner').appendChild(this.buildMessageEl(msg));
+      convo.messages.push(msg); Chats.persist();
+    } finally {
+      this.streaming = false;
+      this.setSendBtnStop(false);
+      this.scrollToBottom();
+    }
+  },
+
+  regenerate(msgId){
+    const convo = Chats.getActive();
+    const idx = convo.messages.findIndex(m=>m.id===msgId);
+    if(idx<0) return;
+    // find preceding user message
+    let uIdx = idx-1;
+    while(uIdx>=0 && convo.messages[uIdx].role!=='user') uIdx--;
+    if(uIdx<0) return;
+    const userText = convo.messages[uIdx].content;
+    convo.messages = convo.messages.slice(0, idx);
+    this.renderConversation();
+    const routed = Router.analyze(userText);
+    this.runAssistantTurn(convo, routed);
+  },
+
+  stopGeneration(){ if(this.abortCtrl) this.abortCtrl.abort(); },
+  setSendBtnStop(on){
+    const btn = document.getElementById('send-btn');
+    btn.classList.toggle('stop', on);
+    btn.innerHTML = on
+      ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>`
+      : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="m22 2-7 20-4-9-9-4Z"/></svg>`;
+  },
+
+  openSidebar(){ document.getElementById('sidebar').classList.add('open'); document.getElementById('scrim').classList.add('show'); },
+  closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('scrim').classList.remove('show'); },
+
+  openDock(title, bodyHtml){
+    document.getElementById('dock-title').textContent = title;
+    document.getElementById('dock-body').innerHTML = bodyHtml;
+    document.getElementById('dock').classList.add('open');
+  },
+  closeDock(){ document.getElementById('dock').classList.remove('open'); },
+
+  renderMemoryDock(){
+    const items = Memory.all();
+    const html = `
+      <div class="field"><input id="mem-new-input" placeholder="Teach NOVA something to remember…" style="width:100%;padding:9px 11px;border-radius:10px;border:1px solid var(--line);background:var(--bg-2);color:var(--ink-0);"></div>
+      <button class="btn primary" id="mem-add-btn" style="width:100%;justify-content:center;margin-bottom:14px;">Save Memory</button>
+      ${items.length ? items.map(m=>`
+        <div class="mem-item">
+          <div class="mtop"><span>${new Date(m.ts).toLocaleDateString()}</span><span>${m.pinned?'📌 pinned':''}</span></div>
+          <div>${Utils.esc(m.content)}</div>
+          <div style="margin-top:6px;display:flex;gap:10px;">
+            <button data-pin="${m.id}">${m.pinned?'Unpin':'Pin'}</button>
+            <button data-rm="${m.id}">Delete</button>
+          </div>
+        </div>`).join('') : `<p style="color:var(--ink-2);font-size:12.5px;">No memories yet. NOVA will remember what you teach it here across sessions.</p>`}
+    `;
+    this.openDock('Memory', html);
+    document.getElementById('mem-add-btn').onclick = ()=>{
+      const inp = document.getElementById('mem-new-input');
+      if(inp.value.trim()){ Memory.add(inp.value.trim(), 'long', true); this.renderMemoryDock(); Utils.toast('Memory saved'); }
+    };
+    document.querySelectorAll('[data-pin]').forEach(b=>b.onclick=()=>{ Memory.togglePin(b.dataset.pin); this.renderMemoryDock(); });
+    document.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{ Memory.remove(b.dataset.rm); this.renderMemoryDock(); });
+  },
+
+  renderGalleryDock(){
+    const items = Images.history();
+    const html = items.length
+      ? `<div class="gallery-grid">${items.map(i=>`<img src="${i.url}" title="${Utils.esc(i.prompt)}">`).join('')}</div>`
+      : `<p style="color:var(--ink-2);font-size:12.5px;">No generated images yet — try the Image Studio.</p>`;
+    this.openDock('Gallery', html);
+  },
+
+  loadKeysIntoSettings(){
+    document.getElementById('key-openrouter').value = Store.get('key_openrouter','');
+    document.getElementById('key-gemini').value = Store.get('key_gemini','');
+    document.getElementById('key-unsplash').value = Store.get('key_unsplash','');
+    document.getElementById('key-pdf').value = Store.get('key_pdf','');
+    document.getElementById('or-status').textContent = Store.get('key_openrouter','') ? 'configured' : 'not set';
+    document.getElementById('mem-toggle').value = Store.get('memEnabled','on');
+    document.getElementById('format-level').value = Store.get('formatLevel','rich');
+    document.getElementById('anim-level').value = Store.get('animLevel','full');
+    Themes.renderSwatches();
+  },
+
+  bindEvents(){
+    const $ = id => document.getElementById(id);
+
+    $('menu-toggle').onclick = ()=> this.openSidebar();
+    $('scrim').onclick = ()=> this.closeSidebar();
+
+    $('new-chat-btn').onclick = ()=>{ Chats.createNew(); this.renderChatList(); this.renderConversation(); if(window.innerWidth<=880) this.closeSidebar(); };
+    $('chat-search').oninput = Utils.debounce(()=>this.renderChatList(), 150);
+
+    $('prompt-input').addEventListener('input', ()=>this.autoGrow());
+    $('prompt-input').addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); this.sendMessage(); }
+    });
+    $('send-btn').onclick = ()=> this.sendMessage();
+
+    $('attach-btn').onclick = ()=> $('file-input').click();
+    $('file-input').onchange = (e)=> Files.handleFiles(e.target.files);
+    ['dragover','drop'].forEach(ev=>document.getElementById('composer').addEventListener(ev, e=>e.preventDefault()));
+    document.getElementById('composer').addEventListener('drop', e=>{ if(e.dataTransfer.files.length) Files.handleFiles(e.dataTransfer.files); });
+
+    $('memory-btn').onclick = ()=> this.renderMemoryDock();
+    $('images-btn').onclick = ()=> $('imgstudio-overlay').classList.add('show');
+    $('dock-close').onclick = ()=> this.closeDock();
+
+    // Settings modal
+    $('settings-btn').onclick = ()=>{ this.loadKeysIntoSettings(); $('settings-overlay').classList.add('show'); };
+    $('settings-close').onclick = ()=> $('settings-overlay').classList.remove('show');
+    $('settings-overlay').addEventListener('click', e=>{ if(e.target.id==='settings-overlay') $('settings-overlay').classList.remove('show'); });
+    document.querySelectorAll('.settings-tab').forEach(tab=>{
+      tab.onclick = ()=>{
+        document.querySelectorAll('.settings-tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+        tab.classList.add('active'); $('tab-'+tab.dataset.tab).classList.add('active');
+      };
+    });
+    $('save-keys-btn').onclick = ()=>{
+      Store.set('key_openrouter', $('key-openrouter').value.trim());
+      Store.set('key_gemini', $('key-gemini').value.trim());
+      Store.set('key_unsplash', $('key-unsplash').value.trim());
+      Store.set('key_pdf', $('key-pdf').value.trim());
+      this.loadKeysIntoSettings();
+      Utils.toast('Keys saved locally on this device');
+    };
+    $('mem-toggle').onchange = (e)=> Store.set('memEnabled', e.target.value);
+    $('format-level').onchange = (e)=> Store.set('formatLevel', e.target.value);
+    $('anim-level').onchange = (e)=>{
+      Store.set('animLevel', e.target.value);
+      document.body.style.setProperty('--anim-scale', e.target.value==='reduced'?'0':'1');
+    };
+
+    $('export-chats-btn').onclick = ()=> Utils.download('nova-chats.json', Chats.exportJSON());
+    $('export-mem-btn').onclick = ()=> Utils.download('nova-memory.json', Memory.exportJSON());
+    $('import-chats-btn').onclick = ()=>{ this._importTarget='chats'; $('import-file-input').click(); };
+    $('import-mem-btn').onclick = ()=>{ this._importTarget='memory'; $('import-file-input').click(); };
+    $('import-file-input').onchange = async (e)=>{
+      const file = e.target.files[0]; if(!file) return;
+      const text = await Files.readAsText(file);
+      if(this._importTarget==='chats'){ Chats.importJSON(text) ? Utils.toast('Chats imported') : Utils.toast('Invalid file','err'); this.renderChatList(); this.renderConversation(); }
+      else { Memory.importJSON(text) ? Utils.toast('Memory imported') : Utils.toast('Invalid file','err'); }
+    };
+    $('wipe-btn').onclick = ()=>{
+      if(confirm('This will erase all NOVA OS local data (chats, memory, keys, settings) on this device. Continue?')){
+        Store.wipeAll(); location.reload();
+      }
+    };
+
+    // Image studio
+    $('imgstudio-close').onclick = ()=> $('imgstudio-overlay').classList.remove('show');
+    $('imgstudio-overlay').addEventListener('click', e=>{ if(e.target.id==='imgstudio-overlay') $('imgstudio-overlay').classList.remove('show'); });
+    $('imgstudio-generate').onclick = async ()=>{
+      const p = $('imgstudio-prompt').value.trim(); if(!p) return;
+      $('imgstudio-results').innerHTML = '<p style="color:var(--ink-2);font-size:12px;">Generating…</p>';
+      try{
+        const url = await Images.generate(p);
+        $('imgstudio-results').innerHTML = `<img src="${url}">`;
+      }catch(e){ $('imgstudio-results').innerHTML = `<p style="color:var(--accent-3);font-size:12px;">${Utils.esc(e.message||String(e))}</p>`; }
+    };
+    $('imgstudio-unsplash').onclick = async ()=>{
+      const p = $('imgstudio-prompt').value.trim(); if(!p) return;
+      $('imgstudio-results').innerHTML = '<p style="color:var(--ink-2);font-size:12px;">Searching Unsplash…</p>';
+      try{
+        const results = await Images.searchUnsplash(p);
+        $('imgstudio-results').innerHTML = results.map(r=>`<img src="${r.url}" title="${Utils.esc(r.alt)}">`).join('') || '<p style="color:var(--ink-2);font-size:12px;">No results.</p>';
+      }catch(e){ $('imgstudio-results').innerHTML = `<p style="color:var(--accent-3);font-size:12px;">${Utils.esc(e.message||String(e))}</p>`; }
+    };
+
+    window.addEventListener('resize', ()=>{ if(window.innerWidth>880) this.closeSidebar(); });
+  }
+};
+
+document.addEventListener('DOMContentLoaded', ()=> UI.init());
+
+})();
+</script>
+</body>
+</html>
