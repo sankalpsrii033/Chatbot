@@ -2163,18 +2163,27 @@
 
                 // Build messages array for API
                 // Search results fetch karo agar query mein "search", "latest", ya "?" ho
+// --- Web search integration ---
 let systemContent = SYSTEM_PROMPT;
-const shouldSearch = text.toLowerCase().includes("search") ||
-                     text.includes("?") ||
+const shouldSearch = text.includes("?") ||
+                     text.toLowerCase().includes("search") ||
+                     text.toLowerCase().includes("latest") ||
+                     text.toLowerCase().includes("recent") ||
                      text.toLowerCase().startsWith("what") ||
                      text.toLowerCase().startsWith("who") ||
-                     text.toLowerCase().startsWith("latest");
+                     text.toLowerCase().startsWith("when");
+
 if (shouldSearch) {
+    console.log("🔍 Searching web for:", text);
     const searchResults = await fetchSearchResults(text);
     if (searchResults) {
-        systemContent = `Current web search results (use these to answer if relevant):\n${searchResults}\n\n---\n${SYSTEM_PROMPT}`;
+        console.log("✅ Search results found");
+        systemContent = `IMPORTANT: Use the following up-to-date web search results to answer. If relevant, incorporate them in your response.\n\n${searchResults}\n\n---\n${SYSTEM_PROMPT}`;
+    } else {
+        console.warn("⚠️ Search returned empty, using default system prompt");
     }
 }
+// --- End of search integration ---
 
 const apiMessages = [
     { role: "system", content: systemContent },
