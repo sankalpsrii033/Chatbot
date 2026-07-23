@@ -1067,6 +1067,7 @@
         (function() {
             // ==================== CONFIGURATION ====================
             const OPENROUTER_API_KEY = "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";
+            const TAVILY_API_KEY = "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";  // <-- yahan apni key paste karo
             const API_URL = "https://openrouter.ai/api/v1/chat/completions";
             const SITE_URL = window.location.origin || "https://nexus-ai.local";
             const SITE_NAME = "Nexus AI Chat";
@@ -1290,6 +1291,26 @@
 
             function getModelInfo(modelId) {
                 return AVAILABLE_MODELS[modelId] || { name: modelId, specialty: 'general', color: '#7c6ff7' };
+            }
+            async function fetchSearchResults(query) {
+    try {
+        const res = await fetch("https://api.tavily.com/search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                api_key: TAVILY_API_KEY,
+                query: query,
+                search_depth: "basic",
+                include_answer: true
+            })
+        });
+        const data = await res.json();
+        // Tavily ka answer field ya results
+        return data.answer || data.results?.map(r => r.content).join("\n") || "";
+    } catch (e) {
+        console.warn("Search error:", e);
+        return "";
+    }
             }
               // ==================== SYNTAX HIGHLIGHTING ====================
             function syntaxHighlight(code, language) {
@@ -2141,10 +2162,24 @@
                 currentStreamingContent = '';
 
                 // Build messages array for API
-                const apiMessages = [
-                    { role: 'system', content: SYSTEM_PROMPT },
-                    ...conv.messages.map(m => ({ role: m.role, content: m.content }))
-                ];
+                // Search results fetch karo agar query mein "search", "latest", ya "?" ho
+let systemContent = SYSTEM_PROMPT;
+const shouldSearch = text.toLowerCase().includes("search") ||
+                     text.includes("?") ||
+                     text.toLowerCase().startsWith("what") ||
+                     text.toLowerCase().startsWith("who") ||
+                     text.toLowerCase().startsWith("latest");
+if (shouldSearch) {
+    const searchResults = await fetchSearchResults(text);
+    if (searchResults) {
+        systemContent = `Current web search results (use these to answer if relevant):\n${searchResults}\n\n---\n${SYSTEM_PROMPT}`;
+    }
+}
+
+const apiMessages = [
+    { role: "system", content: systemContent },
+    ...conv.messages.map(m => ({ role: m.role, content: m.content }))
+];
                 // Remove the last user message from apiMessages since we include all conv messages
                 // Actually we already included it, so we're good
 
