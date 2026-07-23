@@ -1,850 +1,2254 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Doc Studio — Intelligent Document Generation</title>
-    <script src="https://cdn.tailwindcss.com">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js">
-    </script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
-                    colors: {
-                        brand: { 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8',
-                            500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81' },
-                        surface: { light: '#f8fafc', dark: '#0f172a' },
-                        card: { light: '#ffffff', dark: '#1e293b' },
-                        border: { light: '#e2e8f0', dark: '#334155' },
-                    }
-                }
-            }
-        };
-    </script>
+    <title>Nexus AI — Premium Chat</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
-        :root { --transition-speed: 200ms; }
-        * { box-sizing: border-box; }
-        body { font-family: 'Inter', system-ui, sans-serif; transition: background-color 0.3s, color 0.3s; }
-        .dark body { background-color: #0f172a; color: #e2e8f0; }
-        .fade-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        .progress-bar-striped {
-            background-size: 30px 30px;
-            background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent);
-            animation: progressStripe 0.8s linear infinite;
+        :root {
+            --bg-deep: #06060e;
+            --bg-surface: rgba(16, 16, 32, 0.65);
+            --bg-card: rgba(22, 22, 44, 0.55);
+            --bg-input: rgba(18, 18, 36, 0.7);
+            --text-primary: #e4e8f1;
+            --text-secondary: #a0a8bc;
+            --text-muted: #6b7280;
+            --accent-cyan: #00d4aa;
+            --accent-purple: #8b5cf6;
+            --accent-blue: #4f8fff;
+            --accent-pink: #e8558a;
+            --accent-amber: #f59e0b;
+            --border-subtle: rgba(255, 255, 255, 0.07);
+            --border-glow: rgba(255, 255, 255, 0.13);
+            --shadow-glow-cyan: 0 0 30px rgba(0, 212, 170, 0.12);
+            --shadow-glow-purple: 0 0 30px rgba(139, 92, 246, 0.10);
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 22px;
+            --radius-xl: 28px;
+            --font-sans: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+            --transition-fast: 0.18s ease;
+            --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 300px;
         }
-        @keyframes progressStripe { 0% { background-position: 0 0; } 100% { background-position: 30px 0; } }
-        .glass { backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-        .scrollbar-thin::-webkit-scrollbar { width: 6px; }
-        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-        .scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        .dark .scrollbar-thin::-webkit-scrollbar-thumb { background: #475569; }
-        .doc-preview h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.75rem; color: #1e293b; }
-        .dark .doc-preview h1 { color: #f1f5f9; }
-        .doc-preview h2 { font-size: 1.35rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; color: #334155; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.35rem; }
-        .dark .doc-preview h2 { color: #cbd5e1; border-bottom-color: #475569; }
-        .doc-preview h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.4rem; color: #475569; }
-        .dark .doc-preview h3 { color: #94a3b8; }
-        .doc-preview p { margin-bottom: 0.75rem; line-height: 1.7; }
-        .doc-preview ul, .doc-preview ol { margin-left: 1.5rem; margin-bottom: 0.75rem; }
-        .doc-preview li { margin-bottom: 0.3rem; line-height: 1.6; }
-        .doc-preview .mermaid-container { background: #f1f5f9; border-radius: 8px; padding: 1rem; margin: 1rem 0; overflow-x: auto; }
-        .dark .doc-preview .mermaid-container { background: #1e293b; }
-        .doc-preview table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
-        .doc-preview th, .doc-preview td { border: 1px solid #cbd5e1; padding: 0.5rem 0.75rem; text-align: left; }
-        .doc-preview th { background: #f1f5f9; font-weight: 600; }
-        .dark .doc-preview th { background: #334155; }
-        .dark .doc-preview td, .dark .doc-preview th { border-color: #475569; }
-        @media print { .no-print { display: none !important; } body { background: #fff !important; color: #000 !important; } .doc-preview { padding: 0 !important; max-width: 100% !important; } }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            font-size: 15px;
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Animated background blobs */
+        .bg-blobs {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .bg-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.28;
+            animation: floatBlob 22s infinite ease-in-out;
+        }
+        .bg-blob:nth-child(1) {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0, 180, 140, 0.55) 0%, transparent 70%);
+            top: -12%;
+            left: -8%;
+            animation-delay: 0s;
+        }
+        .bg-blob:nth-child(2) {
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle, rgba(120, 80, 240, 0.50) 0%, transparent 70%);
+            top: 55%;
+            right: -10%;
+            animation-delay: -7s;
+            animation-duration: 20s;
+        }
+        .bg-blob:nth-child(3) {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(60, 130, 240, 0.45) 0%, transparent 70%);
+            bottom: -15%;
+            left: 30%;
+            animation-delay: -14s;
+            animation-duration: 24s;
+        }
+        @keyframes floatBlob {
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(60px, -50px) scale(1.12);
+            }
+            50% {
+                transform: translate(-30px, 40px) scale(0.92);
+            }
+            75% {
+                transform: translate(-55px, -35px) scale(1.08);
+            }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--bg-surface);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border-right: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            transition: transform var(--transition-smooth), opacity var(--transition-smooth);
+            position: relative;
+        }
+        .sidebar-header {
+            padding: 18px 16px 10px;
+            flex-shrink: 0;
+        }
+        .sidebar-logo {
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: -0.4px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sidebar-logo .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 12px var(--accent-cyan);
+            animation: pulseDot 2s infinite;
+        }
+        @keyframes pulseDot {
+            0%,
+            100% {
+                box-shadow: 0 0 8px var(--accent-cyan);
+            }
+            50% {
+                box-shadow: 0 0 22px var(--accent-cyan), 0 0 40px rgba(0, 212, 170, 0.35);
+            }
+        }
+        .btn-new-chat {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-glow);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            letter-spacing: 0.2px;
+            font-family: var(--font-sans);
+        }
+        .btn-new-chat:hover {
+            background: rgba(255, 255, 255, 0.09);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: var(--shadow-glow-cyan);
+            transform: translateY(-1px);
+        }
+        .btn-new-chat svg {
+            width: 18px;
+            height: 18px;
+            opacity: 0.85;
+        }
+        .sidebar-search {
+            padding: 8px 16px 12px;
+            flex-shrink: 0;
+        }
+        .sidebar-search input {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-primary);
+            font-size: 0.88rem;
+            outline: none;
+            transition: all var(--transition-fast);
+            font-family: var(--font-sans);
+        }
+        .sidebar-search input::placeholder {
+            color: var(--text-muted);
+        }
+        .sidebar-search input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 16px rgba(0, 212, 170, 0.10);
+            background: rgba(255, 255, 255, 0.07);
+        }
+        .conversation-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+        }
+        .conversation-list::-webkit-scrollbar {
+            width: 5px;
+        }
+        .conversation-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .conversation-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .conv-item {
+            padding: 10px 13px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            border: 1px solid transparent;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .conv-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+        .conv-item.active {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--border-glow);
+            color: var(--text-primary);
+            box-shadow: 0 0 18px rgba(139, 92, 246, 0.08);
+        }
+        .conv-item .conv-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            opacity: 0.6;
+        }
+        .conv-item .conv-title {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 0.88rem;
+        }
+        .conv-item .conv-time {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+        .conv-item .conv-actions {
+            display: none;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .conv-item:hover .conv-actions {
+            display: flex;
+        }
+        .conv-action-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            border: none;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+        .conv-action-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+        .conv-action-btn.danger:hover {
+            background: rgba(255, 80, 80, 0.25);
+            color: #ff6b6b;
+        }
+        .no-conversations {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 30px 16px;
+            font-size: 0.85rem;
+        }
+
+        /* Main area */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+            z-index: 5;
+            min-width: 0;
+        }
+        .main-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: rgba(10, 10, 20, 0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            z-index: 6;
+        }
+        .menu-toggle {
+            display: none;
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-primary);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all var(--transition-fast);
+        }
+        .menu-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .main-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+            letter-spacing: 0.1px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+        .main-model-badge {
+            font-size: 0.7rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--accent-purple);
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 16px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.06) transparent;
+        }
+        .messages-container::-webkit-scrollbar {
+            width: 5px;
+        }
+        .messages-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .messages-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+        }
+        .message-wrapper {
+            display: flex;
+            gap: 10px;
+            animation: fadeSlideUp 0.35s ease forwards;
+            max-width: 85%;
+            position: relative;
+        }
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .message-wrapper.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        .message-wrapper.ai {
+            align-self: flex-start;
+        }
+        .message-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        .message-wrapper.user .message-avatar {
+            background: linear-gradient(135deg, #4f8fff, #8b5cf6);
+            color: #fff;
+        }
+        .message-wrapper.ai .message-avatar {
+            background: linear-gradient(135deg, #00d4aa, #0ea5b9);
+            color: #000;
+        }
+        .message-bubble {
+            padding: 14px 18px;
+            border-radius: var(--radius-lg);
+            line-height: 1.65;
+            font-size: 0.93rem;
+            position: relative;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            min-width: 0;
+        }
+        .message-wrapper.user .message-bubble {
+            background: rgba(79, 143, 255, 0.18);
+            border: 1px solid rgba(79, 143, 255, 0.25);
+            border-bottom-right-radius: 6px;
+            box-shadow: 0 4px 20px rgba(79, 143, 255, 0.08);
+        }
+        .message-wrapper.ai .message-bubble {
+            background: var(--bg-card);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid var(--border-subtle);
+            border-bottom-left-radius: 6px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        .message-bubble p {
+            margin-bottom: 10px;
+        }
+        .message-bubble p:last-child {
+            margin-bottom: 0;
+        }
+        .message-bubble h1,
+        .message-bubble h2,
+        .message-bubble h3 {
+            margin: 16px 0 8px;
+            font-weight: 650;
+            letter-spacing: -0.2px;
+            line-height: 1.3;
+        }
+        .message-bubble h1 {
+            font-size: 1.4rem;
+            color: #fff;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 6px;
+        }
+        .message-bubble h2 {
+            font-size: 1.2rem;
+            color: #f0f0f0;
+        }
+        .message-bubble h3 {
+            font-size: 1.05rem;
+            color: #e0e0e0;
+        }
+        .message-bubble ul,
+        .message-bubble ol {
+            padding-left: 22px;
+            margin: 8px 0 14px;
+        }
+        .message-bubble li {
+            margin-bottom: 5px;
+            line-height: 1.55;
+        }
+        .message-bubble blockquote {
+            border-left: 3px solid var(--accent-cyan);
+            padding: 10px 14px;
+            margin: 12px 0;
+            background: rgba(0, 212, 170, 0.06);
+            border-radius: 0 8px 8px 0;
+            color: #c0c8d8;
+            font-style: italic;
+        }
+        .message-bubble strong {
+            color: #fff;
+            font-weight: 650;
+        }
+        .message-bubble em {
+            color: #d0d6e4;
+        }
+        .message-bubble a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: all var(--transition-fast);
+        }
+        .message-bubble a:hover {
+            border-bottom-color: var(--accent-cyan);
+        }
+        .message-bubble hr {
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 16px 0;
+        }
+        .message-bubble table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 12px 0;
+            font-size: 0.85rem;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+        .message-bubble table th,
+        .message-bubble table td {
+            padding: 10px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            text-align: left;
+        }
+        .message-bubble table th {
+            background: rgba(255, 255, 255, 0.07);
+            font-weight: 600;
+            color: #fff;
+        }
+        .message-bubble table td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .message-bubble .highlight-note {
+            background: rgba(245, 158, 11, 0.12);
+            border-left: 3px solid var(--accent-amber);
+            padding: 10px 14px;
+            border-radius: 0 8px 8px 0;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+        .message-bubble code:not(pre code) {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 7px;
+            border-radius: 5px;
+            font-family: var(--font-mono);
+            font-size: 0.84em;
+            color: var(--accent-cyan);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .message-bubble pre {
+            position: relative;
+            margin: 14px 0;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #0d0d18;
+        }
+        .message-bubble pre .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: var(--font-sans);
+        }
+        .message-bubble pre .lang-label {
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            font-size: 0.7rem;
+        }
+        .message-bubble pre .copy-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ccc;
+            padding: 4px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all var(--transition-fast);
+            font-family: var(--font-sans);
+        }
+        .message-bubble pre .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+        .message-bubble pre .copy-btn.copied {
+            background: rgba(0, 212, 170, 0.2);
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+        .message-bubble pre code {
+            display: block;
+            padding: 16px 18px;
+            overflow-x: auto;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            line-height: 1.6;
+            color: #d4d9e6;
+            background: transparent;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+        }
+        .message-bubble pre code::-webkit-scrollbar {
+            height: 5px;
+        }
+        .message-bubble pre code::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .message-bubble pre code::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        /* Syntax highlighting tokens */
+        .syn-kw {
+            color: #c084fc;
+            font-weight: 600;
+        }
+        .syn-str {
+            color: #6ee7b7;
+        }
+        .syn-num {
+            color: #f9a87a;
+        }
+        .syn-cm {
+            color: #6b7280;
+            font-style: italic;
+        }
+        .syn-fn {
+            color: #60a5fa;
+        }
+        .syn-op {
+            color: #e879a0;
+        }
+        .syn-tag {
+            color: #f472b6;
+        }
+        .syn-attr {
+            color: #93c5fd;
+        }
+        .syn-prop {
+            color: #a5d8ff;
+        }
+
+        .message-meta {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            align-items: center;
+        }
+        .message-wrapper:hover .message-meta {
+            opacity: 1;
+        }
+        .message-meta button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-secondary);
+            padding: 4px 9px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 0.68rem;
+            transition: all var(--transition-fast);
+            font-family: var(--font-sans);
+        }
+        .message-meta button:hover {
+            background: rgba(255, 255, 255, 0.13);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .message-meta .msg-time {
+            opacity: 0.7;
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 8px 0;
+            align-items: center;
+        }
+        .typing-indicator .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            animation: bounceDot 1.3s infinite ease-in-out;
+        }
+        .typing-indicator .dot:nth-child(2) {
+            animation-delay: 0.18s;
+        }
+        .typing-indicator .dot:nth-child(3) {
+            animation-delay: 0.36s;
+        }
+        @keyframes bounceDot {
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        /* Input area */
+        .input-area {
+            padding: 12px 18px 16px;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 6;
+        }
+        .input-wrapper {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            background: var(--bg-input);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-glow);
+            padding: 8px 10px 8px 18px;
+            transition: all var(--transition-smooth);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+        }
+        .input-wrapper:focus-within {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 28px rgba(0, 212, 170, 0.13), 0 2px 20px rgba(0, 0, 0, 0.3);
+        }
+        .input-wrapper textarea {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            font-size: 0.93rem;
+            resize: none;
+            outline: none;
+            font-family: var(--font-sans);
+            line-height: 1.5;
+            max-height: 180px;
+            min-height: 24px;
+            padding: 6px 0;
+        }
+        .input-wrapper textarea::placeholder {
+            color: var(--text-muted);
+        }
+        .input-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .input-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            font-size: 1rem;
+        }
+        .input-btn:hover {
+            background: rgba(255, 255, 255, 0.13);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+        .input-btn.send-btn {
+            background: linear-gradient(135deg, var(--accent-cyan), #0ea5b9);
+            border: none;
+            color: #000;
+            font-weight: 700;
+            box-shadow: 0 4px 18px rgba(0, 212, 170, 0.3);
+        }
+        .input-btn.send-btn:hover {
+            box-shadow: 0 6px 24px rgba(0, 212, 170, 0.45);
+            transform: scale(1.04);
+        }
+        .input-btn.send-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        .input-btn.stop-btn {
+            background: rgba(255, 80, 80, 0.2);
+            border-color: rgba(255, 80, 80, 0.35);
+            color: #ff6b6b;
+        }
+        .input-btn.stop-btn:hover {
+            background: rgba(255, 80, 80, 0.35);
+        }
+        /* Error card */
+        .error-card {
+            background: rgba(255, 70, 70, 0.1);
+            border: 1px solid rgba(255, 70, 70, 0.3);
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            margin: 8px 0;
+            color: #ff9090;
+            font-size: 0.88rem;
+            animation: fadeSlideUp 0.3s ease;
+        }
+
+        /* Overlay for mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 9;
+            cursor: pointer;
+        }
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                z-index: 20;
+                transform: translateX(-100%);
+                width: 280px;
+                min-width: 280px;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+                box-shadow: 8px 0 40px rgba(0, 0, 0, 0.5);
+            }
+            .menu-toggle {
+                display: flex;
+            }
+            .message-wrapper {
+                max-width: 94%;
+            }
+            .main-header {
+                padding: 10px 14px;
+            }
+            .messages-container {
+                padding: 14px 10px 20px;
+                gap: 14px;
+            }
+            .input-area {
+                padding: 8px 10px 12px;
+            }
+            .input-wrapper {
+                border-radius: var(--radius-lg);
+                padding: 6px 8px 6px 14px;
+            }
+            .input-btn {
+                width: 34px;
+                height: 34px;
+            }
+        }
+        @media (max-width: 420px) {
+            .message-wrapper {
+                max-width: 97%;
+            }
+            .message-bubble {
+                padding: 10px 13px;
+                font-size: 0.88rem;
+            }
+            .sidebar {
+                width: 260px;
+                min-width: 260px;
+            }
+        }
     </style>
 </head>
-<body class="bg-surface-light dark:bg-surface-dark text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
+<body>
 
-    <!-- ==================== NAVIGATION ==================== -->
-    <nav class="no-print sticky top-0 z-50 glass bg-white/80 dark:bg-surface-dark/80 border-b border-border-light dark:border-border-dark shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3">
-                    <svg class="w-8 h-8 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    <span class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">AI Doc <span class="text-brand-600">Studio</span></span>
-                </div>
-                <div class="hidden md:flex items-center gap-6 text-sm font-medium">
-                    <button onclick="navigateTo('home')" class="nav-link text-gray-700 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Home</button>
-                    <button onclick="navigateTo('dashboard')" class="nav-link text-gray-700 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Dashboard</button>
-                    <button onclick="navigateTo('editor')" class="nav-link text-gray-700 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Editor</button>
-                    <button onclick="navigateTo('history')" class="nav-link text-gray-700 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">History</button>
-                    <button onclick="toggleApiSettings()" class="nav-link text-gray-700 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> API Keys
-                    </button>
-                </div>
-                <div class="flex items-center gap-3">
-                    <button onclick="toggleDarkMode()" id="darkModeBtn" class="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Toggle dark mode">
-                        <svg id="sunIcon" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                        <svg id="moonIcon" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-                    </button>
-                    <button class="md:hidden p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" onclick="toggleMobileMenu()">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                    </button>
-                </div>
-            </div>
-            <div id="mobileMenu" class="hidden md:hidden pb-3 flex flex-col gap-2 text-sm font-medium">
-                <button onclick="navigateTo('home');toggleMobileMenu()" class="px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-left">Home</button>
-                <button onclick="navigateTo('dashboard');toggleMobileMenu()" class="px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-left">Dashboard</button>
-                <button onclick="navigateTo('editor');toggleMobileMenu()" class="px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-left">Editor</button>
-                <button onclick="navigateTo('history');toggleMobileMenu()" class="px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-left">History</button>
-                <button onclick="toggleApiSettings();toggleMobileMenu()" class="px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-left">API Keys</button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- ==================== API SETTINGS PANEL ==================== -->
-    <div id="apiSettingsPanel" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 fade-in">
-        <div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 border border-border-light dark:border-border-dark shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white">API Configuration (Optional)</h3>
-                <span class="text-xs px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full font-medium">Keys stay in browser memory only</span>
-            </div>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Enter your own API keys to use real AI generation, Unsplash images, and PDF conversion. Leave empty to use the simulation mode. <strong>Never share this page with others.</strong></p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-semibold mb-1">OpenRouter API Key 1</label>
-                    <input type="password" id="openrouterKey1" placeholder="sk-or-..." class="api-key-input w-full px-3 py-2 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-800 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-1">OpenRouter API Key 2</label>
-                    <input type="password" id="openrouterKey2" placeholder="sk-or-..." class="api-key-input w-full px-3 py-2 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-800 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-1">OpenRouter API Key 3</label>
-                    <input type="password" id="openrouterKey3" placeholder="sk-or-..." class="api-key-input w-full px-3 py-2 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-800 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-1">OpenRouter API Key 4</label>
-                    <input type="password" id="openrouterKey4" placeholder="sk-or-..." class="api-key-input w-full px-3 py-2 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-800 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-1">OpenRouter API Key 5</label>
-                    <input type="password" id="openrouterKey5" placeholder="sk-or-..." class="api-key-input w-full px-3 py-2 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-800 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-1">OpenRouter API Key 6</label>
-                    <input type="password" id="openrouterKey6" placeholder="sk-or-..." class="api-key-input w-full px-3 py-2 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-800 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-1">Unsplash Access Key</label>
-                    <input type="password" id="unsplashKey" placeholder="Client-ID ..." class="api-key-input w-full px-3 py-2 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-800 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold mb-1">PDF Endpoint API Key (optional)</label>
-                    <input type="password" id="pdfEndpointKey" placeholder="..." class="api-key-input w-full px-3 py-2 rounded-lg border border-border-light dark:border-border-dark bg-white dark:bg-gray-800 text-sm">
-                    <p class="text-xs text-gray-500 mt-1">Leave empty to use browser‑based PDF export.</p>
-                </div>
-            </div>
-            <div class="mt-4 flex items-center gap-4">
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" id="rememberKeys" class="w-4 h-4 rounded accent-brand-600">
-                    <span class="text-sm text-gray-700 dark:text-gray-300">Remember keys locally (stores in localStorage – insecure)</span>
-                </label>
-                <button onclick="clearSavedKeys()" class="text-sm text-red-600 hover:text-red-700 dark:text-red-400 font-medium">Clear Saved Keys</button>
-            </div>
-        </div>
+    <!-- Background blobs -->
+    <div class="bg-blobs">
+        <div class="bg-blob"></div>
+        <div class="bg-blob"></div>
+        <div class="bg-blob"></div>
     </div>
 
-    <!-- ==================== MAIN CONTENT ==================== -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Sidebar overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-        <!-- HOME PAGE -->
-        <section id="page-home" class="fade-in">
-            <div class="text-center py-12 sm:py-20">
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-6">
-                    Generate Professional Documents<br><span class="text-brand-600">with AI Precision</span>
-                </h1>
-                <p class="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-10">
-                    Create homework assignments, reports, essays, presentations, study notes, and more — beautifully formatted, ready to download as PDF, DOCX, or PPTX.
-                </p>
-                <div class="flex flex-wrap justify-center gap-4">
-                    <button onclick="navigateTo('dashboard')" class="px-8 py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
-                        Start Generating
-                    </button>
-                    <button onclick="navigateTo('dashboard')" class="px-8 py-3.5 border-2 border-gray-300 dark:border-gray-600 hover:border-brand-500 dark:hover:border-brand-400 font-semibold rounded-xl transition-all">
-                        View Templates
-                    </button>
-                </div>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <span class="dot"></span> Nexus AI
             </div>
-<!-- Examples Gallery -->
-            <div class="mt-12">
-                <h2 class="text-2xl font-bold text-center mb-8 text-gray-900 dark:text-white">What You Can Create</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition-shadow">
-                        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-4">
-                            <svg class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        </div>
-                        <h3 class="font-semibold text-lg mb-2">Homework Assignments</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Structured assignments with clear instructions, questions, and answer sections.</p>
-                    </div>
-                    <div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition-shadow">
-                        <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center mb-4">
-                            <svg class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        </div>
-                        <h3 class="font-semibold text-lg mb-2">Reports & Essays</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Well-researched reports with executive summaries, analysis, and conclusions.</p>
-                    </div>
-                    <div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition-shadow">
-                        <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center mb-4">
-                            <svg class="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-                        </div>
-                        <h3 class="font-semibold text-lg mb-2">Presentations</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Slide-ready content with bullet points, diagrams, and speaker notes.</p>
-                    </div>
-                    <div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition-shadow">
-                        <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center mb-4">
-                            <svg class="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                        </div>
-                        <h3 class="font-semibold text-lg mb-2">Study Notes</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Concise, well-organized study materials with key concepts and summaries.</p>
-                    </div>
-                    <div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition-shadow">
-                        <div class="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-xl flex items-center justify-center mb-4">
-                            <svg class="w-6 h-6 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                        </div>
-                        <h3 class="font-semibold text-lg mb-2">PDF & DOCX Export</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Download polished documents in industry-standard formats.</p>
-                    </div>
-                    <div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition-shadow">
-                        <div class="w-12 h-12 bg-teal-100 dark:bg-teal-900/30 rounded-xl flex items-center justify-center mb-4">
-                            <svg class="w-6 h-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        </div>
-                        <h3 class="font-semibold text-lg mb-2">Mermaid Diagrams</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Auto-generated flowcharts and diagrams embedded in your documents.</p>
-                    </div>
-                </div>
-            </div>
-                <!-- Templates Section -->
-            <div class="mt-16">
-                <h2 class="text-2xl font-bold text-center mb-8 text-gray-900 dark:text-white">Popular Templates</h2>
-                <div class="flex flex-wrap justify-center gap-3">
-                    <span class="px-4 py-2 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 rounded-full text-sm font-medium">Research Paper</span>
-                    <span class="px-4 py-2 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 rounded-full text-sm font-medium">Lab Report</span>
-                    <span class="px-4 py-2 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 rounded-full text-sm font-medium">Essay Outline</span>
-                    <span class="px-4 py-2 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 rounded-full text-sm font-medium">Slide Deck</span>
-                    <span class="px-4 py-2 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 rounded-full text-sm font-medium">Study Guide</span>
-                    <span class="px-4 py-2 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 rounded-full text-sm font-medium">Book Summary</span>
-                    <span class="px-4 py-2 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 rounded-full text-sm font-medium">Project Plan</span>
-                </div>
-            </div>
+            <button class="btn-new-chat" id="btnNewChat" title="New Chat (Ctrl+L)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                New Chat
+            </button>
+        </div>
+        <div class="sidebar-search">
+            <input type="text" id="searchInput" placeholder="Search conversations…" autocomplete="off">
+        </div>
+        <div class="conversation-list" id="conversationList">
+            <div class="no-conversations">No conversations yet</div>
+        </div>
+    </aside>
 
-            <!-- FAQ Section -->
-            <div class="mt-16 mb-12">
-                <h2 class="text-2xl font-bold text-center mb-8 text-gray-900 dark:text-white">Frequently Asked Questions</h2>
-                <div class="max-w-3xl mx-auto space-y-3">
-                    <details class="bg-card-light dark:bg-card-dark rounded-xl p-5 border border-border-light dark:border-border-dark cursor-pointer group">
-                        <summary class="font-semibold text-gray-900 dark:text-white list-none flex justify-between items-center">How long does generation take? <span class="text-brand-500 group-open:rotate-180 transition-transform">▼</span></summary>
-                        <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">Depending on document length and complexity, generation takes between 1 to 5 minutes. You'll see real-time progress updates throughout the process.</p>
-                    </details>
-                    <details class="bg-card-light dark:bg-card-dark rounded-xl p-5 border border-border-light dark:border-border-dark cursor-pointer group">
-                        <summary class="font-semibold text-gray-900 dark:text-white list-none flex justify-between items-center">What formats can I download? <span class="text-brand-500 group-open:rotate-180 transition-transform">▼</span></summary>
-                        <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">You can download your documents as PDF, DOCX (Microsoft Word), and PPTX (PowerPoint) files. All exports maintain professional formatting.</p>
-                    </details>
-                    <details class="bg-card-light dark:bg-card-dark rounded-xl p-5 border border-border-light dark:border-border-dark cursor-pointer group">
-                        <summary class="font-semibold text-gray-900 dark:text-white list-none flex justify-between items-center">Is my data secure? <span class="text-brand-500 group-open:rotate-180 transition-transform">▼</span></summary>
-                        <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">Yes. All AI processing happens through secure backend proxies. No API keys or sensitive data are ever exposed to the browser. We use a multi-model safety pipeline to ensure content quality.</p>
-                    </details>
-                    <details class="bg-card-light dark:bg-card-dark rounded-xl p-5 border border-border-light dark:border-border-dark cursor-pointer group">
-                        <summary class="font-semibold text-gray-900 dark:text-white list-none flex justify-between items-center">Can I edit documents after generation? <span class="text-brand-500 group-open:rotate-180 transition-transform">▼</span></summary>
-                        <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">Absolutely. The built-in editor lets you modify any section, adjust formatting, and preview changes in real-time before exporting.</p>
-                    </details>
-                </div>
-            </div>
-
-            <!-- Pricing Section -->
-            <div class="mt-12 mb-16 text-center">
-                <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Simple Pricing</h2>
-                <div class="inline-block bg-card-light dark:bg-card-dark rounded-2xl p-8 border border-border-light dark:border-border-dark shadow-sm max-w-sm">
-                    <div class="text-5xl font-extrabold text-brand-600 mb-2">Free</div>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">During beta. Generous usage limits with multiple AI model fallback for reliability.</p>
-                    <ul class="text-sm text-left space-y-2 text-gray-700 dark:text-gray-300">
-                        <li>✓ All document types</li><li>✓ PDF, DOCX, PPTX export</li><li>✓ Mermaid diagrams</li><li>✓ History & regeneration</li><li>✓ Dark mode</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-        <!-- DASHBOARD PAGE -->
-        <section id="page-dashboard" class="hidden fade-in">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2 bg-card-light dark:bg-card-dark rounded-2xl p-6 sm:p-8 border border-border-light dark:border-border-dark shadow-sm">
-                    <h2 class="text-xl font-bold mb-6 text-gray-900 dark:text-white">Create New Document</h2>
-                    <div class="space-y-5">
-                        <div>
-                            <label class="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Topic / Title</label>
-                            <input id="topicInput" type="text" placeholder="e.g., The Solar System — Planets and Orbits" class="w-full px-4 py-3 rounded-xl border border-border-light dark:border-border-dark bg-white dark:bg-gray-800 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition">
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Document Type</label>
-                                <select id="docTypeSelect" class="w-full px-4 py-3 rounded-xl border border-border-light dark:border-border-dark bg-white dark:bg-gray-800 focus:ring-2 focus:ring-brand-500 outline-none transition">
-                                    <option value="homework">Homework Assignment</option><option value="report">Report</option><option value="essay">Essay</option><option value="presentation">Presentation Content</option><option value="study-notes">Study Notes</option><option value="article">Article</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Tone</label>
-                                <select id="toneSelect" class="w-full px-4 py-3 rounded-xl border border-border-light dark:border-border-dark bg-white dark:bg-gray-800 focus:ring-2 focus:ring-brand-500 outline-none transition">
-                                    <option value="academic">Academic</option><option value="professional">Professional</option><option value="casual">Casual</option><option value="technical">Technical</option><option value="creative">Creative</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Length</label>
-                                <select id="lengthSelect" class="w-full px-4 py-3 rounded-xl border border-border-light dark:border-border-dark bg-white dark:bg-gray-800 focus:ring-2 focus:ring-brand-500 outline-none transition">
-                                    <option value="short">Short (~500 words)</option><option value="medium" selected>Medium (~1500 words)</option><option value="long">Long (~3000 words)</option><option value="extensive">Extensive (~5000 words)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Subject / Language</label>
-                                <select id="subjectSelect" class="w-full px-4 py-3 rounded-xl border border-border-light dark:border-border-dark bg-white dark:bg-gray-800 focus:ring-2 focus:ring-brand-500 outline-none transition">
-                                    <option value="general">General</option><option value="science">Science</option><option value="math">Mathematics</option><option value="history">History</option><option value="literature">Literature</option><option value="technology">Technology</option><option value="business">Business</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Audience</label>
-                            <input id="audienceInput" type="text" placeholder="e.g., High school students, undergraduate level" class="w-full px-4 py-3 rounded-xl border border-border-light dark:border-border-dark bg-white dark:bg-gray-800 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold mb-1.5 text-gray-700 dark:text-gray-300">Optional References (comma-separated)</label>
-                            <input id="referencesInput" type="text" placeholder="e.g., NASA website, textbook chapter 5" class="w-full px-4 py-3 rounded-xl border border-border-light dark:border-border-dark bg-white dark:bg-gray-800 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition">
-                        </div>
-                        <div class="flex items-center gap-3 flex-wrap">
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" id="includeImages" class="w-4 h-4 rounded accent-brand-600"> <span class="text-sm text-gray-700 dark:text-gray-300">Include images</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" id="includeDiagrams" checked class="w-4 h-4 rounded accent-brand-600"> <span class="text-sm text-gray-700 dark:text-gray-300">Include Mermaid diagrams</span>
-                            </label>
-                        </div>
-                        <button id="generateBtn" onclick="startGeneration()" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none">
-                            Generate Document
-                        </button>
-                    </div>
-
-                    <div id="progressContainer" class="hidden mt-6">
-                        <div class="flex justify-between text-sm mb-2">
-                            <span id="progressLabel" class="font-medium text-gray-700 dark:text-gray-300">Initializing...</span>
-                            <span id="progressPercent" class="text-brand-600 font-semibold">0%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-                            <div id="progressBar" class="bg-brand-600 h-full rounded-full transition-all duration-500 progress-bar-striped" style="width: 0%"></div>
-                        </div>
-                        <p id="progressDetail" class="text-xs text-gray-500 dark:text-gray-400 mt-1.5"></p>
-                    </div>
-                </div>
-
-                <div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 border border-border-light dark:border-border-dark shadow-sm">
-                    <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-white">Generation Pipeline</h3>
-                    <div class="space-y-3 text-sm">
-                        <div class="flex items-center gap-3"><span class="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-xs font-bold text-brand-700 dark:text-brand-300">1</span><span class="text-gray-600 dark:text-gray-400">Input validation & safety check</span></div>
-                        <div class="flex items-center gap-3"><span class="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-xs font-bold text-brand-700 dark:text-brand-300">2</span><span class="text-gray-600 dark:text-gray-400">AI planning & outline generation</span></div>
-                        <div class="flex items-center gap-3"><span class="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-xs font-bold text-brand-700 dark:text-brand-300">3</span><span class="text-gray-600 dark:text-gray-400">Section-by-section writing</span></div>
-                        <div class="flex items-center gap-3"><span class="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-xs font-bold text-brand-700 dark:text-brand-300">4</span><span class="text-gray-600 dark:text-gray-400">Quality review & formatting</span></div>
-                        <div class="flex items-center gap-3"><span class="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-xs font-bold text-brand-700 dark:text-brand-300">5</span><span class="text-gray-600 dark:text-gray-400">Export to PDF/DOCX/PPTX</span></div>
-                    </div>
-                    <div class="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
-                        <p class="text-xs text-amber-700 dark:text-amber-300 font-medium">Model Pool: Multiple AI models with automatic fallback. Safety layer active. Real API used when keys provided.</p>
+    <!-- Main -->
+    <main class="main" id="mainArea">
+        <header class="main-header">
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle sidebar">☰</button>
+            <span class="main-title" id="mainTitle">New Conversation</span>
+            <span class="main-model-badge" id="modelBadge">Auto</span>
+        </header>
+        <div class="messages-container" id="messagesContainer">
+            <!-- Welcome message -->
+            <div class="message-wrapper ai" id="welcomeMessage">
+                <div class="message-avatar">N</div>
+                <div>
+                    <div class="message-bubble">
+                        <h2>👋 Welcome to Nexus AI</h2>
+                        <p>I'm your intelligent assistant with <strong>automatic model selection</strong>. Just ask me anything — I'll pick the best AI model for your query behind the scenes.</p>
+                        <ul>
+                            <li><strong>Programming</strong> → Code-specialized model</li>
+                            <li><strong>Math & Logic</strong> → Reasoning-optimized model</li>
+                            <li><strong>Creative Writing</strong> → Creative model</li>
+                            <li><strong>General Knowledge</strong> → Balanced model</li>
+                        </ul>
+                        <p><em>Start a conversation below!</em></p>
                     </div>
                 </div>
             </div>
-        </section>
-         <!-- EDITOR PAGE -->
-        <section id="page-editor" class="hidden fade-in">
-            <div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 sm:p-8 border border-border-light dark:border-border-dark shadow-sm">
-                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">Document Editor</h2>
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="exportPDF()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition">Export PDF</button>
-                        <button onclick="exportDOCX()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">Export DOCX</button>
-                        <button onclick="exportPPTX()" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg transition">Export PPTX</button>
-                        <button onclick="regenerateDocument()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition">Regenerate</button>
-                    </div>
-                </div>
-                <div id="editorContent" class="doc-preview min-h-[400px] p-6 bg-white dark:bg-gray-800 rounded-xl border border-border-light dark:border-border-dark max-h-[70vh] overflow-y-auto scrollbar-thin">
-                    <p class="text-gray-400 dark:text-gray-500 text-center py-16">No document generated yet. Go to the Dashboard to create one.</p>
-                </div>
-                <div class="mt-4 flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
-                    <span>Theme:</span>
-                    <button onclick="toggleEditorTheme()" class="px-3 py-1.5 rounded-lg border border-border-light dark:border-border-dark hover:bg-gray-100 dark:hover:bg-gray-700 transition text-xs">Toggle Light/Dark Preview</button>
-                    <span class="ml-auto" id="wordCount">Words: 0</span>
+        </div>
+        <div class="input-area">
+            <div class="input-wrapper" id="inputWrapper">
+                <textarea id="userInput" rows="1" placeholder="Type your message… (Enter to send, Shift+Enter for new line)" autofocus></textarea>
+                <div class="input-actions">
+                    <button class="input-btn" id="btnClearInput" title="Clear input" aria-label="Clear input">✕</button>
+                    <button class="input-btn stop-btn" id="btnStop" title="Stop generation (Esc)" aria-label="Stop" style="display:none;">■</button>
+                    <button class="input-btn send-btn" id="btnSend" title="Send message (Enter)" aria-label="Send">➤</button>
                 </div>
             </div>
-        </section>
-
-        <!-- HISTORY PAGE -->
-        <section id="page-history" class="hidden fade-in">
-            <div class="bg-card-light dark:bg-card-dark rounded-2xl p-6 sm:p-8 border border-border-light dark:border-border-dark shadow-sm">
-                <h2 class="text-xl font-bold mb-6 text-gray-900 dark:text-white">Generation History</h2>
-                <div id="historyList" class="space-y-3">
-                    <p class="text-gray-400 dark:text-gray-500 text-center py-12">No documents generated yet. Your history will appear here.</p>
-                </div>
-                <button id="clearHistoryBtn" onclick="clearHistory()" class="mt-4 px-4 py-2 text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium transition hidden">Clear All History</button>
-            </div>
-        </section>
+        </div>
     </main>
 
-    <!-- ==================== TOAST ==================== -->
-    <div id="toast" class="fixed bottom-6 right-6 z-50 hidden px-5 py-3 rounded-xl shadow-lg text-sm font-medium transition-all transform translate-y-4 opacity-0"></div>
-
     <script>
-        // ============ STATE ============
-        const AppState = {
-            darkMode: localStorage.getItem('aiDocStudioDarkMode') === 'true',
-            currentPage: 'home',
-            generatedDocument: null,
-            documentHTML: '',
-            generationInProgress: false,
-            history: JSON.parse(localStorage.getItem('aiDocStudioHistory') || '[]'),
-            editorDarkPreview: false,
-            apiSettingsVisible: false,
-        };
-        const ApiKeys = { openrouter: [], unsplash: '', pdfEndpoint: '', remember: false };
-         // ============ INIT ============
-        function init() {
-            applyDarkMode();
-            loadApiKeys();
-            navigateTo(AppState.currentPage);
-            renderHistory();
-            mermaid.initialize({ startOnLoad: false, theme: AppState.darkMode ? 'dark' : 'default', securityLevel: 'loose' });
-            document.querySelectorAll('.api-key-input').forEach(input => {
-                input.addEventListener('change', updateApiKeysFromInputs);
-                input.addEventListener('blur', updateApiKeysFromInputs);
-            });
-            document.getElementById('rememberKeys').addEventListener('change', updateApiKeysFromInputs);
-        }
+        (function() {
+            // ─────────────────────────────────────
+            // CONFIGURATION — Paste your API key here
+            // ─────────────────────────────────────
+            const OPENROUTER_API_KEY = "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";
+            const API_URL = "https://openrouter.ai/api/v1/chat/completions";
+            const APP_NAME = "Nexus AI";
+             // ─────────────────────────────────────
+            // SYSTEM PROMPT
+            // ─────────────────────────────────────
+            const SYSTEM_PROMPT = `You are an intelligent assistant named Nexus AI. 
+        Always answer in a clean, well-organized format using markdown.
+        Use headings (##) and subheadings (###) to structure your response.
+        Use bullet points and numbered lists where appropriate.
+        Use tables whenever a comparison makes understanding easier.
+        Keep explanations simple and clear.
+        Avoid unnecessary complexity.
+        Make answers visually beautiful with proper spacing.
+        Never produce huge unformatted paragraphs.
+        Use **bold** for emphasis, \`inline code\` for technical terms, and > blockquotes for important notes.
+        Include a brief conclusion or summary when helpful.
+        Format code blocks with triple backticks and language specifiers.`;
 
-        function applyDarkMode() {
-            if (AppState.darkMode) {
-                document.documentElement.classList.add('dark');
-                document.getElementById('sunIcon').classList.remove('hidden');
-                document.getElementById('moonIcon').classList.add('hidden');
-            } else {
-                document.documentElement.classList.remove('dark');
-                document.getElementById('sunIcon').classList.add('hidden');
-                document.getElementById('moonIcon').classList.remove('hidden');
-            }
-        }
+            // ─────────────────────────────────────
+            // AVAILABLE MODELS
+            // ─────────────────────────────────────
+            const MODELS = {
+                programming: 'cohere/north-mini-code:free',
+                math: 'nvidia/nemotron-3-ultra:free',
+                reasoning: 'openai/gpt-oss-20b:free',
+                creative: 'google/gemma-4-31b:free',
+                casual: 'nvidia/nemotron-nano-30b-a3b:free',
+                general: 'poolside/laguna-xs-2.1:free',
+                default: 'openai/gpt-oss-20b:free',
+            };
 
-        function loadApiKeys() {
-            const saved = localStorage.getItem('aiDocStudioApiKeys');
-            if (saved) {
+            const MODEL_NAMES = {
+                'cohere/north-mini-code:free': 'North Code',
+                'nvidia/nemotron-3-ultra:free': 'Nemotron Ultra',
+                'openai/gpt-oss-20b:free': 'GPT OSS',
+                'google/gemma-4-31b:free': 'Gemma 4',
+                'nvidia/nemotron-nano-30b-a3b:free': 'Nemotron Nano',
+                'poolside/laguna-xs-2.1:free': 'Laguna XS',
+            };
+
+            // ─────────────────────────────────────
+            // DOM ELEMENTS
+            // ─────────────────────────────────────
+            const $sidebar = document.getElementById('sidebar');
+            const $sidebarOverlay = document.getElementById('sidebarOverlay');
+            const $menuToggle = document.getElementById('menuToggle');
+            const $conversationList = document.getElementById('conversationList');
+            const $searchInput = document.getElementById('searchInput');
+            const $messagesContainer = document.getElementById('messagesContainer');
+            const $userInput = document.getElementById('userInput');
+            const $btnSend = document.getElementById('btnSend');
+            const $btnStop = document.getElementById('btnStop');
+            const $btnClearInput = document.getElementById('btnClearInput');
+            const $btnNewChat = document.getElementById('btnNewChat');
+            const $mainTitle = document.getElementById('mainTitle');
+            const $modelBadge = document.getElementById('modelBadge');
+            const $welcomeMessage = document.getElementById('welcomeMessage');
+
+            // ─────────────────────────────────────
+            // STATE
+            // ─────────────────────────────────────
+            let conversations = [];
+            let currentConversationId = null;
+            let isGenerating = false;
+            let abortController = null;
+            let currentStreamingMessageEl = null;
+            let currentStreamingBubble = null;
+
+            // ─────────────────────────────────────
+            // LOCAL STORAGE
+            // ─────────────────────────────────────
+            function saveToStorage() {
                 try {
-                    const parsed = JSON.parse(saved);
-                    if (parsed.openrouter && Array.isArray(parsed.openrouter)) {
-                        ApiKeys.openrouter = parsed.openrouter.filter(k => k);
-                        document.getElementById('openrouterKey1').value = ApiKeys.openrouter[0] || '';
-                        document.getElementById('openrouterKey2').value = ApiKeys.openrouter[1] || '';
-                        document.getElementById('openrouterKey3').value = ApiKeys.openrouter[2] || '';
-                        document.getElementById('openrouterKey4').value = ApiKeys.openrouter[3] || '';
-                        document.getElementById('openrouterKey5').value = ApiKeys.openrouter[4] || '';
-                        document.getElementById('openrouterKey6').value = ApiKeys.openrouter[5] || '';
+                    const data = {
+                        conversations: conversations,
+                        currentConversationId: currentConversationId,
+                    };
+                    localStorage.setItem('nexus_ai_data', JSON.stringify(data));
+                } catch (e) {
+                    // Storage full or unavailable
+                }
+            }
+
+            function loadFromStorage() {
+                try {
+                    const raw = localStorage.getItem('nexus_ai_data');
+                    if (raw) {
+                        const data = JSON.parse(raw);
+                        conversations = data.conversations || [];
+                        currentConversationId = data.currentConversationId || null;
                     }
-                    if (parsed.unsplash) { ApiKeys.unsplash = parsed.unsplash; document.getElementById('unsplashKey').value = parsed.unsplash; }
-                    if (parsed.pdfEndpoint) { ApiKeys.pdfEndpoint = parsed.pdfEndpoint; document.getElementById('pdfEndpointKey').value = parsed.pdfEndpoint; }
-                    ApiKeys.remember = parsed.remember || false;
-                    document.getElementById('rememberKeys').checked = ApiKeys.remember;
-                } catch (e) {}
+                } catch (e) {
+                    conversations = [];
+                    currentConversationId = null;
+                }
+                // Validate that current conversation still exists
+                if (currentConversationId && !conversations.find(c => c.id === currentConversationId)) {
+                    currentConversationId = conversations.length > 0 ? conversations[0].id : null;
+                }
             }
-        }
-
-        function saveApiKeys() {
-            if (ApiKeys.remember) {
-                localStorage.setItem('aiDocStudioApiKeys', JSON.stringify({
-                    openrouter: ApiKeys.openrouter,
-                    unsplash: ApiKeys.unsplash,
-                    pdfEndpoint: ApiKeys.pdfEndpoint,
-                    remember: true,
-                }));
-            } else {
-                localStorage.removeItem('aiDocStudioApiKeys');
+            // ─────────────────────────────────────
+            // HELPER FUNCTIONS
+            // ─────────────────────────────────────
+            function generateId() {
+                return 'conv_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
             }
-        }
 
-        function updateApiKeysFromInputs() {
-            ApiKeys.openrouter = [];
-            for (let i = 1; i <= 6; i++) {
-                const val = document.getElementById('openrouterKey' + i).value.trim();
-                if (val) ApiKeys.openrouter.push(val);
+            function generateMessageId() {
+                return 'msg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
             }
-            ApiKeys.unsplash = document.getElementById('unsplashKey').value.trim();
-            ApiKeys.pdfEndpoint = document.getElementById('pdfEndpointKey').value.trim();
-            ApiKeys.remember = document.getElementById('rememberKeys').checked;
-            saveApiKeys();
-        }
 
-        function toggleApiSettings() {
-            AppState.apiSettingsVisible = !AppState.apiSettingsVisible;
-            document.getElementById('apiSettingsPanel').classList.toggle('hidden', !AppState.apiSettingsVisible);
-            if (AppState.apiSettingsVisible) updateApiKeysFromInputs();
-        }
+            function getCurrentConversation() {
+                return conversations.find(c => c.id === currentConversationId) || null;
+            }
 
-        function clearSavedKeys() {
-            localStorage.removeItem('aiDocStudioApiKeys');
-            ApiKeys.openrouter = []; ApiKeys.unsplash = ''; ApiKeys.pdfEndpoint = ''; ApiKeys.remember = false;
-            for (let i = 1; i <= 6; i++) document.getElementById('openrouterKey' + i).value = '';
-            document.getElementById('unsplashKey').value = '';
-            document.getElementById('pdfEndpointKey').value = '';
-            document.getElementById('rememberKeys').checked = false;
-            showToast('Saved API keys cleared.', 'info');
-        }
+            function formatTime(isoString) {
+                const d = new Date(isoString);
+                const now = new Date();
+                const diffDays = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+                const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                if (diffDays === 0) return timeStr;
+                if (diffDays === 1) return 'Yesterday ' + timeStr;
+                if (diffDays < 7) return d.toLocaleDateString([], { weekday: 'short' }) + ' ' + timeStr;
+                return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + timeStr;
+            }
 
-        // ============ NAVIGATION ============
-        function navigateTo(page) {
-            AppState.currentPage = page;
-            document.querySelectorAll('[id^="page-"]').forEach(s => s.classList.add('hidden'));
-            const target = document.getElementById('page-' + page);
-            if (target) { target.classList.remove('hidden'); target.classList.add('fade-in'); setTimeout(() => target.classList.remove('fade-in'), 400); }
-            if (page === 'history') renderHistory();
-            if (page === 'editor' && AppState.documentHTML) updateEditorPreview();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            document.getElementById('mobileMenu').classList.add('hidden');
-        }
+            function escapeHtml(str) {
+                const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+                return str.replace(/[&<>"']/g, c => map[c]);
+            }
 
-        function toggleMobileMenu() { document.getElementById('mobileMenu').classList.toggle('hidden'); }
+            // ─────────────────────────────────────
+            // AUTO MODEL SELECTION
+            // ─────────────────────────────────────
+            function selectModel(prompt) {
+                const lower = prompt.toLowerCase();
+                const patterns = {
+                    programming: [
+                        /\b(code|program|function|bug|error|compile|debug|script|programming|javascript|python|html|css|react|node\.?js|api|database|sql|algorithm|implement|class|object|array|string|variable|loop|if statement|framework|library|npm|git|github|deploy|server|endpoint|syntax|refactor|typescript|java|ruby|go|rust|php|swift|kotlin|regex|regexp|json|xml|yaml|docker|kubernetes|linux command|bash|shell|terminal|console\.log)\b/i,
+                        /\b(write (a |some )?code|fix (the |this )?code|create (a |an )?app|build (a |an )?function|how (do|to|can) I (code|program|implement|write)|explain (this |the )?code)\b/i,
+                    ],
+                    math: [
+                        /\b(calculate|solve|equation|math|algebra|calculus|geometry|statistics|probability|theorem|formula|derivative|integral|matrix|vector|arithmetic|trigonometry|logarithm|exponent|polynomial|linear|quadratic|proof|solve for)\b/i,
+                        /\b\d+\s*[\+\-\*\/\^]\s*\d+\b/,
+                    ],
+                    reasoning: [
+                        /\b(why|how come|analyze|reason|logic|think|consider|evaluate|compare|contrast|argue|debate|philosophy|ethics|critical|explain the reason|what (is|are) the (cause|reason|implication)|pros and cons)\b/i,
+                    ],
+                    creative: [
+                        /\b(story|poem|write (a |some )?creative|fiction|narrative|character|plot|novel|essay|describe|imagine|fantasy|dialogue|scene|lyrics|song|rhyme|tale|fable|metaphor|simile|creative writing|write like)\b/i,
+                    ],
+                    casual: [
+                        /\b^(hi|hello|hey|how are you|what'?s up|chat|talk|casual|quick|sup|yo|heya|good morning|good evening|good afternoon|howdy|greetings)\b[?!.]*\s*$/i,
+                    ],
+                };
 
-        function toggleDarkMode() {
-            AppState.darkMode = !AppState.darkMode;
-            localStorage.setItem('aiDocStudioDarkMode', AppState.darkMode);
-            applyDarkMode();
-            mermaid.initialize({ startOnLoad: false, theme: AppState.darkMode ? 'dark' : 'default', securityLevel: 'loose' });
-            if (AppState.documentHTML && AppState.currentPage === 'editor') updateEditorPreview();
-        }
+                if (patterns.programming.some(p => p.test(lower))) return MODELS.programming;
+                if (patterns.math.some(p => p.test(lower))) return MODELS.math;
+                if (patterns.reasoning.some(p => p.test(lower))) return MODELS.reasoning;
+                if (patterns.creative.some(p => p.test(lower))) return MODELS.creative;
+                if (patterns.casual.some(p => p.test(lower))) return MODELS.casual;
+                // Check for general knowledge / summary / explanation patterns
+                if (/\b(what is|who is|when|where|define|meaning|summary|summarize|explain briefly|overview|facts|information|history|science|tell me about|how does|how do)\b/i.test(
+                        lower)) {
+                    return MODELS.general;
+                }
+                return MODELS.default;
+            }
 
-        function toggleEditorTheme() { AppState.editorDarkPreview = !AppState.editorDarkPreview; updateEditorPreview(); }
+            function getModelDisplayName(modelId) {
+                return MODEL_NAMES[modelId] || modelId.split('/').pop() || 'Auto';
+            }
 
-        // ============ TOAST ============
-        function showToast(message, type = 'info') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = 'fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-medium transition-all transform translate-y-0 opacity-100';
-            if (type === 'success') toast.classList.add('bg-green-600', 'text-white');
-            else if (type === 'error') toast.classList.add('bg-red-600', 'text-white');
-            else toast.classList.add('bg-gray-800', 'dark:bg-gray-200', 'text-white', 'dark:text-gray-900');
-            toast.classList.remove('hidden');
-            setTimeout(() => { toast.classList.add('translate-y-4', 'opacity-0'); setTimeout(() => toast.classList.add('hidden'), 300); }, 3000);
-        }
+            // ─────────────────────────────────────
+            // MARKDOWN RENDERER
+            // ─────────────────────────────────────
+            function renderMarkdown(text) {
+                if (!text) return '';
+                const lines = text.split('\n');
+                let html = '';
+                let i = 0;
+                let inCodeBlock = false;
+                let codeBlockContent = '';
+                let codeBlockLang = '';
+                let inTable = false;
+                let tableRows = [];
+                let inList = null; // 'ul' | 'ol' | null
 
-        // ============ API CALL WITH TIMEOUT ============
-        async function callOpenRouter(messages, model = 'google/gemma-4-26b-a4b-it:free') {
-            updateApiKeysFromInputs();
-            const keys = ApiKeys.openrouter.filter(k => k);
-            if (keys.length === 0) throw new Error('No OpenRouter API key configured');
-            let lastError;
-            for (const key of keys) {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 30000);
+                function flushList() {
+                    if (inList === 'ul') { html += '</ul>';
+                        inList = null; } else if (inList === 'ol') { html += '</ol>';
+                        inList = null; }
+                }
+
+                function flushTable() {
+                    if (tableRows.length === 0) return;
+                    let tbl = '<table>';
+                    const headerRow = tableRows[0];
+                    const hasHeader = tableRows.length > 1 && tableRows[1] && tableRows[1].every(
+                        cell => /^[\s\-:]+$/.test(cell.trim()));
+                    if (hasHeader && tableRows.length >= 2) {
+                        tbl += '<thead><tr>';
+                        headerRow.forEach(cell => { tbl += '<th>' + processInline(cell.trim()) + '</th>'; });
+                        tbl += '</tr></thead><tbody>';
+                        for (let r = 2; r < tableRows.length; r++) {
+                            tbl += '<tr>';
+                            tableRows[r].forEach(cell => { tbl += '<td>' + processInline(cell.trim()) + '</td>'; });
+                            tbl += '</tr>';
+                        }
+                        tbl += '</tbody>';
+                    } else {
+                        tbl += '<tbody>';
+                        tableRows.forEach(row => {
+                            tbl += '<tr>';
+                            row.forEach(cell => { tbl += '<td>' + processInline(cell.trim()) + '</td>'; });
+                            tbl += '</tr>';
+                        });
+                        tbl += '</tbody>';
+                    }
+                    tbl += '</table>';
+                    html += tbl;
+                    tableRows = [];
+                    inTable = false;
+                }
+
+                function processInline(text) {
+                    let t = escapeHtml(text);
+                    // Inline code (must be first to avoid formatting inside)
+                    t = t.replace(/`([^`]+)`/g, '<code>$1</code>');
+                    // Bold
+                    t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                    // Italic
+                    t = t.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+                    t = t.replace(/_([^_]+)_/g, '<em>$1</em>');
+                    // Strikethrough
+                    t = t.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+                    // Links
+                    t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+                    // Images
+                    t = t.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,
+                        '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:8px 0;">');
+                    return t;
+                }
+
+                function highlightCode(code, lang) {
+                    let escaped = escapeHtml(code);
+                    if (!lang) return escaped;
+                    const l = lang.toLowerCase();
+                    // Basic syntax highlighting
+                    const keywords = {
+                        js: ['const', 'let', 'var', 'function', 'return', 'if', 'else', 'for', 'while', 'do',
+                            'switch', 'case', 'break', 'continue', 'new', 'this', 'class', 'extends', 'import',
+                            'export', 'default', 'from', 'async', 'await', 'try', 'catch', 'throw', 'typeof',
+                            'instanceof', 'null', 'undefined', 'true', 'false', 'console', 'log', 'error', 'warn',
+                            'map', 'filter', 'reduce', 'forEach', 'push', 'pop', 'shift', 'unshift', 'splice',
+                            'slice', 'find', 'some', 'every', 'includes', 'indexOf', 'Object', 'Array', 'String',
+                            'Number', 'Boolean', 'Promise', 'then', 'catch', 'finally', 'require', 'module',
+                            'exports'
+                        ],
+                        python: ['def', 'return', 'if', 'elif', 'else', 'for', 'while', 'in', 'not', 'and', 'or',
+                            'is', 'None', 'True', 'False', 'class', 'import', 'from', 'as', 'with', 'open', 'try',
+                            'except', 'finally', 'raise', 'pass', 'break', 'continue', 'lambda', 'yield', 'self',
+                            'print', 'len', 'range', 'list', 'dict', 'set', 'tuple', 'str', 'int', 'float', 'bool',
+                            'type', 'isinstance'
+                        ],
+                        html: ['html', 'head', 'body', 'div', 'span', 'p', 'a', 'img', 'ul', 'ol', 'li', 'table',
+                            'tr', 'td', 'th', 'thead', 'tbody', 'form', 'input', 'button', 'textarea', 'select',
+                            'option', 'label', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'footer', 'main',
+                            'nav', 'section', 'article', 'aside', 'script', 'style', 'link', 'meta', 'title'
+                        ],
+                        css: ['color', 'background', 'margin', 'padding', 'border', 'font', 'display', 'flex',
+                            'grid', 'position', 'width', 'height', 'top', 'left', 'right', 'bottom', 'z-index',
+                            'overflow', 'opacity', 'transform', 'transition', 'animation', 'box-shadow',
+                            'text-align', 'align-items', 'justify-content', 'flex-direction', 'border-radius',
+                            'backdrop-filter'
+                        ],
+                    };
+                    let kwList = [];
+                    if (['js', 'javascript', 'ts', 'typescript', 'jsx', 'tsx'].includes(l)) kwList = keywords.js;
+                    else if (['py', 'python', 'python3'].includes(l)) kwList = keywords.python;
+                    else if (['html', 'htm'].includes(l)) kwList = keywords.html;
+                    else if (['css', 'scss', 'sass', 'less'].includes(l)) kwList = keywords.css;
+                    else if (['java', 'c', 'cpp', 'c++', 'go', 'rust', 'ruby', 'php', 'swift', 'kotlin'].includes(
+                        l)) kwList = keywords.js; // fallback
+
+                    // Highlight strings
+                    escaped = escaped.replace(
+                        /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)/g,
+                        '<span class="syn-str">$1</span>'
+                    );
+                    // Highlight comments
+                    if (['js', 'javascript', 'ts', 'typescript', 'jsx', 'tsx', 'java', 'c', 'cpp', 'c++', 'go',
+                            'rust', 'swift', 'kotlin', 'css', 'scss', 'less'
+                        ].includes(l)) {
+                        escaped = escaped.replace(/(\/\/.*$)/gm, '<span class="syn-cm">$1</span>');
+                        escaped = escaped.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="syn-cm">$1</span>');
+                    }
+                    if (['py', 'python', 'python3', 'ruby', 'bash', 'sh', 'shell', 'yaml', 'yml'].includes(l)) {
+                        escaped = escaped.replace(/(#.*$)/gm, '<span class="syn-cm">$1</span>');
+                    }
+                    // Highlight numbers
+                    escaped = escaped.replace(/\b(\d+\.?\d*)\b/g, '<span class="syn-num">$1</span>');
+                    // Highlight keywords
+                    if (kwList.length > 0) {
+                        const kwPattern = new RegExp('\\b(' + kwList.join('|') + ')\\b', 'g');
+                        escaped = escaped.replace(kwPattern, '<span class="syn-kw">$1</span>');
+                    }
+                    // Highlight HTML tags
+                    if (['html', 'htm', 'xml', 'jsx', 'tsx'].includes(l)) {
+                        escaped = escaped.replace(
+                            /(&lt;\/?)([\w-]+)([^&]*&gt;)/g,
+                            '$1<span class="syn-tag">$2</span>$3'
+                        );
+                        escaped = escaped.replace(
+                            /\b([\w-]+)=("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g,
+                            '<span class="syn-attr">$1</span>=<span class="syn-str">$2</span>'
+                        );
+                    }
+                    // Highlight CSS properties
+                    if (['css', 'scss', 'sass', 'less'].includes(l)) {
+                        escaped = escaped.replace(
+                            /^(\s*)([\w-]+)(\s*:)/gm,
+                            '$1<span class="syn-prop">$2</span>$3'
+                        );
+                    }
+                    return escaped;
+                }
+
+                while (i < lines.length) {
+                    const rawLine = lines[i];
+                    const trimmed = rawLine.trim();
+
+                    // Code block toggle
+                    if (trimmed.startsWith('```')) {
+                        flushList();
+                        flushTable();
+                        if (inCodeBlock) {
+                            // Close code block
+                            const highlighted = highlightCode(codeBlockContent, codeBlockLang);
+                            const displayLang = codeBlockLang || 'code';
+                            html += '<pre><div class="code-header"><span class="lang-label">' +
+                                escapeHtml(displayLang) +
+                                '</span><button class="copy-btn" onclick="this.innerText=\'Copied!\';this.classList.add(\'copied\');navigator.clipboard.writeText(this.closest(\'pre\').querySelector(\'code\').innerText.replace(/\\u00A0/g,\' \'));setTimeout(()=>{this.innerText=\'Copy\';this.classList.remove(\'copied\')},1800)">Copy</button></div><code>' +
+                                highlighted + '</code></pre>';
+                            inCodeBlock = false;
+                            codeBlockContent = '';
+                            codeBlockLang = '';
+                        } else {
+                            // Open code block
+                            codeBlockLang = trimmed.substring(3).trim();
+                            inCodeBlock = true;
+                            codeBlockContent = '';
+                        }
+                        i++;
+                        continue;
+                    }
+                    if (inCodeBlock) {
+                        codeBlockContent += (codeBlockContent ? '\n' : '') + rawLine;
+                        i++;
+                        continue;
+                    }
+
+                    // Table detection
+                    if (trimmed.includes('|') && trimmed.startsWith('|')) {
+                        flushList();
+                        if (!inTable) {
+                            inTable = true;
+                            tableRows = [];
+                        }
+                        const cells = trimmed.split('|').filter((c, idx, arr) => idx > 0 && idx < arr.length - 1);
+                        if (cells.length > 0 && !trimmed.match(/^\|[\s\-:]+\|$/)) {
+                            tableRows.push(cells);
+                        } else if (trimmed.match(/^\|[\s\-:]+\|$/)) {
+                            tableRows.push(cells);
+                        }
+                        i++;
+                        continue;
+                    } else if (inTable) {
+                        flushTable();
+                    }
+
+                    // Horizontal rule
+                    if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(trimmed)) {
+                        flushList();
+                        html += '<hr>';
+                        i++;
+                        continue;
+                    }
+                    // Blockquote
+                    if (trimmed.startsWith('>')) {
+                        flushList();
+                        const quoteContent = trimmed.substring(1).trim();
+                        html += '<blockquote>' + processInline(quoteContent) + '</blockquote>';
+                        i++;
+                        continue;
+                    }
+
+                    // Highlight note
+                    if (trimmed.startsWith('!>') || trimmed.startsWith('!!')) {
+                        flushList();
+                        const noteContent = trimmed.replace(/^!>?\s*/, '');
+                        html += '<div class="highlight-note">' + processInline(noteContent) + '</div>';
+                        i++;
+                        continue;
+                    }
+
+                    // Headings
+                    if (trimmed.startsWith('### ')) {
+                        flushList();
+                        html += '<h3>' + processInline(trimmed.substring(4)) + '</h3>';
+                        i++;
+                        continue;
+                    }
+                    if (trimmed.startsWith('## ')) {
+                        flushList();
+                        html += '<h2>' + processInline(trimmed.substring(3)) + '</h2>';
+                        i++;
+                        continue;
+                    }
+                    if (trimmed.startsWith('# ')) {
+                        flushList();
+                        html += '<h1>' + processInline(trimmed.substring(2)) + '</h1>';
+                        i++;
+                        continue;
+                    }
+
+                    // Unordered list
+                    if (/^[-*+]\s+/.test(trimmed)) {
+                        if (inList !== 'ul') { flushList();
+                            html += '<ul>';
+                            inList = 'ul'; }
+                        const liContent = trimmed.replace(/^[-*+]\s+/, '');
+                        html += '<li>' + processInline(liContent) + '</li>';
+                        i++;
+                        continue;
+                    }
+                    // Checkbox
+                    if (/^[-*+]\s+\[([ x])\]\s+/.test(trimmed)) {
+                        if (inList !== 'ul') { flushList();
+                            html += '<ul>';
+                            inList = 'ul'; }
+                        const match = trimmed.match(/^[-*+]\s+\[([ x])\]\s+(.*)/);
+                        const checked = match[1] === 'x';
+                        html += '<li style="list-style:none;">' + (checked ? '☑ ' : '☐ ') + processInline(match[
+                            2]) + '</li>';
+                        i++;
+                        continue;
+                    }
+                    // Ordered list
+                    if (/^\d+[.)]\s+/.test(trimmed)) {
+                        if (inList !== 'ol') { flushList();
+                            html += '<ol>';
+                            inList = 'ol'; }
+                        const liContent = trimmed.replace(/^\d+[.)]\s+/, '');
+                        html += '<li>' + processInline(liContent) + '</li>';
+                        i++;
+                        continue;
+                    }
+
+                    // Empty line
+                    if (trimmed === '') {
+                        flushList();
+                        i++;
+                        continue;
+                    }
+
+                    // Regular paragraph
+                    flushList();
+                    html += '<p>' + processInline(trimmed) + '</p>';
+                    i++;
+                }
+                // Flush remaining
+                flushList();
+                flushTable();
+                if (inCodeBlock && codeBlockContent) {
+                    const highlighted = highlightCode(codeBlockContent, codeBlockLang);
+                    const displayLang = codeBlockLang || 'code';
+                    html += '<pre><div class="code-header"><span class="lang-label">' + escapeHtml(displayLang) +
+                        '</span><button class="copy-btn" onclick="this.innerText=\'Copied!\';this.classList.add(\'copied\');navigator.clipboard.writeText(this.closest(\'pre\').querySelector(\'code\').innerText.replace(/\\u00A0/g,\' \'));setTimeout(()=>{this.innerText=\'Copy\';this.classList.remove(\'copied\')},1800)">Copy</button></div><code>' +
+                        highlighted + '</code></pre>';
+                }
+                return html;
+            }
+
+            // ─────────────────────────────────────
+            // MESSAGE RENDERING IN DOM
+            // ─────────────────────────────────────
+            function createMessageElement(role, content, messageId, timestamp) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'message-wrapper ' + role;
+                wrapper.dataset.messageId = messageId;
+                const avatarChar = role === 'user' ? 'U' : 'N';
+                wrapper.innerHTML = `
+            <div class="message-avatar">${avatarChar}</div>
+            <div style="flex:1;min-width:0;">
+              <div class="message-bubble">${role === 'ai' ? renderMarkdown(content) : '<p>' + escapeHtml(content).replace(/\n/g, '<br>') + '</p>'}</div>
+              <div class="message-meta">
+                <span class="msg-time">${formatTime(timestamp)}</span>
+                <button class="copy-msg-btn" title="Copy message">📋 Copy</button>
+                ${role === 'user' ? '<button class="edit-msg-btn" title="Edit message">✏️ Edit</button>' : '<button class="regenerate-btn" title="Regenerate response">🔄 Regenerate</button>'}
+                <button class="delete-msg-btn" title="Delete message">🗑️</button>
+              </div>
+            </div>`;
+                return wrapper;
+            }
+
+            function appendMessageToDOM(role, content, messageId, timestamp) {
+                const el = createMessageElement(role, content, messageId, timestamp);
+                $messagesContainer.appendChild(el);
+                // Hide welcome message if present
+                if ($welcomeMessage && $welcomeMessage.style.display !== 'none') {
+                    $welcomeMessage.style.display = 'none';
+                }
+                return el;
+            }
+
+            function renderAllMessages(messages) {
+                // Clear container
+                $messagesContainer.innerHTML = '';
+                if ($welcomeMessage) {
+                    $welcomeMessage.remove();
+                }
+                if (messages.length === 0) {
+                    // Show welcome
+                    const wm = document.createElement('div');
+                    wm.className = 'message-wrapper ai';
+                    wm.id = 'welcomeMessage';
+                    wm.innerHTML = `
+              <div class="message-avatar">N</div>
+              <div>
+                <div class="message-bubble">
+                  <h2>👋 Welcome to Nexus AI</h2>
+                  <p>I'm your intelligent assistant with <strong>automatic model selection</strong>. Just ask me anything — I'll pick the best AI model for your query behind the scenes.</p>
+                  <ul>
+                    <li><strong>Programming</strong> → Code-specialized model</li>
+                    <li><strong>Math & Logic</strong> → Reasoning-optimized model</li>
+                    <li><strong>Creative Writing</strong> → Creative model</li>
+                    <li><strong>General Knowledge</strong> → Balanced model</li>
+                  </ul>
+                  <p><em>Start a conversation below!</em></p>
+                </div>
+              </div>`;
+                    $messagesContainer.appendChild(wm);
+                    // Re-assign the welcomeMessage reference
+                    window._welcomeMsg = wm;
+                    return;
+                }
+                messages.forEach(msg => {
+                    appendMessageToDOM(msg.role, msg.content, msg.id, msg.timestamp);
+                });
+                scrollToBottom();
+            }
+
+            function scrollToBottom() {
+                requestAnimationFrame(() => {
+                    $messagesContainer.scrollTop = $messagesContainer.scrollHeight;
+                });
+            }
+
+            // ─────────────────────────────────────
+            // API CALL
+            // ─────────────────────────────────────
+            async function callOpenRouter(messages, modelId, onChunk, onDone, onError) {
+                const payload = {
+                    model: modelId,
+                    messages: [
+                        { role: 'system', content: SYSTEM_PROMPT },
+                        ...messages.map(m => ({ role: m.role, content: m.content })),
+                    ],
+                    stream: true,
+                    temperature: 0.7,
+                    max_tokens: 4096,
+                };
+
+                abortController = new AbortController();
+
                 try {
-                    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    const response = await fetch(API_URL, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${key}`,
+                            'Authorization': 'Bearer ' + OPENROUTER_API_KEY,
                             'HTTP-Referer': window.location.origin,
+                            'X-Title': APP_NAME,
                         },
-                        body: JSON.stringify({
-                            model: model,
-                            messages: messages,
-                            temperature: 0.7,
-                            max_tokens: 4000,
-                        }),
-                        signal: controller.signal,
+                        body: JSON.stringify(payload),
+                        signal: abortController.signal,
                     });
-                    clearTimeout(timeoutId);
+
                     if (!response.ok) {
-                        const err = await response.json().catch(() => ({}));
-                        throw new Error(err.error?.message || `OpenRouter error: ${response.status}`);
+                        const errBody = await response.text();
+                        let errMsg = `API Error: ${response.status} ${response.statusText}`;
+                        try {
+                            const errJson = JSON.parse(errBody);
+                            if (errJson.error && errJson.error.message) errMsg = errJson.error.message;
+                        } catch (e) {}
+                        throw new Error(errMsg);
                     }
-                    const data = await response.json();
-                    return data.choices[0].message.content;
-                } catch (e) {
-                    clearTimeout(timeoutId);
-                    lastError = e;
-                    console.warn(`OpenRouter key failed: ${e.message}`);
-                    continue;
-                }
-            }
-            throw lastError || new Error('All OpenRouter keys failed');
-        }
 
-        async function searchUnsplash(query) {
-            if (!ApiKeys.unsplash) return null;
-            try {
-                const response = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1`, {
-                    headers: { 'Authorization': `Client-ID ${ApiKeys.unsplash}` },
-                });
-                if (!response.ok) return null;
-                const data = await response.json();
-                if (data.results && data.results.length > 0) return data.results[0].urls.regular;
-            } catch (e) { /* ignore */ }
-            return null;
-        }
-         // ============ GENERATION ============
-        async function startGeneration() {
-            if (AppState.generationInProgress) return;
-            const topic = document.getElementById('topicInput').value.trim();
-            if (!topic) { showToast('Please enter a topic or title.', 'error'); return; }
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder('utf-8');
+                    let buffer = '';
+                    let fullContent = '';
 
-            AppState.generationInProgress = true;
-            const btn = document.getElementById('generateBtn');
-            btn.disabled = true;
-            btn.textContent = 'Generating...';
-            document.getElementById('progressContainer').classList.remove('hidden');
-            updateProgress(0, 'Initializing...', '');
-
-            const docType = document.getElementById('docTypeSelect').value;
-            const tone = document.getElementById('toneSelect').value;
-            const length = document.getElementById('lengthSelect').value;
-            const subject = document.getElementById('subjectSelect').value;
-            const audience = document.getElementById('audienceInput').value.trim() || 'General audience';
-            const references = document.getElementById('referencesInput').value.trim();
-            const includeImages = document.getElementById('includeImages').checked;
-            const includeDiagrams = document.getElementById('includeDiagrams').checked;
-
-            if (hasOpenRouterKeys()) {
-                await generateWithRealAPI(topic, docType, tone, length, subject, audience, references, includeImages, includeDiagrams);
-            } else {
-                await simulatePipeline(topic, docType, tone, length, subject, audience, references, includeImages, includeDiagrams);
-            }
-
-            AppState.generationInProgress = false;
-            btn.disabled = false;
-            btn.textContent = 'Generate Document';
-            updateProgress(100, 'Complete!', 'Document ready');
-            showToast('Document generated successfully!', 'success');
-
-            const historyEntry = { id: Date.now(), topic, docType, tone, length, subject, audience, date: new Date().toISOString(), html: AppState.documentHTML };
-            AppState.history.unshift(historyEntry);
-            if (AppState.history.length > 50) AppState.history = AppState.history.slice(0, 50);
-            localStorage.setItem('aiDocStudioHistory', JSON.stringify(AppState.history));
-            document.getElementById('clearHistoryBtn').classList.remove('hidden');
-            setTimeout(() => navigateTo('editor'), 600);
-        }
-
-        function hasOpenRouterKeys() { updateApiKeysFromInputs(); return ApiKeys.openrouter.length > 0; }
-
-        async function generateWithRealAPI(topic, docType, tone, length, subject, audience, references, includeImages, includeDiagrams) {
-            const lengthMap = { short: 500, medium: 1500, long: 3000, extensive: 5000 };
-            const targetWords = lengthMap[length] || 1500;
-            updateProgress(10, 'Contacting AI model...', 'Safety check & planning');
-
-            const systemPrompt = `You are an expert document generator. Create a well-structured HTML document about "${topic}" as a ${docType} with a ${tone} tone, targeting ${audience}. Subject area: ${subject}. Approximate word count: ${targetWords}. ${references ? `Use references: ${references}.` : ''} ${includeDiagrams ? 'Include a Mermaid diagram where appropriate (wrapped in <div class="mermaid-container"><pre class="mermaid">...</pre></div>).' : ''} Format the response as clean, valid HTML with <h1>, <h2>, <h3>, <p>, <ul>, <li>, and tables where needed. Do NOT use Markdown symbols (# or *). The final output must be a complete HTML snippet ready for insertion.`;
-
-            try {
-                updateProgress(25, 'Generating content...', 'Model: long-form writer');
-                let htmlContent = await callOpenRouter([{ role: 'system', content: systemPrompt }, { role: 'user', content: `Generate the full document HTML for "${topic}".` }]);
-                if (!htmlContent || htmlContent.trim().length < 100) throw new Error('Empty or too short response');
-                htmlContent = htmlContent.replace(/```html\s*|```/g, '').trim();
-                updateProgress(75, 'Formatting & adding visuals...', 'Post-processing');
-                if (includeImages) {
-                    const imageUrl = await searchUnsplash(topic);
-                    if (imageUrl) htmlContent += `<div style="text-align:center;margin:1.5rem 0;"><img src="${imageUrl}" alt="${escapeHTML(topic)}" style="max-width:100%;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);"/><p style="color:#64748b;font-size:0.85rem;">Image via Unsplash</p></div>`;
-                }
-                AppState.documentHTML = htmlContent;
-            } catch (error) {
-                console.error('Real AI generation failed:', error);
-                showToast('AI call failed or timed out. Using simulated content instead.', 'error');
-                await simulatePipeline(topic, docType, tone, length, subject, audience, references, includeImages, includeDiagrams);
-            }
-        }
-
-        async function simulatePipeline(topic, docType, tone, length, subject, audience, references, includeImages, includeDiagrams) {
-            const steps = [
-                { percent: 5, label: 'Running content safety check...', detail: 'Model: safety moderation layer', delay: 400 },
-                { percent: 12, label: 'Analyzing prompt & planning...', detail: 'Model: planner router', delay: 500 },
-                { percent: 25, label: 'Generating document outline...', detail: 'Model: outline generator', delay: 600 },
-                { percent: 40, label: 'Writing Section 1...', detail: 'Model: section writer', delay: 700 },
-                { percent: 55, label: 'Writing Section 2...', detail: 'Model: section writer', delay: 800 },
-                { percent: 70, label: 'Writing Section 3...', detail: 'Model: long-form writer', delay: 700 },
-                { percent: 85, label: 'Quality review & formatting...', detail: 'Model: quality checker', delay: 500 },
-                { percent: 95, label: 'Assembling final document...', detail: 'Applying styles', delay: 400 },
-            ];
-            for (const step of steps) { updateProgress(step.percent, step.label, step.detail); await sleep(step.delay); }
-            AppState.documentHTML = generateDocumentHTML(topic, docType, tone, length, subject, audience, references, includeImages, includeDiagrams);
-        }
-
-        function generateDocumentHTML(topic, docType, tone, length, subject, audience, references, includeImages, includeDiagrams) {
-            const docTypeLabels = { homework: 'Homework Assignment', report: 'Report', essay: 'Essay', presentation: 'Presentation Content', 'study-notes': 'Study Notes', article: 'Article' };
-            const docLabel = docTypeLabels[docType] || 'Document';
-            const toneLabel = tone.charAt(0).toUpperCase() + tone.slice(1);
-            const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-            let html = `<h1>${escapeHTML(topic)}</h1><p style="color:#64748b;font-size:0.9rem;"><strong>${docLabel}</strong> | ${toneLabel} Tone | ${dateStr} | For: ${escapeHTML(audience)}</p><hr style="border-color:#e2e8f0;margin:1rem 0;">`;
-            html += `<h2>1. Introduction</h2><p>This document provides a comprehensive overview of <strong>${escapeHTML(topic)}</strong>, tailored for ${escapeHTML(audience)}.</p>`;
-            html += `<h2>2. Background & Context</h2><p>Understanding <strong>${escapeHTML(topic)}</strong> requires examining its foundational elements.</p><h3>2.1 Key Concepts</h3><ul><li><strong>Concept A:</strong> Primary framework.</li><li><strong>Concept B:</strong> Complementary principle.</li><li><strong>Concept C:</strong> Practical application.</li></ul>`;
-            html += `<h2>3. Core Analysis</h2><p>This section delves into central themes of <strong>${escapeHTML(topic)}</strong>.</p><h3>3.1 Primary Findings</h3><ol><li>Interconnected components.</li><li>Empirical evidence.</li><li>Measurable improvements.</li></ol>`;
-            if (includeDiagrams) html += `<h3>3.2 Process Flow Diagram</h3><div class="mermaid-container"><pre class="mermaid">graph TD\n    A[Input: ${escapeHTML(topic.substring(0,30))}] --> B{Analysis}\n    B --> C[Research]\n    B --> D[Planning]\n    C --> E[Findings]\n    D --> F[Structure]\n    E --> G[Synthesis]\n    F --> G\n    G --> H[Output]</pre></div>`;
-            if (includeImages) html += `<div style="background:#f1f5f9;border-radius:12px;padding:2rem;text-align:center;margin:1rem 0;border:2px dashed #cbd5e1;"><p style="color:#64748b;">[Image: Relevant illustration for "${escapeHTML(topic)}"]</p></div>`;
-            html += `<h2>4. Summary & Conclusions</h2><p>This document has explored <strong>${escapeHTML(topic)}</strong> from multiple angles.</p><ul><li>Clear understanding of foundational concepts.</li><li>Practical strategies for real-world application.</li><li>Importance of continued learning.</li></ul>`;
-            if (references) { html += `<h2>5. References</h2><ul>`; references.split(',').map(r => r.trim()).filter(r => r).forEach(ref => { html += `<li>${escapeHTML(ref)}</li>`; }); html += `</ul>`; }
-            html += `<hr style="border-color:#e2e8f0;margin:1.5rem 0;"><p style="text-align:center;color:#94a3b8;font-size:0.85rem;">Generated by AI Doc Studio | ${dateStr} | ${docLabel} — ${toneLabel} Tone</p>`;
-            return html;
-                              }
-        function updateProgress(percent, label, detail) {
-            document.getElementById('progressBar').style.width = percent + '%';
-            document.getElementById('progressPercent').textContent = percent + '%';
-            document.getElementById('progressLabel').textContent = label;
-            document.getElementById('progressDetail').textContent = detail;
-        }
-
-        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-        function escapeHTML(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
-
-        // ============ EDITOR & EXPORT ============
-        function updateEditorPreview() {
-            const editor = document.getElementById('editorContent');
-            if (AppState.documentHTML) {
-                editor.innerHTML = AppState.documentHTML;
-                if (AppState.editorDarkPreview) editor.classList.add('dark'); else editor.classList.remove('dark');
-                setTimeout(() => { try { mermaid.run({ querySelector: '.mermaid' }); } catch (e) {} }, 200);
-                const text = editor.textContent || '';
-                document.getElementById('wordCount').textContent = 'Words: ' + text.split(/\s+/).filter(w => w.length > 0).length;
-            } else {
-                editor.innerHTML = '<p class="text-gray-400 dark:text-gray-500 text-center py-16">No document generated yet.</p>';
-                document.getElementById('wordCount').textContent = 'Words: 0';
-            }
-        }
-
-        function regenerateDocument() {
-            if (!AppState.generatedDocument) { showToast('No document to regenerate.', 'error'); return; }
-            navigateTo('dashboard');
-            const gd = AppState.generatedDocument;
-            document.getElementById('topicInput').value = gd.topic || '';
-            document.getElementById('docTypeSelect').value = gd.docType || 'homework';
-            document.getElementById('toneSelect').value = gd.tone || 'academic';
-            document.getElementById('lengthSelect').value = gd.length || 'medium';
-            document.getElementById('subjectSelect').value = gd.subject || 'general';
-            document.getElementById('audienceInput').value = gd.audience || '';
-            showToast('Form populated. Click Generate to regenerate.', 'info');
-        }
-
-        async function exportPDF() {
-            if (!AppState.documentHTML) { showToast('No document to export.', 'error'); return; }
-            showToast('Preparing PDF...', 'info');
-            if (ApiKeys.pdfEndpoint) {
-                try {
-                    const response = await fetch('https://api.pdfendpoint.com/v1/convert', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ApiKeys.pdfEndpoint}` },
-                        body: JSON.stringify({ html: AppState.documentHTML, format: 'pdf' }),
-                    });
-                    if (response.ok) {
-                        const blob = await response.blob();
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a'); a.href = url; a.download = 'document-' + Date.now() + '.pdf'; a.click();
-                        URL.revokeObjectURL(url);
-                        showToast('PDF downloaded via PDF Endpoint!', 'success');
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop() || '';
+                        for (const line of lines) {
+                            const trimmed = line.trim();
+                            if (!trimmed || !trimmed.startsWith('data: ')) continue;
+                            const dataStr = trimmed.substring(6);
+                            if (dataStr === '[DONE]') {
+                                onDone(fullContent);
+                                return;
+                            }
+                            try {
+                                const parsed = JSON.parse(dataStr);
+                                const delta = parsed?.choices?.[0]?.delta?.content;
+                                if (delta) {
+                                    fullContent += delta;
+                                    onChunk(delta, fullContent);
+                                }
+                            } catch (e) {
+                                // Skip unparseable chunks
+                            }
+                        }
+                    }
+                    onDone(fullContent);
+                } catch (err) {
+                    if (err.name === 'AbortError') {
+                        onDone(null, true);
                         return;
                     }
-                } catch (e) { /* fallback */ }
+                    onError(err.message);
+                }
+                    }
+             // ─────────────────────────────────────
+            // SEND MESSAGE
+            // ─────────────────────────────────────
+            function getWelcomeMessageEl() {
+                return document.getElementById('welcomeMessage') || window._welcomeMsg || null;
             }
-            // Fallback jsPDF
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-            const editor = document.getElementById('editorContent');
-            const content = editor.cloneNode(true);
-            content.style.width = '190mm'; content.style.padding = '10mm'; content.style.fontSize = '12px';
-            content.style.color = '#1e293b'; content.style.backgroundColor = '#ffffff';
-            content.classList.remove('dark');
-            const tempDiv = document.createElement('div'); tempDiv.appendChild(content);
-            tempDiv.style.position = 'absolute'; tempDiv.style.left = '-9999px'; document.body.appendChild(tempDiv);
-            setTimeout(() => {
-                doc.html(tempDiv.innerHTML, {
-                    callback: function(pdf) { pdf.save('document-' + Date.now() + '.pdf'); document.body.removeChild(tempDiv); showToast('PDF downloaded.', 'success'); },
-                    x: 5, y: 5, width: 200, windowWidth: 800,
+
+            async function sendMessage() {
+                if (isGenerating) return;
+                const text = $userInput.value.trim();
+                if (!text) return;
+                $userInput.value = '';
+                $userInput.style.height = 'auto';
+                $btnSend.disabled = true;
+
+                // Hide welcome message
+                const wm = getWelcomeMessageEl();
+                if (wm) wm.style.display = 'none';
+
+                // Get or create conversation
+                let conv = getCurrentConversation();
+                if (!conv) {
+                    conv = {
+                        id: generateId(),
+                        title: text.substring(0, 40) + (text.length > 40 ? '…' : ''),
+                        timestamp: new Date().toISOString(),
+                        messages: [],
+                    };
+                    conversations.unshift(conv);
+                    currentConversationId = conv.id;
+                }
+                // Update title if first message
+                if (conv.messages.length === 0) {
+                    conv.title = text.substring(0, 40) + (text.length > 40 ? '…' : '');
+                    conv.timestamp = new Date().toISOString();
+                }
+
+                const userMsg = {
+                    id: generateMessageId(),
+                    role: 'user',
+                    content: text,
+                    timestamp: new Date().toISOString(),
+                };
+                conv.messages.push(userMsg);
+
+                // Select model
+                const selectedModel = selectModel(text);
+                $modelBadge.textContent = getModelDisplayName(selectedModel);
+
+                // Render user message
+                appendMessageToDOM('user', text, userMsg.id, userMsg.timestamp);
+                scrollToBottom();
+                updateSidebar();
+                updateMainTitle();
+                saveToStorage();
+
+                // Create AI message placeholder
+                const aiMsgId = generateMessageId();
+                const aiWrapper = document.createElement('div');
+                aiWrapper.className = 'message-wrapper ai';
+                aiWrapper.dataset.messageId = aiMsgId;
+                aiWrapper.innerHTML = `
+            <div class="message-avatar">N</div>
+            <div style="flex:1;min-width:0;">
+              <div class="message-bubble">
+                <div class="typing-indicator">
+                  <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                  <span style="margin-left:8px;color:var(--text-muted);font-size:0.85rem;">Thinking…</span>
+                </div>
+              </div>
+              <div class="message-meta">
+                <span class="msg-time">${formatTime(new Date().toISOString())}</span>
+                <button class="copy-msg-btn">📋 Copy</button>
+                <button class="regenerate-btn">🔄 Regenerate</button>
+                <button class="delete-msg-btn">🗑️</button>
+              </div>
+            </div>`;
+                $messagesContainer.appendChild(aiWrapper);
+                currentStreamingMessageEl = aiWrapper;
+                currentStreamingBubble = aiWrapper.querySelector('.message-bubble');
+                scrollToBottom();
+
+                // Prepare messages for API
+                const apiMessages = conv.messages.slice(); // include the just-added user message
+
+                isGenerating = true;
+                $btnStop.style.display = 'flex';
+                $btnSend.style.display = 'none';
+                let streamedContent = '';
+                let wasAborted = false;
+
+                await callOpenRouter(
+                    apiMessages,
+                    selectedModel,
+                    // onChunk
+                    (delta, fullContent) => {
+                        streamedContent = fullContent;
+                        currentStreamingBubble.innerHTML = renderMarkdown(fullContent);
+                        scrollToBottom();
+                    },
+                    // onDone
+                    (fullContent, aborted) => {
+                        isGenerating = false;
+                        $btnStop.style.display = 'none';
+                        $btnSend.style.display = 'flex';
+                        $btnSend.disabled = false;
+                        abortController = null;
+                        currentStreamingMessageEl = null;
+                        currentStreamingBubble = null;
+
+                        if (aborted) {
+                            wasAborted = true;
+                            if (streamedContent) {
+                                // Save partial content
+                                const aiMsg = {
+                                    id: aiMsgId,
+                                    role: 'ai',
+                                    content: streamedContent,
+                                    timestamp: new Date().toISOString(),
+                                };
+                                conv.messages.push(aiMsg);
+                            }
+                            if (!streamedContent) {
+                                currentStreamingBubble.innerHTML =
+                                    '<p style="color:var(--text-muted);font-style:italic;">Generation stopped.</p>';
+                            }
+                            saveToStorage();
+                            updateSidebar();
+                            return;
+                        }
+                        const finalContent = fullContent || streamedContent;
+                        if (!finalContent && !wasAborted) {
+                            currentStreamingBubble.innerHTML =
+                                '<p style="color:#ff9090;">No response received. Please try again.</p>';
+                            return;
+                        }
+                        const aiMsg = {
+                            id: aiMsgId,
+                            role: 'ai',
+                            content: finalContent,
+                            timestamp: new Date().toISOString(),
+                        };
+                        conv.messages.push(aiMsg);
+                        currentStreamingBubble.innerHTML = renderMarkdown(finalContent);
+                        saveToStorage();
+                        updateSidebar();
+                        scrollToBottom();
+                        attachMessageEventListeners(aiWrapper, aiMsgId);
+                    },
+                    // onError
+                    (errorMsg) => {
+                        isGenerating = false;
+                        $btnStop.style.display = 'none';
+                        $btnSend.style.display = 'flex';
+                        $btnSend.disabled = false;
+                        abortController = null;
+                        currentStreamingMessageEl = null;
+                        currentStreamingBubble = null;
+                        const errCard = document.createElement('div');
+                        errCard.className = 'error-card';
+                        errCard.textContent = '⚠️ ' + errorMsg;
+                        if (aiWrapper.querySelector('.message-bubble')) {
+                            aiWrapper.querySelector('.message-bubble').innerHTML = '';
+                            aiWrapper.querySelector('.message-bubble').appendChild(errCard);
+                        }
+                        scrollToBottom();
+                    }
+                );
+
+                if (wasAborted && streamedContent && aiWrapper.querySelector('.message-bubble')) {
+                    // Already handled in onDone
+                }
+                attachMessageEventListeners(aiWrapper, aiMsgId);
+            }
+
+            function stopGeneration() {
+                if (abortController && isGenerating) {
+                    abortController.abort();
+                    isGenerating = false;
+                    $btnStop.style.display = 'none';
+                    $btnSend.style.display = 'flex';
+                    $btnSend.disabled = false;
+                }
+            }
+            // ─────────────────────────────────────
+            // MESSAGE EVENT LISTENERS
+            // ─────────────────────────────────────
+            function attachMessageEventListeners(wrapper, messageId) {
+                const copyBtn = wrapper.querySelector('.copy-msg-btn');
+                const editBtn = wrapper.querySelector('.edit-msg-btn');
+                const regenBtn = wrapper.querySelector('.regenerate-btn');
+                const deleteBtn = wrapper.querySelector('.delete-msg-btn');
+                const conv = getCurrentConversation();
+                if (!conv) return;
+
+                if (copyBtn) {
+                    copyBtn.addEventListener('click', () => {
+                        const msg = conv.messages.find(m => m.id === messageId);
+                        if (msg) {
+                            navigator.clipboard.writeText(msg.content).then(() => {
+                                copyBtn.textContent = '✓ Copied!';
+                                setTimeout(() => { copyBtn.textContent = '📋 Copy'; }, 1800);
+                            });
+                        }
+                    });
+                }
+                if (editBtn) {
+                    editBtn.addEventListener('click', () => {
+                        const msg = conv.messages.find(m => m.id === messageId);
+                        if (!msg) return;
+                        const newContent = prompt('Edit your message:', msg.content);
+                        if (newContent !== null && newContent.trim() !== '') {
+                            msg.content = newContent.trim();
+                            msg.timestamp = new Date().toISOString();
+                            // Remove all messages after this one
+                            const idx = conv.messages.findIndex(m => m.id === messageId);
+                            if (idx >= 0) {
+                                conv.messages = conv.messages.slice(0, idx + 1);
+                            }
+                            saveToStorage();
+                            renderAllMessages(conv.messages);
+                            updateSidebar();
+                            // Auto-regenerate
+                            regenerateAfterEdit();
+                        }
+                    });
+                }
+                if (regenBtn) {
+                    regenBtn.addEventListener('click', () => {
+                        const msgIdx = conv.messages.findIndex(m => m.id === messageId);
+                        if (msgIdx >= 0 && conv.messages[msgIdx].role === 'ai') {
+                            // Remove this AI message and regenerate
+                            conv.messages = conv.messages.slice(0, msgIdx);
+                            saveToStorage();
+                            regenerateLastMessage();
+                        }
+                    });
+                }
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', () => {
+                        const msgIdx = conv.messages.findIndex(m => m.id === messageId);
+                        if (msgIdx >= 0) {
+                            conv.messages.splice(msgIdx, 1);
+                            saveToStorage();
+                            renderAllMessages(conv.messages);
+                            updateSidebar();
+                            if (conv.messages.length === 0) {
+                                updateMainTitle();
+                            }
+                        }
+                    });
+                }
+            }
+
+            async function regenerateAfterEdit() {
+                const conv = getCurrentConversation();
+                if (!conv || conv.messages.length === 0) return;
+                const lastMsg = conv.messages[conv.messages.length - 1];
+                if (lastMsg.role !== 'user') return;
+                // Trigger regeneration
+                await regenerateLastMessage();
+            }
+
+            async function regenerateLastMessage() {
+                const conv = getCurrentConversation();
+                if (!conv || conv.messages.length === 0) return;
+                const lastUserMsg = [...conv.messages].reverse().find(m => m.role === 'user');
+                if (!lastUserMsg) return;
+                // Remove AI messages after the last user message
+                const lastUserIdx = conv.messages.findIndex(m => m.id === lastUserMsg.id);
+                if (lastUserIdx >= 0) {
+                    conv.messages = conv.messages.slice(0, lastUserIdx + 1);
+                }
+                saveToStorage();
+                renderAllMessages(conv.messages);
+                // Now send
+                const selectedModel = selectModel(lastUserMsg.content);
+                $modelBadge.textContent = getModelDisplayName(selectedModel);
+                const aiMsgId = generateMessageId();
+                const aiWrapper = document.createElement('div');
+                aiWrapper.className = 'message-wrapper ai';
+                aiWrapper.dataset.messageId = aiMsgId;
+                aiWrapper.innerHTML = `
+            <div class="message-avatar">N</div>
+            <div style="flex:1;min-width:0;">
+              <div class="message-bubble">
+                <div class="typing-indicator">
+                  <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                  <span style="margin-left:8px;color:var(--text-muted);font-size:0.85rem;">Regenerating…</span>
+                </div>
+              </div>
+              <div class="message-meta">
+                <span class="msg-time">${formatTime(new Date().toISOString())}</span>
+                <button class="copy-msg-btn">📋 Copy</button>
+                <button class="regenerate-btn">🔄 Regenerate</button>
+                <button class="delete-msg-btn">🗑️</button>
+              </div>
+            </div>`;
+                $messagesContainer.appendChild(aiWrapper);
+                currentStreamingMessageEl = aiWrapper;
+                currentStreamingBubble = aiWrapper.querySelector('.message-bubble');
+                scrollToBottom();
+                const apiMessages = conv.messages.slice();
+                isGenerating = true;
+                $btnStop.style.display = 'flex';
+                $btnSend.style.display = 'none';
+                $btnSend.disabled = true;
+                let streamedContent = '';
+                await callOpenRouter(
+                    apiMessages,
+                    selectedModel,
+                    (delta, fullContent) => {
+                        streamedContent = fullContent;
+                        currentStreamingBubble.innerHTML = renderMarkdown(fullContent);
+                        scrollToBottom();
+                    },
+                    (fullContent, aborted) => {
+                        isGenerating = false;
+                        $btnStop.style.display = 'none';
+                        $btnSend.style.display = 'flex';
+                        $btnSend.disabled = false;
+                        abortController = null;
+                        currentStreamingMessageEl = null;
+                        currentStreamingBubble = null;
+                        const finalContent = fullContent || streamedContent;
+                        if (finalContent && !aborted) {
+                            const aiMsg = { id: aiMsgId, role: 'ai', content: finalContent, timestamp: new Date()
+                                    .toISOString() };
+                            conv.messages.push(aiMsg);
+                            currentStreamingBubble.innerHTML = renderMarkdown(finalContent);
+                        }
+                        saveToStorage();
+                        updateSidebar();
+                        scrollToBottom();
+                        attachMessageEventListeners(aiWrapper, aiMsgId);
+                    },
+                    (errorMsg) => {
+                        isGenerating = false;
+                        $btnStop.style.display = 'none';
+                        $btnSend.style.display = 'flex';
+                        $btnSend.disabled = false;
+                        abortController = null;
+                        currentStreamingMessageEl = null;
+                        currentStreamingBubble = null;
+                        const errCard = document.createElement('div');
+                        errCard.className = 'error-card';
+                        errCard.textContent = '⚠️ ' + errorMsg;
+                        currentStreamingBubble.innerHTML = '';
+                        currentStreamingBubble.appendChild(errCard);
+                        scrollToBottom();
+                    }
+                );
+                attachMessageEventListeners(aiWrapper, aiMsgId);
+                    }
+              // ─────────────────────────────────────
+            // SIDEBAR MANAGEMENT
+            // ─────────────────────────────────────
+            function updateSidebar(filterText = '') {
+                const list = $conversationList;
+                list.innerHTML = '';
+                const filtered = filterText ?
+                    conversations.filter(c => c.title.toLowerCase().includes(filterText.toLowerCase())) :
+                    conversations;
+                if (filtered.length === 0) {
+                    list.innerHTML = '<div class="no-conversations">' + (filterText ? 'No matches found' :
+                        'No conversations yet') + '</div>';
+                    return;
+                }
+                filtered.forEach(conv => {
+                    const item = document.createElement('div');
+                    item.className = 'conv-item' + (conv.id === currentConversationId ? ' active' : '');
+                    item.dataset.convId = conv.id;
+                    item.innerHTML = `
+              <svg class="conv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              <span class="conv-title">${escapeHtml(conv.title)}</span>
+              <span class="conv-time">${formatTime(conv.timestamp)}</span>
+              <span class="conv-actions">
+                <button class="conv-action-btn rename-btn" title="Rename">✎</button>
+                <button class="conv-action-btn danger delete-conv-btn" title="Delete">✕</button>
+              </span>`;
+                    list.appendChild(item);
+
+                    // Click to select conversation
+                    item.addEventListener('click', (e) => {
+                        if (e.target.closest('.conv-action-btn')) return;
+                        selectConversation(conv.id);
+                    });
+                    // Rename
+                    item.querySelector('.rename-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const newTitle = prompt('Rename conversation:', conv.title);
+                        if (newTitle !== null && newTitle.trim() !== '') {
+                            conv.title = newTitle.trim();
+                            saveToStorage();
+                            updateSidebar($searchInput.value);
+                            updateMainTitle();
+                        }
+                    });
+                    // Delete
+                    item.querySelector('.delete-conv-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (confirm('Delete this conversation?')) {
+                            deleteConversation(conv.id);
+                        }
+                    });
                 });
-            }, 300);
-        }
-
-        function exportDOCX() {
-            if (!AppState.documentHTML) { showToast('No document to export.', 'error'); return; }
-            const { Document, Packer, Paragraph, HeadingLevel } = docx;
-            const doc = new Document({ sections: [{ children: [
-                new Paragraph({ text: AppState.generatedDocument?.topic || 'Document', heading: HeadingLevel.HEADING_1 }),
-                new Paragraph({ text: extractTextFromHTML(AppState.documentHTML).substring(0, 5000) || 'Content.', spacing: { after: 200 } })
-            ]}]});
-            Packer.toBlob(doc).then(blob => {
-                const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url;
-                a.download = 'document-' + Date.now() + '.docx'; a.click(); URL.revokeObjectURL(url);
-                showToast('DOCX downloaded!', 'success');
-            }).catch(() => showToast('DOCX export failed.', 'error'));
-        }
-
-        function exportPPTX() {
-            if (!AppState.documentHTML) { showToast('No document to export.', 'error'); return; }
-            const PptxGenJS = window.PptxGenJS;
-            const pptx = new PptxGenJS();
-            pptx.layout = 'LAYOUT_WIDE';
-            const topic = AppState.generatedDocument?.topic || 'Presentation';
-            pptx.defineSlideMaster({ title: 'AI_DOC_STUDIO', background: { color: 'FFFFFF' }, objects: [{ rect: { x: 0, y: 0, w: '100%', h: 0.06, fill: { color: '6366f1' } } }] });
-            pptx.addSlide().addText(topic, { x: 1, y: 0.5, w: '80%', h: 1, fontSize: 28, bold: true, color: '1e293b' });
-            pptx.addSlide().addText('Generated content:\n' + extractTextFromHTML(AppState.documentHTML).substring(0, 200), { x: 1, y: 1.5, w: '80%', h: 3, fontSize: 14, color: '475569' });
-            pptx.writeFile({ fileName: 'presentation-' + Date.now() + '.pptx' }).then(() => showToast('PPTX downloaded!', 'success')).catch(() => showToast('PPTX export failed.', 'error'));
-        }
-
-        function extractTextFromHTML(html) { const div = document.createElement('div'); div.innerHTML = html; return div.textContent || ''; }
-         // ============ HISTORY ============
-        function renderHistory() {
-            const list = document.getElementById('historyList');
-            const clearBtn = document.getElementById('clearHistoryBtn');
-            if (AppState.history.length === 0) {
-                list.innerHTML = '<p class="text-gray-400 dark:text-gray-500 text-center py-12">No documents generated yet.</p>';
-                clearBtn.classList.add('hidden');
-            } else {
-                clearBtn.classList.remove('hidden');
-                list.innerHTML = AppState.history.map(entry => `
-                    <div class="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl border border-border-light dark:border-border-dark">
-                        <div class="flex-1 min-w-0"><p class="font-semibold truncate">${escapeHTML(entry.topic)}</p><p class="text-xs text-gray-500">${entry.docType} · ${new Date(entry.date).toLocaleString()}</p></div>
-                        <div class="flex gap-2 ml-3">
-                            <button onclick="loadHistoryEntry(${entry.id})" class="px-3 py-1.5 text-xs bg-brand-100 dark:bg-brand-900/30 text-brand-700 rounded-lg">Load</button>
-                            <button onclick="deleteHistoryEntry(${entry.id})" class="px-3 py-1.5 text-xs bg-red-50 dark:bg-red-900/20 text-red-600 rounded-lg">Delete</button>
-                        </div>
-                    </div>
-                `).join('');
             }
-        }
 
-        function loadHistoryEntry(id) {
-            const entry = AppState.history.find(e => e.id === id);
-            if (entry) {
-                AppState.documentHTML = entry.html;
-                AppState.generatedDocument = { topic: entry.topic, docType: entry.docType, tone: entry.tone, length: entry.length, subject: entry.subject, audience: entry.audience, html: entry.html };
-                updateEditorPreview();
-                navigateTo('editor');
-                showToast('Document loaded.', 'success');
+            function selectConversation(convId) {
+                currentConversationId = convId;
+                const conv = getCurrentConversation();
+                if (conv) {
+                    renderAllMessages(conv.messages);
+                    updateMainTitle();
+                    $modelBadge.textContent = 'Auto';
+                }
+                updateSidebar($searchInput.value);
+                saveToStorage();
+                closeMobileSidebar();
             }
-        }
 
-        function deleteHistoryEntry(id) {
-            AppState.history = AppState.history.filter(e => e.id !== id);
-            localStorage.setItem('aiDocStudioHistory', JSON.stringify(AppState.history));
-            renderHistory();
-        }
-
-        function clearHistory() {
-            if (confirm('Delete all history?')) {
-                AppState.history = [];
-                localStorage.setItem('aiDocStudioHistory', '[]');
-                renderHistory();
-                showToast('History cleared.', 'info');
+            function deleteConversation(convId) {
+                conversations = conversations.filter(c => c.id !== convId);
+                if (currentConversationId === convId) {
+                    currentConversationId = conversations.length > 0 ? conversations[0].id : null;
+                    const conv = getCurrentConversation();
+                    if (conv) {
+                        renderAllMessages(conv.messages);
+                        updateMainTitle();
+                    } else {
+                        currentConversationId = null;
+                        renderAllMessages([]);
+                        updateMainTitle();
+                        $modelBadge.textContent = 'Auto';
+                    }
+                }
+                saveToStorage();
+                updateSidebar($searchInput.value);
             }
-        }
 
-        document.addEventListener('DOMContentLoaded', init);
-        console.log('AI Doc Studio ready. All keys are handled securely. Never hardcoded.');
+            function startNewChat() {
+                currentConversationId = null;
+                renderAllMessages([]);
+                updateMainTitle();
+                $modelBadge.textContent = 'Auto';
+                updateSidebar($searchInput.value);
+                saveToStorage();
+                $userInput.focus();
+                closeMobileSidebar();
+            }
+
+            function updateMainTitle() {
+                const conv = getCurrentConversation();
+                $mainTitle.textContent = conv ? conv.title : 'New Conversation';
+            }
+
+            // ─────────────────────────────────────
+            // MOBILE SIDEBAR
+            // ─────────────────────────────────────
+            function openMobileSidebar() {
+                $sidebar.classList.add('open');
+                $sidebarOverlay.classList.add('show');
+            }
+
+            function closeMobileSidebar() {
+                $sidebar.classList.remove('open');
+                $sidebarOverlay.classList.remove('show');
+            }
+
+            function toggleMobileSidebar() {
+                if ($sidebar.classList.contains('open')) {
+                    closeMobileSidebar();
+                } else {
+                    openMobileSidebar();
+                }
+            }
+
+            // ─────────────────────────────────────
+            // EVENT LISTENERS
+            // ─────────────────────────────────────
+            $btnSend.addEventListener('click', sendMessage);
+            $btnStop.addEventListener('click', stopGeneration);
+            $btnNewChat.addEventListener('click', startNewChat);
+            $menuToggle.addEventListener('click', toggleMobileSidebar);
+            $sidebarOverlay.addEventListener('click', closeMobileSidebar);
+            $btnClearInput.addEventListener('click', () => {
+                $userInput.value = '';
+                $userInput.style.height = 'auto';
+                $userInput.focus();
+            });
+
+            $userInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                } else if (e.key === 'Escape') {
+                    stopGeneration();
+                    $userInput.blur();
+                }
+            });
+
+            // Auto-resize textarea
+            $userInput.addEventListener('input', () => {
+                $userInput.style.height = 'auto';
+                $userInput.style.height = Math.min($userInput.scrollHeight, 180) + 'px';
+            });
+
+            // Search
+            $searchInput.addEventListener('input', () => {
+                updateSidebar($searchInput.value);
+            });
+
+            // Global keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'l') {
+                    e.preventDefault();
+                    startNewChat();
+                }
+            });
+
+            // Click outside sidebar to close on mobile
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768 &&
+                    $sidebar.classList.contains('open') &&
+                    !$sidebar.contains(e.target) &&
+                    e.target !== $menuToggle &&
+                    !$menuToggle.contains(e.target)) {
+                    closeMobileSidebar();
+                }
+            });
+
+            // Handle resize
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768) {
+                    closeMobileSidebar();
+                }
+            });
+
+            // Delegate click for dynamically created message action buttons
+            $messagesContainer.addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                const wrapper = e.target.closest('.message-wrapper');
+                if (!wrapper) return;
+                const msgId = wrapper.dataset.messageId;
+                if (!msgId) return;
+                const conv = getCurrentConversation();
+                if (!conv) return;
+
+                if (btn.classList.contains('copy-msg-btn')) {
+                    const msg = conv.messages.find(m => m.id === msgId);
+                    if (msg) {
+                        navigator.clipboard.writeText(msg.content).then(() => {
+                            btn.textContent = '✓ Copied!';
+                            setTimeout(() => { btn.textContent = '📋 Copy'; }, 1800);
+                        });
+                    }
+                } else if (btn.classList.contains('edit-msg-btn')) {
+                    const msg = conv.messages.find(m => m.id === msgId);
+                    if (!msg || msg.role !== 'user') return;
+                    const newContent = prompt('Edit your message:', msg.content);
+                    if (newContent !== null && newContent.trim() !== '') {
+                        msg.content = newContent.trim();
+                        msg.timestamp = new Date().toISOString();
+                        const idx = conv.messages.findIndex(m => m.id === msgId);
+                        if (idx >= 0) {
+                            conv.messages = conv.messages.slice(0, idx + 1);
+                        }
+                        saveToStorage();
+                        renderAllMessages(conv.messages);
+                        updateSidebar();
+                        regenerateLastMessage();
+                    }
+                } else if (btn.classList.contains('regenerate-btn')) {
+                    const msgIdx = conv.messages.findIndex(m => m.id === msgId);
+                    if (msgIdx >= 0 && conv.messages[msgIdx].role === 'ai') {
+                        conv.messages = conv.messages.slice(0, msgIdx);
+                        saveToStorage();
+                        regenerateLastMessage();
+                    }
+                } else if (btn.classList.contains('delete-msg-btn')) {
+                    const msgIdx = conv.messages.findIndex(m => m.id === msgId);
+                    if (msgIdx >= 0) {
+                        conv.messages.splice(msgIdx, 1);
+                        saveToStorage();
+                        renderAllMessages(conv.messages);
+                        updateSidebar();
+                        if (conv.messages.length === 0) updateMainTitle();
+                    }
+                }
+            });
+            // ─────────────────────────────────────
+            // INITIALIZATION
+            // ─────────────────────────────────────
+            function init() {
+                loadFromStorage();
+                updateSidebar();
+                const conv = getCurrentConversation();
+                if (conv) {
+                    renderAllMessages(conv.messages);
+                    updateMainTitle();
+                } else {
+                    currentConversationId = null;
+                    renderAllMessages([]);
+                    updateMainTitle();
+                }
+                $modelBadge.textContent = 'Auto';
+                $btnStop.style.display = 'none';
+                $btnSend.style.display = 'flex';
+                $btnSend.disabled = false;
+                $userInput.focus();
+
+                // Re-attach listeners for welcome message if present
+                const wm = getWelcomeMessageEl();
+                if (wm) {
+                    window._welcomeMsg = wm;
+                }
+            }
+
+            init();
+            console.log('%c🚀 Nexus AI Ready %c| %cOpenRouter Auto-Model Chatbot',
+                'color:#00d4aa;font-weight:bold;', '', 'color:#aaa;');
+            console.log('%cPaste your API key in the constant at the top of the script.',
+            'color:#f59e0b;');
+        })();
     </script>
 </body>
 </html>
+            
