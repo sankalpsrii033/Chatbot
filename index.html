@@ -1069,6 +1069,7 @@
             const OPENROUTER_API_KEY = "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";
             const TAVILY_API_KEY = "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";  // <-- yahan apni key paste karo
             const API_URL = "https://openrouter.ai/api/v1/chat/completions";
+            const GEMINI_API_KEY = "AQ.Ab8RN6JHPuGlh6KviwpLt0K8pIhvH_Gw3ueOVqUHhU6NtPB2tg";
             const SITE_URL = window.location.origin || "https://nexus-ai.local";
             const SITE_NAME = "Nexus AI Chat";
 
@@ -1291,6 +1292,99 @@
 
             function getModelInfo(modelId) {
                 return AVAILABLE_MODELS[modelId] || { name: modelId, specialty: 'general', color: '#7c6ff7' };
+            }
+            function getModelInfo(modelId) {
+    return AVAILABLE_MODELS[modelId] || { name: modelId, specialty: 'general', color: '#7c6ff7' };
+}
+
+// 👇 Yeh wala function yahan paste karo 👇
+async function callGemini(messages, systemPrompt) {
+    // Convert messages to Gemini format
+    const contents = [];
+    for (const msg of messages) {
+        // Skip system messages (they go separately)
+        if (msg.role === 'system') continue;
+        const geminiRole = msg.role === 'assistant' ? 'model' : 'user';
+        contents.push({
+            role: geminiRole,
+            parts: [{ text: msg.content }]
+        });
+    }
+
+    const requestBody = {
+        systemInstruction: {
+            parts: [{ text: systemPrompt }]
+        },
+        contents: contents,
+        generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 4096,
+        }
+    };
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error?.message || `Gemini API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    // Extract text from the first candidate
+    const candidate = data.candidates?.[0];
+    const parts = candidate?.content?.parts;
+    if (!parts || parts.length === 0) throw new Error('Empty response from Gemini');
+    return parts.map(p => p.text).join('');
+}
+
+// 👆 Exactly yahan tak paste karna hai.
+            async function fallbackToGemini(conv, userMessageText) {
+    // Remove the failed assistant streaming message if any
+    if (currentStreamingMessageEl) {
+        currentStreamingMessageEl.remove();
+        currentStreamingMessageEl = null;
+    }
+    currentStreamingContent = '';
+    hideTypingIndicator();
+
+    // Build messages array (exactly what would have been sent to OpenRouter)
+    const apiMessages = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...conv.messages.map(m => ({ role: m.role, content: m.content }))
+    ];
+
+    try {
+        showTypingIndicator();
+        const geminiText = await callGemini(apiMessages, SYSTEM_PROMPT);
+        hideTypingIndicator();
+
+        // Save the assistant message
+        const msgId = generateMessageId();
+        conv.messages.push({
+            id: msgId,
+            role: 'assistant',
+            content: geminiText,
+            timestamp: Date.now(),
+            model: 'gemini-2.5-flash (fallback)'
+        });
+
+        saveState();
+        renderAllMessages();
+        updateChatHeader();
+    } catch (fallbackError) {
+        hideTypingIndicator();
+        // Show final error if even Gemini fails
+        const errorCard = document.createElement('div');
+        errorCard.className = 'error-card';
+        errorCard.textContent = '⚠️ Both AI providers failed. ' + fallbackError.message;
+        messagesContainer.appendChild(errorCard);
+        scrollToBottom(true);
+    }
             }
             async function fetchSearchResults(query) {
     try {
@@ -2258,33 +2352,53 @@ const apiMessages = [
                     finalizeStreamingMessage(fullContent, selectedModel);
 
                 } catch (error) {
-                    hideTypingIndicator();
-                    if (currentStreamingMessageEl) {
-                        currentStreamingMessageEl.remove();
-                        currentStreamingMessageEl = null;
-                    }
-                    currentStreamingContent = '';
+    hideTypingIndicator();
 
-                    if (error.name === 'AbortError') {
-                        // User stopped generation
-                        if (currentStreamingContent) {
-                            finalizeStreamingMessage(currentStreamingContent + '\n\n*[Generation stopped]*',
-                                selectedModel);
-                        }
-                    } else {
-                        // Show error card
-                        const errorCard = document.createElement('div');
-                        errorCard.className = 'error-card';
-                        errorCard.textContent = '⚠️ ' + (error.message || 'An error occurred. Please try again.');
-                        messagesContainer.appendChild(errorCard);
-                        scrollToBottom(true);
-                        // Remove the user message if API fails completely and no content was generated
-                        if (!currentStreamingContent && conv.messages.length > 0 && conv.messages[conv.messages
-                                .length - 1].role === 'user') {
-                            // Keep the user message but add error note
-                        }
-                    }
-                } finally {
+    // If the request was aborted intentionally, handle partial content normally
+    if (error.name === 'AbortError') {
+        if (currentStreamingMessageEl) {
+            currentStreamingMessageEl.remove();
+            currentStreamingMessageEl = null;
+        }
+        if (currentStreamingContent) {
+            const conv = getCurrentConversation();
+            if (conv) {
+                conv.messages.push({
+                    id: generateMessageId(),
+                    role: 'assistant',
+                    content: currentStreamingContent + '\n\n*[Generation stopped]*',
+                    timestamp: Date.now(),
+                    model: 'unknown'
+                });
+                saveState();
+                renderAllMessages();
+            }
+        }
+        currentStreamingContent = '';
+    } else {
+        // OpenRouter failed (rate limit, network error, etc.) → fallback to Gemini
+        console.warn('OpenRouter error, switching to Gemini:', error.message);
+        const conv = getCurrentConversation();
+        if (conv) {
+            // Remove the failed streaming element if any
+            if (currentStreamingMessageEl) {
+                currentStreamingMessageEl.remove();
+                currentStreamingMessageEl = null;
+            }
+            // If we already have partial streaming content, discard it (clean fallback)
+            currentStreamingContent = '';
+            // Attempt Gemini fallback
+            await fallbackToGemini(conv, text);
+        } else {
+            // No conversation? show error
+            const errorCard = document.createElement('div');
+            errorCard.className = 'error-card';
+            errorCard.textContent = '⚠️ ' + (error.message || 'AI request failed and no active conversation.');
+            messagesContainer.appendChild(errorCard);
+            scrollToBottom(true);
+        }
+    }
+} finally {
                     setGeneratingState(false);
                     abortController = null;
                     hideTypingIndicator();
