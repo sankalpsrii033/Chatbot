@@ -1077,7 +1077,7 @@
                     specialty: 'reasoning',
                     color: '#7c6ff7'
                 },
-                'nvidia/nemotron-3-ultra:free': {
+                'nvidia/nemotron-3-ultra-550b-a55b:free': {
                     name: 'Nemotron 3 Ultra',
                     specialty: 'math',
                     color: '#4ec9f0'
@@ -1226,7 +1226,7 @@
                 ];
                 for (const pattern of mathPatterns) {
                     if (pattern.test(lower)) {
-                        return 'nvidia/nemotron-3-ultra:free';
+                        return 'nvidia/nemotron-3-ultra-550b-a55b:free';
                     }
                 }
 
