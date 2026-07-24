@@ -1296,7 +1296,107 @@
             function getModelInfo(modelId) {
     return AVAILABLE_MODELS[modelId] || { name: modelId, specialty: 'general', color: '#7c6ff7' };
 }
+// ---- Speech‑to‑Text (AssemblyAI) ----
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+const btnMic = document.getElementById('btnMic');
 
+async function startRecording() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = async () => {
+            stream.getTracks().forEach(track => track.stop());
+            btnMic.classList.remove('recording');
+            isRecording = false;
+            if (audioChunks.length === 0) return;
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            await transcribeAudio(audioBlob);
+        };
+
+        mediaRecorder.start();
+        btnMic.classList.add('recording');
+        isRecording = true;
+    } catch (err) {
+        alert('Microphone access denied.');
+        console.error(err);
+    }
+}
+
+function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+    }
+}
+
+async function transcribeAudio(audioBlob) {
+    btnMic.disabled = true;
+    btnMic.textContent = '⏳';
+    try {
+        // 1. Upload audio
+        const uploadRes = await fetch('https://api.assemblyai.com/v2/upload', {
+            method: 'POST',
+            headers: { 'authorization': ASSEMBLYAI_API_KEY },
+            body: audioBlob
+        });
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(uploadData.error || 'Upload failed');
+
+        // 2. Create transcript job
+        const transRes = await fetch('https://api.assemblyai.com/v2/transcript', {
+            method: 'POST',
+            headers: {
+                'authorization': ASSEMBLYAI_API_KEY,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({ audio_url: uploadData.upload_url })
+        });
+        const transData = await transRes.json();
+        if (!transRes.ok) throw new Error(transData.error || 'Transcript request failed');
+
+        // 3. Poll until done
+        let transcript;
+        while (true) {
+            const pollRes = await fetch(`https://api.assemblyai.com/v2/transcript/${transData.id}`, {
+                headers: { 'authorization': ASSEMBLYAI_API_KEY }
+            });
+            const pollData = await pollRes.json();
+            if (pollData.status === 'completed') {
+                transcript = pollData.text;
+                break;
+            } else if (pollData.status === 'error') {
+                throw new Error(pollData.error || 'Transcription error');
+            }
+            await new Promise(r => setTimeout(r, 1000)); // wait 1 sec
+        }
+
+        // 4. Insert into input field
+        userInput.value = transcript;
+        updateClearButton();
+        userInput.focus();
+        // Optional: auto-send if you like (remove if you want manual send)
+        // sendMessage(transcript);
+    } catch (error) {
+        alert('Voice input failed: ' + error.message);
+        console.error(error);
+    } finally {
+        btnMic.disabled = false;
+        btnMic.textContent = '🎤';
+    }
+}
+
+btnMic.addEventListener('click', () => {
+    if (isRecording) {
+        stopRecording();
+    } else {
+        startRecording();
+    }
+});
+// ---- End Speech‑to‑Text ----
 // 👇 Yeh wala function yahan paste karo 👇
 async function callGemini(messages, systemPrompt) {
     // Convert messages to Gemini format
