@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1" />
+  <meta name="theme-color" content="#0a0a12" />
+  <meta name="description" content="YOUR MUSIC — Premium music streaming" />
+  <title>YOUR MUSIC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* =========================================================
+       DESIGN SYSTEM
+       ========================================================= */
+    :root {
+      --bg-deep: #07070d;
+      --bg-primary: #0a0a12;
+      --bg-elevated: #12121c;
+      --bg-surface: #181824;
+      --bg-card: rgba(24, 24, 36, 0.72);
+      --bg-glass: rgba(18, 18, 28, 0.65);
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-medium: rgba(255, 255, 255, 0.1);
+      --text-primary: #f4f4f8;
+      --text-secondary: #a0a0b8;
+      --text-muted: #6b6b84;
+      --accent: #7c6bff;
+      --accent-soft: rgba(124, 107, 255, 0.15);
+      --accent-hover: #9588ff;
+      --accent-glow: rgba(124, 107, 255, 0.35);
+      --success: #34d399;
+      --danger: #f87171;
+      --warning: #fbbf24;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+      --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.45);
+      --sidebar-width: 260px;
+      --player-height: 88px;
+      --header-height: 64px;
+      --mobile-nav-height: 64px;
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+      --font-display: 'Outfit', system-ui, sans-serif;
+      --font-body: 'Inter', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; -webkit-tap-highlight-color: transparent; }
+    body {
+      height: 100%;
+      font-family: var(--font-body);
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      overflow: hidden;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+    input, textarea { font-family: inherit; color: inherit; }
+    img { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    ul, ol { list-style: none; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* =========================================================
+       LAYOUT
+       ========================================================= */
+    #app {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      grid-template-rows: 1fr var(--player-height);
+      height: 100%;
+      height: 100dvh;
+      background: radial-gradient(ellipse 120% 80% at 10% -20%, rgba(124, 107, 255, 0.12), transparent 50%),
+                  radial-gradient(ellipse 80% 60% at 90% 10%, rgba(99, 102, 241, 0.08), transparent 45%),
+                  var(--bg-deep);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      grid-row: 1 / 2;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-glass);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-right: 1px solid var(--border-subtle);
+      padding: 24px 16px 16px;
+      overflow: hidden;
+      z-index: 40;
+    }
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 12px 28px;
+    }
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 16px;
+      color: white;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+    .brand-text {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+    .nav-section { margin-bottom: 28px; }
+    .nav-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      padding: 0 12px 10px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: var(--radius-md);
+      font-size: 14.5px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: background var(--transition-fast), color var(--transition-fast);
+      text-align: left;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+    .nav-item.active {
+      background: var(--accent-soft);
+      color: var(--accent-hover);
+    }
+    .nav-item svg { width: 20px; height: 20px; flex-shrink: 0; opacity: 0.9; }
+    .nav-item.active svg { opacity: 1; }
+
+    /* Main column */
+    .main-column {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+      grid-row: 1 / 2;
+    }
+    .top-header {
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(10, 10, 18, 0.6);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      flex-shrink: 0;
+      z-index: 30;
+    }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .page-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-full);
+      display: grid;
+      place-items: center;
+      color: var(--text-secondary);
+      transition: background var(--transition-fast), color var(--transition-fast);
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); }
+    .icon-btn svg { width: 20px; height: 20px; }
+
+    .content-scroll {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 28px 28px 40px;
+      scroll-behavior: smooth;
+    }
+    .content-scroll::-webkit-scrollbar { width: 8px; }
+    .content-scroll::-webkit-scrollbar-track { background: transparent; }
+    .content-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+    }
+
+    /* Page sections */
+    .page { display: none; animation: fadeIn 0.28s ease; }
+    .page.active { display: block; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards & sections */
+    .section { margin-bottom: 36px; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .section-link {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: color var(--transition-fast);
+    }
+    .section-link:hover { color: var(--accent-hover); }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 18px;
+    }
+    .media-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      transition: transform var(--transition-normal), background var(--transition-normal), border-color var(--transition-normal);
+      cursor: pointer;
+    }
+    .media-card:hover {
+      transform: translateY(-3px);
+      background: rgba(30, 30, 46, 0.9);
+      border-color: var(--border-medium);
+    }
+    .media-card-cover {
+      aspect-ratio: 1;
+      border-radius: var(--radius-md);
+      background: linear-gradient(145deg, #1e1e2e, #12121c);
+      margin-bottom: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+    .media-card-cover img { width: 100%; height: 100%; object-fit: cover; }
+    .media-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+    .media-card-sub {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Empty / Loading / Error states */
+    .state-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 64px 24px;
+      min-height: 280px;
+    }
+    .state-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      background: var(--bg-surface);
+      display: grid;
+      place-items: center;
+      margin-bottom: 20px;
+      color: var(--text-muted);
+    }
+    .state-icon svg { width: 28px; height: 28px; }
+    .state-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .state-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      max-width: 320px;
+      line-height: 1.55;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 22px;
+      padding: 11px 22px;
+      border-radius: var(--radius-full);
+      background: var(--accent);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background var(--transition-fast), transform var(--transition-fast);
+    }
+    .btn-primary:hover { background: var(--accent-hover); transform: scale(1.02); }
+    .btn-primary:active { transform: scale(0.98); }
+
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-surface) 25%, rgba(255,255,255,0.04) 50%, var(--bg-surface) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: var(--radius-md);
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* =========================================================
+       MINI PLAYER
+       ========================================================= */
+    .player-bar {
+      grid-column: 1 / -1;
+      height: var(--player-height);
+      background: rgba(12, 12, 20, 0.92);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border-top: 1px solid var(--border-subtle);
+      display: grid;
+      grid-template-columns: 1fr 1.4fr 1fr;
+      align-items: center;
+      padding: 0 20px;
+      gap: 16px;
+      z-index: 50;
+    }
+    .player-now {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+    .player-cover {
+      width: 56px;
+      height: 56px;
+      border-radius: 10px;
+      background: var(--bg-surface);
+      flex-shrink: 0;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .player-cover img { width: 100%; height: 100%; object-fit: cover; }
+    .player-meta { min-width: 0; }
+    .player-title {
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .player-artist {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .player-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .controls-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ctrl-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-full);
+      display: grid;
+      place-items: center;
+      color: var(--text-secondary);
+      transition: color var(--transition-fast), background var(--transition-fast);
+    }
+    .ctrl-btn:hover { color: var(--text-primary); background: rgba(255,255,255,0.06); }
+    .ctrl-btn.play-btn {
+      width: 42px;
+      height: 42px;
+      background: var(--text-primary);
+      color: var(--bg-deep);
+    }
+    .ctrl-btn.play-btn:hover { transform: scale(1.05); background: white; }
+    .ctrl-btn svg { width: 18px; height: 18px; }
+    .ctrl-btn.play-btn svg { width: 20px; height: 20px; }
+    .progress-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      max-width: 480px;
+    }
+    .time-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      min-width: 36px;
+      font-variant-numeric: tabular-nums;
+    }
+    .time-label.right { text-align: right; }
+    .progress-track {
+      flex: 1;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.1s linear;
+      pointer-events: none;
+    }
+    .progress-track:hover .progress-fill { background: var(--accent-hover); }
+    .player-extra {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+    .volume-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 120px;
+    }
+    .volume-track {
+      flex: 1;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      cursor: pointer;
+      position: relative;
+    }
+    .volume-fill {
+      height: 100%;
+      background: var(--text-secondary);
+      border-radius: 2px;
+      width: 80%;
+      pointer-events: none;
+    }
+
+    /* Mobile bottom nav */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      background: rgba(12, 12, 20, 0.95);
+      backdrop-filter: blur(24px);
+      border-top: 1px solid var(--border-subtle);
+      z-index: 45;
+      justify-content: space-around;
+      align-items: center;
+    }
+    .mobile-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 12px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 500;
+      transition: color var(--transition-fast);
+    }
+    .mobile-nav-item.active { color: var(--accent-hover); }
+    .mobile-nav-item svg { width: 22px; height: 22px; }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 12px 18px;
+      font-size: 13.5px;
+      box-shadow: var(--shadow-md);
+      animation: toastIn 0.3s ease;
+      pointer-events: auto;
+      max-width: 320px;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Search input (header) */
+    .search-input-wrap {
+      position: relative;
+      width: 280px;
+      max-width: 40vw;
+    }
+    .search-input-wrap svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      height: 40px;
+      padding: 0 14px 0 42px;
+      border-radius: var(--radius-full);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      font-size: 14px;
+      transition: border-color var(--transition-fast), background var(--transition-fast);
+    }
+    .search-input::placeholder { color: var(--text-muted); }
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(24, 24, 36, 0.9);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      #app {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr var(--player-height) var(--mobile-nav-height);
+      }
+      .sidebar { display: none; }
+      .mobile-nav { display: flex; }
+      .player-bar {
+        grid-column: 1;
+        grid-template-columns: 1fr auto;
+        padding: 0 14px;
+        height: var(--player-height);
+      }
+      .player-controls { display: none; }
+      .player-extra { display: none; }
+      .content-scroll { padding: 20px 16px 32px; }
+      .top-header { padding: 0 16px; }
+      .search-input-wrap { width: 180px; }
+      .card-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+    }
+    @media (max-width: 520px) {
+      .player-bar { grid-template-columns: 1fr; }
+      .player-now { width: 100%; }
+      .page-title { font-size: 17px; }
+    }
+
+    /* Utility */
+    .hidden { display: none !important; }
+    .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- SIDEBAR (desktop) -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-mark">YM</div>
+        <span class="brand-text">YOUR MUSIC</span>
+      </div>
+
+      <nav class="nav-section" aria-label="Main">
+        <div class="nav-label">Browse</div>
+        <button class="nav-item active" data-page="home" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+          Home
+        </button>
+        <button class="nav-item" data-page="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          Search
+        </button>
+        <button class="nav-item" data-page="explore">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+          Explore
+        </button>
+      </nav>
+
+      <nav class="nav-section" aria-label="Library">
+        <div class="nav-label">Your Library</div>
+        <button class="nav-item" data-page="library">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+          Library
+        </button>
+        <button class="nav-item" data-page="playlists">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          Playlists
+        </button>
+      </nav>
+
+      <nav class="nav-section" style="margin-top:auto" aria-label="Settings">
+        <button class="nav-item" data-page="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          Settings
+        </button>
+      </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main-column">
+      <header class="top-header">
+        <div class="header-left">
+          <h1 class="page-title" id="pageTitle">Home</h1>
+        </div>
+        <div class="header-actions">
+          <div class="search-input-wrap hidden" id="headerSearchWrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input type="search" class="search-input" id="headerSearchInput" placeholder="Search songs, artists..." autocomplete="off" />
+          </div>
+          <button class="icon-btn" id="btnTheme" title="Theme" aria-label="Toggle theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="content-scroll" id="contentArea" role="main">
+        <!-- HOME -->
+        <section class="page active" id="page-home" data-page="home">
+          <div class="section">
+            <div class="section-header">
+              <h2 class="section-title">Welcome back</h2>
+            </div>
+            <div class="state-container">
+              <div class="state-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              </div>
+              <h3 class="state-title">Your music journey starts here</h3>
+              <p class="state-desc">Search for songs, explore trending tracks, or build your library. Everything stays on this device.</p>
+              <button class="btn-primary" data-goto="search">Start searching</button>
+            </div>
+          </div>
+          <div class="section">
+            <div class="section-header">
+              <h2 class="section-title">Recently played</h2>
+            </div>
+            <div id="homeRecent" class="state-container" style="min-height:160px;padding:32px 16px">
+              <p class="state-desc">Nothing played yet. Tracks you play will appear here.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- SEARCH -->
+        <section class="page" id="page-search" data-page="search">
+          <div class="state-container">
+            <div class="state-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            </div>
+            <h3 class="state-title">Search</h3>
+            <p class="state-desc">Find songs, albums, artists and playlists. Full search arrives in the next development phase.</p>
+          </div>
+        </section>
+
+        <!-- EXPLORE -->
+        <section class="page" id="page-explore" data-page="explore">
+          <div class="state-container">
+            <div class="state-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+            </div>
+            <h3 class="state-title">Explore</h3>
+            <p class="state-desc">Trending, charts and discovery feeds will live here.</p>
+          </div>
+        </section>
+
+        <!-- LIBRARY -->
+        <section class="page" id="page-library" data-page="library">
+          <div class="state-container">
+            <div class="state-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+            </div>
+            <h3 class="state-title">Your Library</h3>
+            <p class="state-desc">Liked songs and saved music will appear here once you start collecting tracks.</p>
+          </div>
+        </section>
+
+        <!-- PLAYLISTS -->
+        <section class="page" id="page-playlists" data-page="playlists">
+          <div class="state-container">
+            <div class="state-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </div>
+            <h3 class="state-title">Playlists</h3>
+            <p class="state-desc">Create and manage your playlists. Coming in a later part.</p>
+          </div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section class="page" id="page-settings" data-page="settings">
+          <div class="section">
+            <div class="section-header"><h2 class="section-title">Settings</h2></div>
+            <div style="max-width:480px;display:flex;flex-direction:column;gap:16px">
+              <div style="background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:18px 20px">
+                <div style="font-weight:600;margin-bottom:6px">Music provider</div>
+                <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">Choose primary source. Saavn requires a CORS proxy on pure static hosting.</p>
+                <select id="settingProvider" style="width:100%;height:40px;border-radius:var(--radius-md);background:var(--bg-surface);border:1px solid var(--border-subtle);padding:0 12px;font-size:14px">
+                  <option value="saavn">JioSaavn (needs proxy)</option>
+                  <option value="ytmusic">YTMusic (public instances)</option>
+                </select>
+              </div>
+              <div style="background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:18px 20px">
+                <div style="font-weight:600;margin-bottom:6px">About</div>
+                <p style="font-size:13px;color:var(--text-secondary)">YOUR MUSIC — single-file streaming foundation (Part 1). Built for GitHub Pages. No account required. Data stays in your browser.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- MINI PLAYER -->
+    <footer class="player-bar" id="playerBar" aria-label="Now playing">
+      <div class="player-now">
+        <div class="player-cover" id="playerCover">
+          <div style="width:100%;height:100%;background:linear-gradient(145deg,#1e1e2e,#0f0f18);display:grid;place-items:center">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          </div>
+        </div>
+        <div class="player-meta">
+          <div class="player-title" id="playerTitle">No track playing</div>
+          <div class="player-artist" id="playerArtist">—</div>
+        </div>
+      </div>
+
+      <div class="player-controls">
+        <div class="controls-row">
+          <button class="ctrl-btn" id="btnShuffle" title="Shuffle" aria-label="Shuffle" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+          </button>
+          <button class="ctrl-btn" id="btnPrev" title="Previous" aria-label="Previous" disabled>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+          </button>
+          <button class="ctrl-btn play-btn" id="btnPlay" title="Play" aria-label="Play">
+            <svg id="iconPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="iconPause" class="hidden" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+          </button>
+          <button class="ctrl-btn" id="btnNext" title="Next" aria-label="Next" disabled>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+          </button>
+          <button class="ctrl-btn" id="btnRepeat" title="Repeat" aria-label="Repeat" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+          </button>
+        </div>
+        <div class="progress-row">
+          <span class="time-label" id="timeCurrent">0:00</span>
+          <div class="progress-track" id="progressTrack" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <span class="time-label right" id="timeDuration">0:00</span>
+        </div>
+      </div>
+
+      <div class="player-extra">
+        <button class="ctrl-btn" id="btnQueue" title="Queue" aria-label="Queue" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        </button>
+        <div class="volume-wrap">
+          <button class="ctrl-btn" id="btnMute" title="Mute" aria-label="Mute">
+            <svg id="iconVolume" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+          </button>
+          <div class="volume-track" id="volumeTrack">
+            <div class="volume-fill" id="volumeFill"></div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Mobile nav -->
+  <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+    <button class="mobile-nav-item active" data-page="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+      Home
+    </button>
+    <button class="mobile-nav-item" data-page="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      Search
+    </button>
+    <button class="mobile-nav-item" data-page="library">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+      Library
+    </button>
+    <button class="mobile-nav-item" data-page="settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      Settings
+    </button>
+  </nav>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Hidden audio element -->
+  <audio id="audioEngine" preload="metadata"></audio>
+
+  <script>
+  /* =========================================================
+     CONFIGURATION
+     ========================================================= */
+  const CONFIG = {
+    APP_NAME: 'YOUR MUSIC',
+    STORAGE_VERSION: 'v1',
+    STORAGE_PREFIX: 'yourmusic_',
+    // Saavn base — direct browser calls will fail CORS on GitHub Pages.
+    // Set SAAVN_PROXY_BASE to a CORS-enabled proxy that forwards to the
+    // real JioSaavn endpoint (same pattern as original /api/saavn).
+    // Example: 'https://your-worker.example.com/saavn'
+    SAAVN_API_BASE: 'https://www.jiosaavn.com/api.php',
+    SAAVN_PROXY_BASE: null, // set by user later or via settings
+    YT_STATIC_INSTANCES: [
+      // Public Invidious-style instances (may change; discovery will be added later)
+      'https://invidious.fdn.fr',
+      'https://inv.nadeko.net',
+      'https://invidious.nerdvpn.de'
+    ],
+    YT_EXTRA_CONFIG_URL: 'https://raw.githubusercontent.com/BlackHatDevX/openspot-config/refs/heads/main/ytmusicextraapi.json',
+    DEFAULT_VOLUME: 0.8,
+    RECENTLY_PLAYED_LIMIT: 30,
+    SEARCH_CACHE_TTL: 3 * 60 * 1000,
+    STREAM_CACHE_TTL: 5 * 60 * 1000
+  };
+
+  /* =========================================================
+     STORAGE MANAGER (versioned localStorage)
+     ========================================================= */
+  const Storage = {
+    key(name) {
+      return `${CONFIG.STORAGE_PREFIX}${CONFIG.STORAGE_VERSION}_${name}`;
+    },
+    get(name, fallback = null) {
+      try {
+        const raw = localStorage.getItem(this.key(name));
+        if (raw === null) return fallback;
+        return JSON.parse(raw);
+      } catch (e) {
+        console.warn('[Storage] get failed', name, e);
+        return fallback;
+      }
+    },
+    set(name, value) {
+      try {
+        localStorage.setItem(this.key(name), JSON.stringify(value));
+        return true;
+      } catch (e) {
+        console.warn('[Storage] set failed', name, e);
+        return false;
+      }
+    },
+    remove(name) {
+      try {
+        localStorage.removeItem(this.key(name));
+      } catch (_) {}
+    }
+  };
+
+  /* =========================================================
+     APPLICATION STATE
+     Structured for future expansion (Parts 2–8)
+     ========================================================= */
+  const AppState = {
+    currentPage: 'home',
+    currentSong: null,
+    queue: [],
+    currentIndex: -1,
+    isPlaying: false,
+    volume: CONFIG.DEFAULT_VOLUME,
+    muted: false,
+    progress: 0,
+    duration: 0,
+    repeatMode: 'off', // off | one | all
+    shuffleEnabled: false,
+    likedSongs: [],
+    playlists: [],
+    recentlyPlayed: [],
+    searchResults: { tracks: [], albums: [], artists: [], playlists: [] },
+    searchQuery: '',
+    currentAlbum: null,
+    currentArtist: null,
+    currentPlaylist: null,
+    lyrics: null,
+    userPreferences: {
+      provider: 'ytmusic', // safer default for pure browser
+      theme: 'dark'
+    },
+    isLoading: false,
+    error: null,
+    _listeners: [],
+    subscribe(fn) {
+      this._listeners.push(fn);
+      return () => {
+        this._listeners = this._listeners.filter(l => l !== fn);
+      };
+    },
+    notify(changed = {}) {
+      this._listeners.forEach(fn => {
+        try { fn(changed); } catch (e) { console.error(e); }
+      });
+    },
+    patch(partial) {
+      Object.assign(this, partial);
+      this.notify(partial);
+    }
+  };
+
+  /* =========================================================
+     UTILITIES
+     ========================================================= */
+  const Utils = {
+    formatTime(seconds) {
+      if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+      const s = Math.floor(seconds);
+      const m = Math.floor(s / 60);
+      const rem = s % 60;
+      const h = Math.floor(m / 60);
+      if (h > 0) {
+        return `${h}:${String(m % 60).padStart(2, '0')}:${String(rem).padStart(2, '0')}`;
+      }
+      return `${m}:${String(rem).padStart(2, '0')}`;
+    },
+    decodeHtml(text) {
+      if (!text) return '';
+      const map = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'", '&apos;': "'", '&nbsp;': ' ' };
+      return String(text).replace(/&[#\w]+;/g, m => {
+        if (map[m]) return map[m];
+        const d = m.match(/^&#(\d+);$/);
+        if (d) return String.fromCharCode(+d[1]);
+        const h = m.match(/^&#x([0-9a-fA-F]+);$/);
+        if (h) return String.fromCharCode(parseInt(h[1], 16));
+        return m;
+      });
+    },
+    clamp(v, min, max) {
+      return Math.min(max, Math.max(min, v));
+    },
+    toast(message, duration = 2800) {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = 'toast';
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(12px)';
+        el.style.transition = '0.25s';
+        setTimeout(() => el.remove(), 260);
+      }, duration);
+    },
+    fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeoutMs);
+      return fetch(url, { ...options, signal: controller.signal })
+        .finally(() => clearTimeout(id));
+    }
+  };
+
+  /* =========================================================
+     API LAYER (foundation)
+     - Saavn: requires proxy on GitHub Pages (CORS)
+     - YTMusic: uses public instances (may work without proxy)
+     Full search / stream resolution arrives in Part 3+
+     ========================================================= */
+  const MusicAPI = {
+    _searchCache: new Map(),
+    _streamCache: new Map(),
+
+    getProvider() {
+      return AppState.userPreferences.provider || 'ytmusic';
+    },
+
+    /**
+     * Build Saavn URL. If SAAVN_PROXY_BASE is set, route through it.
+     * Without a proxy this will fail in the browser due to CORS.
+     */
+    buildSaavnUrl(endpoint, params = {}) {
+      const base = CONFIG.SAAVN_PROXY_BASE || CONFIG.SAAVN_API_BASE;
+      const url = new URL(base);
+      if (CONFIG.SAAVN_PROXY_BASE) {
+        url.searchParams.set('endpoint', endpoint);
+        Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, String(v)));
+      } else {
+        url.searchParams.set('__call', endpoint);
+        url.searchParams.set('_format', 'json');
+        url.searchParams.set('_marker', '0');
+        url.searchParams.set('api_version', '4');
+        url.searchParams.set('ctx', 'web6dot0');
+        Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, String(v)));
+      }
+      return url.toString();
+    },
+
+    async saavnRequest(endpoint, params = {}) {
+      // LIMITATION: Direct calls to jiosaavn.com are blocked by CORS in browsers.
+      // Deploy a small proxy (Cloudflare Worker / own server) and set CONFIG.SAAVN_PROXY_BASE.
+      if (!CONFIG.SAAVN_PROXY_BASE) {
+        console.warn('[MusicAPI] Saavn requires a CORS proxy on static hosting. Set CONFIG.SAAVN_PROXY_BASE.');
+      }
+      const url = this.buildSaavnUrl(endpoint, params);
+      const res = await Utils.fetchWithTimeout(url, {
+        headers: { 'Accept': 'application/json' }
+      }, 12000);
+      if (!res.ok) throw new Error(`Saavn HTTP ${res.status}`);
+      return res.json();
+    },
+
+    // DES decryption helpers (CryptoJS will be loaded on demand in later parts)
+    // createDownloadLinks / createImageLinks will be fully ported in Part 3.
+
+    async searchTracks(query, page = 1, limit = 20) {
+      // Placeholder structure — real implementation in Part 3
+      const provider = this.getProvider();
+      if (provider === 'ytmusic') {
+        return this.ytSearch(query);
+      }
+      // Saavn path prepared but will surface CORS error until proxy is configured
+      try {
+        const data = await this.saavnRequest('search.getResults', { q: query, p: page, n: limit });
+        return this.transformSaavnSearch(data);
+      } catch (e) {
+        console.error('[MusicAPI] searchTracks', e);
+        throw e;
+      }
+    },
+
+    async ytSearch(query) {
+      // Minimal working YT path for future use; instances may change
+      const instances = CONFIG.YT_STATIC_INSTANCES;
+      let lastErr = null;
+      for (const base of instances) {
+        try {
+          const url = `${base.replace(/\/$/, '')}/api/v1/search?q=${encodeURIComponent(query)}&type=video`;
+          const res = await Utils.fetchWithTimeout(url, {}, 8000);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const items = await res.json();
+          const tracks = (Array.isArray(items) ? items : [])
+            .filter(i => i.videoId)
+            .map(i => ({
+              id: i.videoId,
+              provider: 'ytmusic',
+              title: i.title || 'Unknown',
+              artist: i.author || 'Unknown',
+              artistId: 0,
+              albumTitle: '',
+              albumCover: i.videoThumbnails?.[0]?.url || `https://i.ytimg.com/vi/${i.videoId}/hqdefault.jpg`,
+              albumId: '',
+              releaseDate: '',
+              genre: '',
+              duration: (i.lengthSeconds || 0) * 1000,
+              audioQuality: { maximumBitDepth: 16, maximumSamplingRate: 44100, isHiRes: false },
+              version: null,
+              label: '',
+              labelId: 0,
+              upc: '',
+              mediaCount: 1,
+              parental_warning: false,
+              streamable: true,
+              purchasable: false,
+              previewable: false,
+              genreId: 0,
+              genreSlug: '',
+              genreColor: '',
+              releaseDateStream: '',
+              releaseDateDownload: '',
+              maximumChannelCount: 2,
+              images: {
+                small: `https://i.ytimg.com/vi/${i.videoId}/hqdefault.jpg`,
+                thumbnail: `https://i.ytimg.com/vi/${i.videoId}/hqdefault.jpg`,
+                large: `https://i.ytimg.com/vi/${i.videoId}/hqdefault.jpg`,
+                back: null
+              },
+              isrc: ''
+            }));
+          return {
+            tracks,
+            albums: [],
+            artists: [],
+            playlists: [],
+            pagination: { offset: 0, total: tracks.length, hasMore: false }
+          };
+        } catch (err) {
+          lastErr = err;
+        }
+      }
+      throw lastErr || new Error('All YT instances failed');
+    },
+
+    transformSaavnSearch(data) {
+      // Skeleton — full transform ported in Part 3
+      return { tracks: [], albums: [], artists: [], playlists: [], pagination: { offset: 0, total: 0, hasMore: false } };
+    },
+
+    async getStreamUrl(trackId, providerHint) {
+      const provider = providerHint || this.getProvider();
+      if (provider === 'ytmusic') {
+        // Stream resolution via instance /latest_version or adaptiveFormats — Part 4
+        throw new Error('Stream resolution for YTMusic will be completed in Part 4');
+      }
+      // Saavn stream via song.getDetails + DES decrypt — Part 4
+      throw new Error('Stream resolution for Saavn requires proxy + decrypt (Part 4)');
+    }
+  };
+
+  /* =========================================================
+     MUSIC ENGINE (HTMLAudioElement foundation)
+     Ready for queue, shuffle, repeat, Media Session later
+     ========================================================= */
+  const MusicEngine = {
+    audio: null,
+    init() {
+      this.audio = document.getElementById('audioEngine');
+      this.audio.volume = AppState.volume;
+
+      this.audio.addEventListener('timeupdate', () => {
+        if (!this.audio.duration) return;
+        AppState.progress = this.audio.currentTime;
+        AppState.duration = this.audio.duration;
+        UI.updateProgress();
+      });
+
+      this.audio.addEventListener('loadedmetadata', () => {
+        AppState.duration = this.audio.duration || 0;
+        UI.updateProgress();
+      });
+
+      this.audio.addEventListener('ended', () => {
+        this.onEnded();
+      });
+
+      this.audio.addEventListener('play', () => {
+        AppState.isPlaying = true;
+        UI.updatePlayButton();
+      });
+
+      this.audio.addEventListener('pause', () => {
+        AppState.isPlaying = false;
+        UI.updatePlayButton();
+      });
+
+      this.audio.addEventListener('error', (e) => {
+        console.error('[MusicEngine] audio error', e);
+        Utils.toast('Playback error');
+        AppState.isPlaying = false;
+        UI.updatePlayButton();
+      });
+    },
+
+    async load(track) {
+      if (!track) return;
+      AppState.currentSong = track;
+      UI.updateNowPlaying();
+      // Actual stream URL resolution deferred to Part 4
+      // this.audio.src = await MusicAPI.getStreamUrl(...)
+      // For foundation we only update UI state
+    },
+
+    play() {
+      if (!this.audio.src) {
+        Utils.toast('No track loaded yet');
+        return;
+      }
+      this.audio.play().catch(err => {
+        console.warn(err);
+        Utils.toast('Unable to play');
+      });
+    },
+
+    pause() {
+      this.audio.pause();
+    },
+
+    toggle() {
+      if (AppState.isPlaying) this.pause();
+      else this.play();
+    },
+
+    seek(time) {
+      if (!Number.isFinite(time)) return;
+      this.audio.currentTime = Utils.clamp(time, 0, this.audio.duration || 0);
+    },
+
+    setVolume(v) {
+      const vol = Utils.clamp(v, 0, 1);
+      AppState.volume = vol;
+      this.audio.volume = AppState.muted ? 0 : vol;
+      Storage.set('volume', vol);
+      UI.updateVolume();
+    },
+
+    toggleMute() {
+      AppState.muted = !AppState.muted;
+      this.audio.volume = AppState.muted ? 0 : AppState.volume;
+      UI.updateVolume();
+    },
+
+    next() {
+      // Queue logic expanded in Part 4
+      if (AppState.queue.length === 0) return;
+      const nextIdx = AppState.currentIndex + 1;
+      if (nextIdx < AppState.queue.length) {
+        AppState.currentIndex = nextIdx;
+        this.load(AppState.queue[nextIdx]);
+      }
+    },
+
+    previous() {
+      if (AppState.queue.length === 0) return;
+      if (this.audio.currentTime > 3) {
+        this.seek(0);
+        return;
+      }
+      const prevIdx = AppState.currentIndex - 1;
+      if (prevIdx >= 0) {
+        AppState.currentIndex = prevIdx;
+        this.load(AppState.queue[prevIdx]);
+      }
+    },
+
+    onEnded() {
+      if (AppState.repeatMode === 'one') {
+        this.seek(0);
+        this.play();
+        return;
+      }
+      this.next();
+    }
+  };
+
+  /* =========================================================
+     LIBRARY / RECENTLY PLAYED (local)
+     ========================================================= */
+  const Library = {
+    load() {
+      AppState.likedSongs = Storage.get('likedSongs', []) || [];
+      AppState.playlists = Storage.get('playlists', []) || [];
+      AppState.recentlyPlayed = Storage.get('recentlyPlayed', []) || [];
+      AppState.userPreferences = {
+        ...AppState.userPreferences,
+        ...(Storage.get('preferences', {}) || {})
+      };
+      const vol = Storage.get('volume', CONFIG.DEFAULT_VOLUME);
+      AppState.volume = typeof vol === 'number' ? vol : CONFIG.DEFAULT_VOLUME;
+    },
+
+    savePreferences() {
+      Storage.set('preferences', AppState.userPreferences);
+    },
+
+    addRecentlyPlayed(track) {
+      if (!track || !track.id) return;
+      const id = String(track.id);
+      let list = AppState.recentlyPlayed.filter(t => String(t.id) !== id);
+      list.unshift(track);
+      list = list.slice(0, CONFIG.RECENTLY_PLAYED_LIMIT);
+      AppState.recentlyPlayed = list;
+      Storage.set('recentlyPlayed', list);
+    }
+  };
+
+  /* =========================================================
+     NAVIGATION / ROUTER
+     ========================================================= */
+  const Router = {
+    pages: ['home', 'search', 'explore', 'library', 'playlists', 'settings'],
+    titles: {
+      home: 'Home',
+      search: 'Search',
+      explore: 'Explore',
+      library: 'Library',
+      playlists: 'Playlists',
+      settings: 'Settings'
+    },
+
+    go(page) {
+      if (!this.pages.includes(page)) page = 'home';
+      AppState.currentPage = page;
+
+      document.querySelectorAll('.page').forEach(el => {
+        el.classList.toggle('active', el.dataset.page === page);
+      });
+      document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(el => {
+        const active = el.dataset.page === page;
+        el.classList.toggle('active', active);
+        if (active) el.setAttribute('aria-current', 'page');
+        else el.removeAttribute('aria-current');
+      });
+
+      const titleEl = document.getElementById('pageTitle');
+      if (titleEl) titleEl.textContent = this.titles[page] || page;
+
+      const searchWrap = document.getElementById('headerSearchWrap');
+      if (searchWrap) {
+        searchWrap.classList.toggle('hidden', page !== 'search');
+      }
+
+      // Focus search when entering search page
+      if (page === 'search') {
+        setTimeout(() => {
+          const input = document.getElementById('headerSearchInput');
+          if (input) input.focus();
+        }, 80);
+      }
+    }
+  };
+
+  /* =========================================================
+     UI RENDERER
+     ========================================================= */
+  const UI = {
+    updateNowPlaying() {
+      const song = AppState.currentSong;
+      const title = document.getElementById('playerTitle');
+      const artist = document.getElementById('playerArtist');
+      const cover = document.getElementById('playerCover');
+      if (!song) {
+        title.textContent = 'No track playing';
+        artist.textContent = '—';
+        cover.innerHTML = `<div style="width:100%;height:100%;background:linear-gradient(145deg,#1e1e2e,#0f0f18);display:grid;place-items:center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>`;
+        return;
+      }
+      title.textContent = song.title || 'Unknown';
+      artist.textContent = song.artist || 'Unknown artist';
+      const img = song.albumCover || song.images?.large || song.images?.thumbnail;
+      if (img) {
+        cover.innerHTML = `<img src="${img}" alt="" loading="lazy" />`;
+      }
+    },
+
+    updatePlayButton() {
+      const play = document.getElementById('iconPlay');
+      const pause = document.getElementById('iconPause');
+      const btn = document.getElementById('btnPlay');
+      if (AppState.isPlaying) {
+        play.classList.add('hidden');
+        pause.classList.remove('hidden');
+        btn.setAttribute('aria-label', 'Pause');
+        btn.title = 'Pause';
+      } else {
+        pause.classList.add('hidden');
+        play.classList.remove('hidden');
+        btn.setAttribute('aria-label', 'Play');
+        btn.title = 'Play';
+      }
+    },
+
+    updateProgress() {
+      const fill = document.getElementById('progressFill');
+      const cur = document.getElementById('timeCurrent');
+      const dur = document.getElementById('timeDuration');
+      const track = document.getElementById('progressTrack');
+      const pct = AppState.duration > 0 ? (AppState.progress / AppState.duration) * 100 : 0;
+      if (fill) fill.style.width = `${pct}%`;
+      if (cur) cur.textContent = Utils.formatTime(AppState.progress);
+      if (dur) dur.textContent = Utils.formatTime(AppState.duration);
+      if (track) {
+        track.setAttribute('aria-valuenow', Math.round(pct));
+        track.setAttribute('aria-valuemax', '100');
+      }
+    },
+
+    updateVolume() {
+      const fill = document.getElementById('volumeFill');
+      const pct = AppState.muted ? 0 : AppState.volume * 100;
+      if (fill) fill.style.width = `${pct}%`;
+    },
+
+    bindControls() {
+      document.getElementById('btnPlay')?.addEventListener('click', () => MusicEngine.toggle());
+      document.getElementById('btnPrev')?.addEventListener('click', () => MusicEngine.previous());
+      document.getElementById('btnNext')?.addEventListener('click', () => MusicEngine.next());
+      document.getElementById('btnMute')?.addEventListener('click', () => MusicEngine.toggleMute());
+
+      // Progress seek
+      const progressTrack = document.getElementById('progressTrack');
+      progressTrack?.addEventListener('click', (e) => {
+        const rect = progressTrack.getBoundingClientRect();
+        const ratio = Utils.clamp((e.clientX - rect.left) / rect.width, 0, 1);
+        MusicEngine.seek(ratio * (AppState.duration || 0));
+      });
+
+      // Volume
+      const volumeTrack = document.getElementById('volumeTrack');
+      volumeTrack?.addEventListener('click', (e) => {
+        const rect = volumeTrack.getBoundingClientRect();
+        const ratio = Utils.clamp((e.clientX - rect.left) / rect.width, 0, 1);
+        MusicEngine.setVolume(ratio);
+        if (AppState.muted) MusicEngine.toggleMute();
+      });
+
+      // Navigation
+      document.querySelectorAll('[data-page]').forEach(el => {
+        el.addEventListener('click', () => Router.go(el.dataset.page));
+      });
+      document.querySelectorAll('[data-goto]').forEach(el => {
+        el.addEventListener('click', () => Router.go(el.dataset.goto));
+      });
+
+      // Settings provider
+      const providerSelect = document.getElementById('settingProvider');
+      if (providerSelect) {
+        providerSelect.value = AppState.userPreferences.provider || 'ytmusic';
+        providerSelect.addEventListener('change', () => {
+          AppState.userPreferences.provider = providerSelect.value;
+          Library.savePreferences();
+          Utils.toast(`Provider set to ${providerSelect.value}`);
+        });
+      }
+    }
+  };
+
+  /* =========================================================
+     BOOT
+     ========================================================= */
+  function boot() {
+    Library.load();
+    MusicEngine.init();
+    MusicEngine.setVolume(AppState.volume);
+    UI.bindControls();
+    UI.updateNowPlaying();
+    UI.updatePlayButton();
+    UI.updateProgress();
+    UI.updateVolume();
+    Router.go('home');
+
+    // Keyboard accessibility: space toggles play when not in input
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        MusicEngine.toggle();
+      }
+    });
+
+    console.info('[YOUR MUSIC] Part 1 foundation ready');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+  </script>
+</body>
+</html>
