@@ -1,0 +1,3551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Code Builder — V1</title>
+  <meta name="description" content="Premium AI-powered code generator using NVIDIA Nemotron. Generate complete self-contained websites from natural language." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-deep: #0a0b0f;
+      --bg-panel: #12141a;
+      --bg-elevated: #1a1d27;
+      --bg-hover: #222633;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.14);
+      --text-primary: #f0f2f8;
+      --text-secondary: #9aa3b5;
+      --text-muted: #6b7385;
+      --accent: #6c8cff;
+      --accent-hover: #8aa4ff;
+      --accent-soft: rgba(108, 140, 255, 0.15);
+      --success: #34d399;
+      --success-soft: rgba(52, 211, 153, 0.15);
+      --error: #f87171;
+      --error-soft: rgba(248, 113, 113, 0.15);
+      --warning: #fbbf24;
+      --glass: rgba(18, 20, 26, 0.72);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+      --font: 'Inter', system-ui, -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font);
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(108, 140, 255, 0.08), transparent),
+        radial-gradient(ellipse 60% 40% at 90% 10%, rgba(52, 211, 153, 0.05), transparent);
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      height: 56px;
+      border-bottom: 1px solid var(--border);
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      flex-shrink: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #6c8cff, #34d399);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 13px;
+      color: #0a0b0f;
+    }
+
+    .brand-text {
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-version {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg-elevated);
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+    }
+
+    .status-pill .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    .status-pill.idle .dot { background: var(--text-muted); }
+    .status-pill.generating {
+      background: var(--accent-soft);
+      border-color: rgba(108, 140, 255, 0.3);
+      color: var(--accent);
+    }
+    .status-pill.generating .dot {
+      background: var(--accent);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .status-pill.success {
+      background: var(--success-soft);
+      border-color: rgba(52, 211, 153, 0.3);
+      color: var(--success);
+    }
+    .status-pill.success .dot { background: var(--success); }
+    .status-pill.error {
+      background: var(--error-soft);
+      border-color: rgba(248, 113, 113, 0.3);
+      color: var(--error);
+    }
+    .status-pill.error .dot { background: var(--error); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.85); }
+    }
+
+    /* Main layout */
+    .workspace {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(320px, 380px) 1fr;
+      grid-template-rows: 1fr auto;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    @media (max-width: 900px) {
+      .workspace {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+      }
+    }
+
+    /* Left panel */
+    .panel-left {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      background: var(--bg-panel);
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .panel-section {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-section:last-child { border-bottom: none; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .prompt-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    #promptInput {
+      width: 100%;
+      flex: 1;
+      min-height: 140px;
+      resize: none;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.55;
+      padding: 14px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    #promptInput:focus {
+      border-color: rgba(108, 140, 255, 0.5);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    #promptInput::placeholder { color: var(--text-muted); }
+
+    .examples {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .example-chip {
+      font-size: 12px;
+      padding: 6px 11px;
+      border-radius: 999px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .example-chip:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 560;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      padding: 10px 16px;
+      white-space: nowrap;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6c8cff, #5a7aef);
+      color: white;
+      flex: 1;
+      box-shadow: 0 2px 12px rgba(108, 140, 255, 0.25);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #8aa4ff, #6c8cff);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border-color: var(--border-strong);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid transparent;
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+
+    /* Preview panel */
+    .panel-preview {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: #0d0e12;
+      position: relative;
+    }
+
+    .preview-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      height: 40px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-panel);
+      flex-shrink: 0;
+    }
+
+    .preview-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .preview-title .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    .preview-frame-wrap {
+      flex: 1;
+      position: relative;
+      min-height: 0;
+      background: #111;
+    }
+
+    #previewFrame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+      display: block;
+    }
+
+    .preview-empty {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--text-muted);
+      background: var(--bg-deep);
+      z-index: 2;
+    }
+
+    .preview-empty.hidden { display: none; }
+
+    .preview-empty svg {
+      width: 48px;
+      height: 48px;
+      opacity: 0.35;
+    }
+
+    .preview-empty p {
+      font-size: 14px;
+      max-width: 260px;
+      text-align: center;
+    }
+
+    /* Code output area */
+    .panel-code {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      border-top: 1px solid var(--border);
+      background: var(--bg-panel);
+      height: 280px;
+      min-height: 160px;
+      max-height: 45vh;
+      resize: vertical;
+      overflow: hidden;
+    }
+
+    .code-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      height: 42px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .code-toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .code-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .code-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--mono);
+    }
+
+    .code-toolbar-right {
+      display: flex;
+      gap: 8px;
+    }
+
+    .code-body {
+      flex: 1;
+      overflow: auto;
+      position: relative;
+      background: #0c0d11;
+    }
+
+    #codeOutput {
+      margin: 0;
+      padding: 16px 18px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: #c8d0e0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 100%;
+    }
+
+    .code-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    .code-placeholder.hidden { display: none; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 18px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-strong);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: var(--shadow);
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: all 0.25s ease;
+      pointer-events: none;
+      max-width: 320px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .toast.success { border-color: rgba(52, 211, 153, 0.4); }
+    .toast.error { border-color: rgba(248, 113, 113, 0.4); }
+
+    /* Spinner */
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 24px;
+      width: 90%;
+      max-width: 380px;
+      box-shadow: var(--shadow);
+    }
+
+    .modal h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .modal p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    /* Error banner */
+    .error-banner {
+      display: none;
+      padding: 12px 16px;
+      background: var(--error-soft);
+      border-bottom: 1px solid rgba(248, 113, 113, 0.25);
+      color: var(--error);
+      font-size: 13px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .error-banner.show { display: flex; }
+
+    .error-banner button {
+      background: transparent;
+      border: 1px solid rgba(248, 113, 113, 0.4);
+      color: var(--error);
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* Streaming indicator in code area */
+    .streaming-indicator {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      font-size: 12px;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-bottom: 1px solid rgba(108, 140, 255, 0.2);
+    }
+
+    .streaming-indicator.show { display: flex; }
+
+    /* Config note */
+    .config-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      line-height: 1.4;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.12);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+  </style>
+</head>
+<body>
+  <!-- ============================================================
+       CONFIGURATION
+       ============================================================
+       NVIDIA's hosted API does NOT allow browser CORS.
+       Therefore we route all requests through a local CORS proxy.
+
+       1. Open a terminal and run:
+          npx local-cors-proxy --proxyUrl https://integrate.api.nvidia.com --port 8010
+
+       2. Keep that terminal open while using the app.
+
+       3. Open this index.html (preferably via a local server or just
+          double-click it).
+
+       The proxy listens on http://localhost:8010 and forwards to NVIDIA.
+       ============================================================ -->
+  <script>
+    const CONFIG = {
+      // ★★★ NVIDIA API KEY — change only this value ★★★
+      API_KEY: "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",
+
+      // Use the local CORS proxy (required for browser)
+      // Start it with:  npx local-cors-proxy --proxyUrl https://integrate.api.nvidia.com --port 8010
+      // This version of the proxy uses the /proxy path
+      API_ENDPOINT: "http://localhost:8010/proxy/v1/chat/completions",
+
+      // Original direct endpoint (does NOT work from browser due to CORS):
+      // API_ENDPOINT: "https://integrate.api.nvidia.com/v1/chat/completions",
+
+      MODEL: "nvidia/nemotron-3-ultra-550b-a55b",
+
+      // Generation defaults
+      MAX_TOKENS: 16384,
+      TEMPERATURE: 0.4,
+      TOP_P: 0.9,
+      STREAM: true,
+
+      // Disable model "thinking" mode for cleaner code output
+      ENABLE_THINKING: false
+    };
+  </script>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-logo">AI</div>
+      <span class="brand-text">AI Code Builder</span>
+      <span class="brand-version">V3</span>
+    </div>
+    <div class="header-right">
+      <div id="statusPill" class="status-pill idle">
+        <span class="dot"></span>
+        <span id="statusText">Ready to build</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Error banner -->
+  <div id="errorBanner" class="error-banner">
+    <span id="errorMessage" style="white-space:pre-line"></span>
+    <button type="button" id="retryBtn">Retry</button>
+  </div>
+
+  <!-- Proxy tip banner -->
+  <div id="proxyTip" style="
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:10px 18px;font-size:12.5px;background:rgba(108,140,255,0.08);
+    border-bottom:1px solid rgba(108,140,255,0.2);color:var(--text-secondary);
+  ">
+    <div>
+      <strong style="color:var(--accent)">Required once:</strong>
+      Start the local CORS proxy in a terminal, then keep it running:
+      <code style="background:var(--bg-elevated);padding:2px 6px;border-radius:4px;margin-left:4px;font-family:var(--mono);font-size:11px">
+        npx local-cors-proxy --proxyUrl https://integrate.api.nvidia.com --port 8010
+      </code>
+    </div>
+    <button type="button" id="dismissProxyTip" style="
+      background:transparent;border:1px solid var(--border);color:var(--text-muted);
+      font-size:11px;padding:3px 8px;border-radius:6px;cursor:pointer;white-space:nowrap;
+    ">Dismiss</button>
+  </div>
+
+  <!-- Workspace -->
+  <div class="workspace">
+    <!-- Left: Prompt -->
+    <aside class="panel-left">
+      <div class="panel-section" style="padding-bottom:12px;">
+        <div class="section-label">Generation Mode</div>
+        <div style="display:flex;gap:8px;">
+          <button type="button" id="modeQuick" class="btn btn-secondary" style="flex:1;font-size:12px;padding:8px 10px;">Quick</button>
+          <button type="button" id="modeLarge" class="btn btn-ghost" style="flex:1;font-size:12px;padding:8px 10px;">Large Project</button>
+        </div>
+        <div id="modeHint" style="font-size:11px;color:var(--text-muted);margin-top:8px;line-height:1.4;">
+          Quick = generate full website immediately (V1)
+        </div>
+      </div>
+
+      <div class="panel-section prompt-area">
+        <div class="section-label">Describe your project</div>
+        <textarea
+          id="promptInput"
+          placeholder="e.g. Create a premium music streaming website with a dark glassmorphism UI, search, music cards, playlist section, responsive mobile layout and audio player."
+          spellcheck="false"
+        ></textarea>
+
+        <div class="actions-row">
+          <button type="button" id="generateBtn" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            <span id="generateBtnLabel">Generate</span>
+          </button>
+          <button type="button" id="regenerateBtn" class="btn btn-secondary" disabled title="Regenerate with same prompt / context">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-label">Example prompts</div>
+        <div class="examples" id="examples">
+          <button type="button" class="example-chip" data-prompt="Create a premium SaaS landing page with a bold hero section, feature grid, pricing table with three tiers, testimonials, and a responsive mobile layout. Use a dark modern aesthetic with subtle gradients.">SaaS Landing</button>
+          <button type="button" class="example-chip" data-prompt="Build a modern analytics dashboard with a collapsible sidebar, top stats cards showing key metrics, a large line chart area, recent activity list, and fully responsive mobile layout. Dark theme.">Dashboard</button>
+          <button type="button" class="example-chip" data-prompt="Create a premium music streaming interface with search bar, album/track cards, playlist section, now-playing bottom bar with progress and controls, and a dark glassmorphism UI. Make it fully interactive with sample data.">Music Player</button>
+          <button type="button" class="example-chip" data-prompt="Design a clean personal portfolio website for a product designer. Include hero with photo placeholder, about section, project grid with hover effects, skills, and contact form. Light modern aesthetic, fully responsive.">Portfolio</button>
+          <button type="button" class="example-chip" data-prompt="Build a modern e-commerce product listing page with filter sidebar, product cards (image, title, price, rating), sort dropdown, and a sticky cart button. Clean minimal design, responsive.">E-commerce</button>
+          <button type="button" class="example-chip" data-prompt="Create a fully functional interactive calculator with a modern dark UI, support for basic operations, percentage, clear, and keyboard support. Large readable display.">Calculator</button>
+          <button type="button" class="example-chip" data-prompt="Build a polished todo application with add/edit/delete tasks, mark complete, filter by All/Active/Completed, local persistence via localStorage, and a clean minimal UI.">Todo App</button>
+          <button type="button" class="example-chip" data-prompt="Create a multi-section SaaS marketing site: navigation, hero with CTA, logos bar, features with icons, how-it-works steps, pricing, FAQ accordion, and footer. Premium dark theme with glassmorphism accents.">Complex SaaS</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right: Preview -->
+    <section class="panel-preview">
+      <div class="preview-toolbar">
+        <div class="preview-title">
+          <span class="live-dot" id="liveDot" style="opacity:0.3"></span>
+          Live Preview
+        </div>
+        <div style="font-size:11px;color:var(--text-muted)">iframe sandbox</div>
+      </div>
+      <div class="preview-frame-wrap">
+        <div id="previewEmpty" class="preview-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          <p>Generate a project to see the live preview here</p>
+        </div>
+        <iframe
+          id="previewFrame"
+          title="Generated website preview"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"
+          referrerpolicy="no-referrer"
+        ></iframe>
+
+        <!-- V3 Part 1: Requirements Panel -->
+        <div id="requirementsPanel" style="
+          display:none;position:absolute;inset:0;background:var(--bg-deep);
+          z-index:7;overflow:auto;padding:20px;flex-direction:column;
+        ">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:4px;">V3 · Architect</div>
+              <div style="font-size:16px;font-weight:600;color:var(--text-primary);">Requirements Analysis</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button type="button" id="regenRequirementsBtn" class="btn btn-secondary" style="font-size:12px;padding:8px 12px;">Regenerate</button>
+              <button type="button" id="continueArchitectureBtn" class="btn btn-primary" style="font-size:12px;padding:8px 14px;">Continue to Architecture</button>
+            </div>
+          </div>
+          <div id="requirementsContent" style="flex:1;overflow:auto;"></div>
+          <div style="margin-top:12px;font-size:12px;color:var(--text-muted);">Toggle features on/off, then continue to architecture design.</div>
+        </div>
+
+        <!-- V3 Part 1: Architecture Panel -->
+        <div id="architecturePanel" style="
+          display:none;position:absolute;inset:0;background:var(--bg-deep);
+          z-index:7;overflow:auto;padding:20px;flex-direction:column;
+        ">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:4px;">V3 · Architect</div>
+              <div style="font-size:16px;font-weight:600;color:var(--text-primary);">Architecture Design</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button type="button" id="regenArchitectureBtn" class="btn btn-secondary" style="font-size:12px;padding:8px 12px;">Regenerate</button>
+              <button type="button" id="approveArchitectureBtn" class="btn btn-primary" style="font-size:12px;padding:8px 14px;">Approve Architecture</button>
+            </div>
+          </div>
+          <pre id="architectureContent" style="
+            flex:1;margin:0;padding:18px;background:var(--bg-elevated);
+            border:1px solid var(--border);border-radius:var(--radius);
+            font-family:var(--mono);font-size:12.5px;line-height:1.6;
+            color:#c8d0e0;white-space:pre-wrap;word-break:break-word;overflow:auto;
+          "></pre>
+          <div id="architectureStatus" style="margin-top:12px;font-size:12px;color:var(--text-muted);">
+            Review the architecture. Approving will create the project blueprint and continue to V2 generation.
+          </div>
+        </div>
+
+        <!-- V3 Part 2: Project Structure Panel -->
+        <div id="structurePanel" style="
+          display:none;position:absolute;inset:0;background:var(--bg-deep);
+          z-index:7;overflow:auto;padding:20px;flex-direction:column;
+        ">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:4px;">V3 · Structure</div>
+              <div style="font-size:16px;font-weight:600;color:var(--text-primary);">Project Structure & Dependencies</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button type="button" id="regenStructureBtn" class="btn btn-secondary" style="font-size:12px;padding:8px 12px;">Regenerate</button>
+              <button type="button" id="approveStructureBtn" class="btn btn-primary" style="font-size:12px;padding:8px 14px;">Approve Structure</button>
+            </div>
+          </div>
+          <div id="structureConsistency" style="margin-bottom:12px;font-size:12px;"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1;min-height:0;">
+            <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);padding:14px;overflow:auto;">
+              <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;">Project Structure</div>
+              <pre id="structureTree" style="margin:0;font-family:var(--mono);font-size:12px;line-height:1.55;color:#c8d0e0;white-space:pre-wrap;"></pre>
+            </div>
+            <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);padding:14px;overflow:auto;">
+              <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;">Dependency Graph</div>
+              <pre id="structureDeps" style="margin:0;font-family:var(--mono);font-size:12px;line-height:1.55;color:#c8d0e0;white-space:pre-wrap;"></pre>
+              <div id="structureValidation" style="margin-top:12px;font-size:12px;"></div>
+            </div>
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--text-muted);">Approve to lock this structure and start module generation with the optimal order.</div>
+        </div>
+
+        <!-- V2 Part 1: Blueprint Panel -->
+        <div id="blueprintPanel" style="
+          display:none;position:absolute;inset:0;background:var(--bg-deep);
+          z-index:5;overflow:auto;padding:20px;flex-direction:column;
+        ">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:4px;">Large Project Mode</div>
+              <div style="font-size:16px;font-weight:600;color:var(--text-primary);">Project Blueprint</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button type="button" id="regeneratePlanBtn" class="btn btn-secondary" style="font-size:12px;padding:8px 12px;">Regenerate Plan</button>
+              <button type="button" id="approveBuildBtn" class="btn btn-primary" style="font-size:12px;padding:8px 14px;">Approve & Build</button>
+            </div>
+          </div>
+          <pre id="blueprintContent" style="
+            flex:1;margin:0;padding:18px;background:var(--bg-elevated);
+            border:1px solid var(--border);border-radius:var(--radius);
+            font-family:var(--mono);font-size:12.5px;line-height:1.6;
+            color:#c8d0e0;white-space:pre-wrap;word-break:break-word;
+            overflow:auto;
+          "></pre>
+          <div id="blueprintStatus" style="margin-top:12px;font-size:12px;color:var(--text-muted);"></div>
+        </div>
+
+        <!-- V2 Part 2: Build Progress Panel -->
+        <div id="buildPanel" style="
+          display:none;position:absolute;inset:0;background:var(--bg-deep);
+          z-index:6;overflow:auto;padding:20px;flex-direction:column;
+        ">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:4px;">V2 Part 2 — Multi-Stage Build</div>
+              <div style="font-size:16px;font-weight:600;color:var(--text-primary);" id="buildTitle">Building Project</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button type="button" id="pauseBuildBtn" class="btn btn-secondary" style="font-size:12px;padding:8px 12px;">Pause Build</button>
+              <button type="button" id="cancelBuildBtn" class="btn btn-ghost" style="font-size:12px;padding:8px 12px;color:var(--error);">Cancel Build</button>
+              <button type="button" id="retryModuleBtn" class="btn btn-secondary" style="font-size:12px;padding:8px 12px;display:none;">Retry Module</button>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+            <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;">
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Progress</div>
+              <div style="font-size:18px;font-weight:600;" id="buildProgressText">0 / 0 modules</div>
+            </div>
+            <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;">
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Code Generated</div>
+              <div style="font-size:18px;font-weight:600;" id="buildLinesText">0 lines</div>
+            </div>
+          </div>
+
+          <div id="moduleListUI" style="
+            flex:1;background:var(--bg-elevated);border:1px solid var(--border);
+            border-radius:var(--radius);padding:12px 14px;overflow:auto;
+            font-family:var(--mono);font-size:13px;line-height:1.7;
+          "></div>
+
+          <div id="buildStatusMsg" style="margin-top:12px;font-size:12px;color:var(--text-muted);"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom: Code -->
+    <section class="panel-code">
+      <div class="streaming-indicator" id="streamingIndicator">
+        <div class="spinner"></div>
+        <span>AI is generating… streaming response</span>
+      </div>
+      <div class="code-toolbar">
+        <div class="code-toolbar-left">
+          <span class="code-label">Generated Code</span>
+          <span class="code-meta" id="codeMeta"></span>
+        </div>
+        <div class="code-toolbar-right">
+          <button type="button" id="copyBtn" class="btn btn-ghost" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+          <button type="button" id="downloadBtn" class="btn btn-secondary" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download index.html
+          </button>
+          <button type="button" id="clearBtn" class="btn btn-ghost">
+            Clear
+          </button>
+        </div>
+      </div>
+      <div class="code-body">
+        <div id="codePlaceholder" class="code-placeholder">Generated HTML will appear here</div>
+        <pre id="codeOutput"></pre>
+      </div>
+    </section>
+  </div>
+
+  <!-- Confirm Clear Modal -->
+  <div id="clearModal" class="modal-overlay">
+    <div class="modal">
+      <h3>Clear current project?</h3>
+      <p>This will reset the prompt, generated code, and preview. This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="cancelClearBtn">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirmClearBtn" style="background:#ef4444;box-shadow:none;">Clear Project</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    /* ================================================================
+       AI CODE BUILDER V1 — Core Application
+       Modular architecture for reliability and future extensibility
+       ================================================================ */
+
+    // ----------------------------------------------------------------
+    // 1. PROJECT STATE
+    // ----------------------------------------------------------------
+    const ProjectState = {
+      currentCode: null,          // last successfully extracted HTML
+      lastSuccessfulCode: null,   // preserved across failed regenerations
+      conversation: [],           // multi-turn context (user + assistant pairs)
+      isGenerating: false,
+      abortController: null,
+      status: 'idle',             // idle | generating | success | error
+      lastError: null,
+      lastPrompt: '',
+
+      // V2 Part 1 — Large Project Planner
+      mode: 'quick',              // 'quick' | 'large'
+      blueprint: null,            // raw blueprint text from model
+      manifest: null,             // structured project manifest
+      blueprintApproved: false,
+
+      // V2 Part 2 — Multi-stage module generation
+      modules: {},                // { key: { name, code, status, meta } }
+      moduleList: [],             // ordered module names from blueprint
+      currentModuleIndex: -1,
+      buildStatus: 'idle',        // idle | building | paused | completed | failed
+      buildPaused: false,
+      totalLinesGenerated: 0,
+
+      // V3 Part 1 — Intelligent Project Architect
+      requirements: null,
+      architecture: null,
+      architectureManifest: null,
+      architectStage: 'idle',     // idle | requirements | architecture | structure | approved
+
+      // V3 Part 2 — Project Structure & Dependency Graph
+      projectStructure: null,
+      componentRegistry: [],
+      featureRegistry: [],
+      dependencyGraph: [],
+      structureValidated: false
+    };
+
+    // ----------------------------------------------------------------
+    // 2. SYSTEM PROMPT — Expert software engineer instructions
+    // ----------------------------------------------------------------
+    const SYSTEM_PROMPT = `You are an elite senior frontend software engineer and UI designer specializing in production-quality, self-contained single-file websites.
+
+Your sole task: given a user's natural-language request, generate a COMPLETE, working HTML document that fully implements every requested feature.
+
+STRICT OUTPUT RULES:
+1. Output ONLY the raw HTML source. Nothing else.
+2. Do NOT wrap the code in markdown fences (\`\`\`html or \`\`\`).
+3. Do NOT include any introductory text, explanations, comments about the code, or trailing notes.
+4. The very first characters of your response must be "<!DOCTYPE html>" (or "<html").
+5. The very last characters must be the closing "</html>" tag.
+6. The HTML must be fully self-contained: all CSS in <style>, all JavaScript in <script>, SVG inline, no external file dependencies (except optional Google Fonts or trusted CDNs if truly needed for the design).
+7. Implement every feature the user asked for. Do not leave placeholders, TODOs, or fake "coming soon" sections when the feature can be built with HTML/CSS/JS.
+8. Use semantic HTML5, clean modern CSS (Flexbox/Grid), vanilla JavaScript, responsive design (mobile-first where sensible), and good accessibility (labels, contrast, keyboard support).
+9. Prefer glassmorphism, dark themes, premium spacing and typography when the user requests a modern/premium look.
+10. Make interactive elements actually work (buttons, forms, players, filters, etc.).
+11. If the user is asking for a modification of a previous project, treat it as an iteration: start from the previous HTML and apply the requested changes cleanly.
+
+You are generating production-ready code, not a demo. Quality, completeness, and correctness are mandatory.`;
+
+    // ----------------------------------------------------------------
+    // 2b. PLANNER SYSTEM PROMPT (V2 Part 1 — Large Project Mode)
+    // ----------------------------------------------------------------
+    const PLANNER_SYSTEM_PROMPT = `You are a senior software architect and product designer specializing in frontend web applications.
+
+Your task is to analyze a user's natural-language request and produce a clear, structured PROJECT BLUEPRINT.
+
+Output ONLY the blueprint in the exact format below. Do not write any actual HTML, CSS, or JavaScript code. Do not use markdown code fences.
+
+Format your entire response exactly like this:
+
+PROJECT BLUEPRINT
+
+Project Name: [name]
+Main Objective: [one clear sentence]
+
+Required Features:
+- feature 1
+- feature 2
+- ...
+
+Pages / Sections:
+1. [section name] — [short purpose]
+2. ...
+
+Components:
+- [component name] — [purpose]
+- ...
+
+Functional Modules:
+1. [module name]
+2. ...
+
+JavaScript Systems:
+- [system name] — [what it handles]
+- ...
+
+CSS / UI Systems:
+- [system name] — [description]
+- ...
+
+Dependencies:
+- none (or list any external libraries if truly needed)
+
+Integration Requirements:
+- [any important integration notes]
+
+Generation Order:
+1. [first module to build]
+2. [second]
+3. ...
+
+Keep the blueprint practical, complete, and focused on a single-file or modular frontend application. Be specific but concise.`;
+
+    // ----------------------------------------------------------------
+    // 2d. V3 PART 1 — REQUIREMENT ANALYST
+    // ----------------------------------------------------------------
+    const REQUIREMENTS_SYSTEM_PROMPT = `You are a senior product analyst and software architect.
+
+Analyze the user's application idea and extract structured requirements.
+
+Output ONLY in this exact format (no markdown fences, no extra commentary):
+
+REQUIREMENTS ANALYSIS
+
+PROJECT NAME: [short name]
+SUMMARY: [one sentence]
+
+CORE REQUIREMENTS
+- [must-have feature 1]
+- [must-have feature 2]
+
+RECOMMENDED FEATURES
+- [useful feature the user likely wants]
+- ...
+
+OPTIONAL FEATURES
+- [nice-to-have feature]
+- ...
+
+ASSUMPTIONS
+- [important assumption you are making]
+- ...
+
+RULES:
+- CORE = clearly implied by the user request
+- RECOMMENDED = strongly useful for a professional result, but not explicitly requested
+- OPTIONAL = advanced or secondary features
+- Do not invent unrelated enterprise features
+- Prefer practical frontend features for a single-file or modular web app
+- Keep lists focused (typically 4–10 items per category)`;
+
+    // ----------------------------------------------------------------
+    // 2e. V3 PART 1 — ARCHITECTURE DESIGNER
+    // ----------------------------------------------------------------
+    const ARCHITECTURE_SYSTEM_PROMPT = `You are a senior software architect designing a frontend web application.
+
+Given confirmed requirements, design a clean practical architecture.
+
+Output ONLY in this exact format (no markdown fences):
+
+ARCHITECTURE DESIGN
+
+PROJECT: [name]
+OBJECTIVE: [one sentence]
+
+APPLICATION STRUCTURE
+- UI
+  - [component/page]
+  - ...
+- STATE
+  - [state item]
+- SERVICES
+  - [service or "none"]
+- UTILITIES
+  - [helper]
+
+PAGES / SECTIONS
+1. [name] — [purpose]
+2. ...
+
+COMPONENTS
+- [name] — [purpose]
+
+FUNCTIONAL SYSTEMS
+- [system] — [what it does]
+
+TECHNICAL DECISIONS
+- Rendering: HTML/CSS/JavaScript
+- State: [approach]
+- Styling: [approach]
+- Storage: [approach]
+- External API: [Required / Not required] — [note]
+
+CONFIDENCE
+- Responsive layout: HIGH — [short reason]
+- Local storage: HIGH|MEDIUM|LOW — [short reason]
+- External API: HIGH|MEDIUM|LOW — [short reason]
+
+FEATURE DEPENDENCIES
+- [Feature A] → [Feature B] → [Feature C]
+
+GENERATION ORDER
+1. [first module/system to build]
+2. ...
+
+INTEGRATION POINTS
+- [how major parts connect]
+
+RULES:
+- Prefer simple architecture for simple apps
+- Do not force frameworks
+- Keep everything realistic for a browser-based single-file or modular frontend
+- Generation order must be practical for module-by-module coding`;
+
+    // ----------------------------------------------------------------
+    // 2f. V3 PART 2 — PROJECT STRUCTURE & DEPENDENCY GRAPH
+    // ----------------------------------------------------------------
+    const STRUCTURE_SYSTEM_PROMPT = `You are a senior software architect creating a machine-readable project structure and dependency graph.
+
+Given an approved architecture and confirmed requirements, produce a detailed project structure.
+
+Output ONLY in this exact format (no markdown fences):
+
+PROJECT STRUCTURE
+
+TREE
+- Core
+  - App
+  - State
+  - Utilities
+- UI
+  - [components]
+- Features
+  - [features]
+- Services
+  - [services]
+- Integration
+
+COMPONENT REGISTRY
+NAME: [ComponentName]
+TYPE: UI|Feature|Service|Core|Utility
+PURPOSE: [one line]
+DEPENDENCIES: [comma-separated or none]
+PRIORITY: High|Medium|Low
+---
+(repeat for each component)
+
+FEATURE REGISTRY
+NAME: [FeatureName]
+STATUS: Planned
+COMPONENTS: [comma-separated]
+DEPENDENCIES: [comma-separated or none]
+PRIORITY: High|Medium|Low
+---
+(repeat for each feature)
+
+DEPENDENCY GRAPH
+[From] -> [To]
+[From] -> [To]
+...
+
+GENERATION ORDER
+1. [item]
+2. [item]
+...
+
+VALIDATION NOTES
+- [any missing dependency or issue, or "none"]
+
+RULES:
+- Structure must match THIS specific application (not a generic template)
+- Include only components/features justified by the architecture
+- Generation order must respect dependencies (dependencies first)
+- Prefer practical frontend structure for a modular single-page app
+- Keep registries complete but compact`;
+
+    // ----------------------------------------------------------------
+    // 2c. MODULE GENERATOR SYSTEM PROMPT (V2 Part 2)
+    // ----------------------------------------------------------------
+    const MODULE_SYSTEM_PROMPT = `You are an elite senior frontend engineer generating ONE module of a larger architecture-aware web application.
+
+You will receive an ARCHITECTURE CONTRACT plus compact project context.
+
+STRICT RULES:
+1. Generate ONLY the code for the CURRENT module. Do not rewrite other modules.
+2. Follow the Architecture Contract exactly (names, dependencies, expected outputs).
+3. Do NOT invent alternate component names for the same responsibility.
+4. If dependent interfaces are provided, use those function/API names — do not rename them.
+5. Output in this exact structure (no markdown fences):
+
+MODULE
+NAME: [exact module name]
+PURPOSE: [one sentence]
+DEPENDENCIES: [comma-separated or "none"]
+COMPONENTS_CREATED: [comma-separated or "none"]
+FUNCTIONS_CREATED: [comma-separated or "none"]
+CODE:
+[the actual HTML/CSS/JS code for this module only]
+
+6. CODE must be real functional HTML/CSS/JS suitable for later single-file assembly.
+7. Prefer vanilla JS + modern CSS. No unnecessary frameworks.
+8. No TODOs/placeholders when the feature can be implemented.
+9. If the module is large and you must stop, end cleanly for continuation.
+
+Return only the structured MODULE block. No extra commentary.`;
+
+    // ----------------------------------------------------------------
+    // 3. API CLIENT
+    // ----------------------------------------------------------------
+    const ApiClient = {
+      async generate(messages, { stream = CONFIG.STREAM, signal } = {}) {
+        if (!CONFIG.API_KEY || CONFIG.API_KEY.includes('YOUR_') || CONFIG.API_KEY.length < 20) {
+          throw new Error('Missing or invalid NVIDIA API key. Update CONFIG.API_KEY at the top of the file.');
+        }
+
+        const body = {
+          model: CONFIG.MODEL,
+          messages,
+          temperature: CONFIG.TEMPERATURE,
+          top_p: CONFIG.TOP_P,
+          max_tokens: CONFIG.MAX_TOKENS,
+          stream
+        };
+
+        // Disable thinking for cleaner code generation
+        if (CONFIG.ENABLE_THINKING === false) {
+          body.chat_template_kwargs = { enable_thinking: false };
+        }
+
+        const response = await fetch(CONFIG.API_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${CONFIG.API_KEY}`,
+            'Accept': stream ? 'text/event-stream' : 'application/json'
+          },
+          body: JSON.stringify(body),
+          signal
+        });
+
+        if (!response.ok) {
+          let detail = '';
+          try {
+            const errJson = await response.json();
+            detail = errJson.error?.message || errJson.message || JSON.stringify(errJson);
+          } catch {
+            detail = await response.text().catch(() => '');
+          }
+
+          if (response.status === 401 || response.status === 403) {
+            throw new Error('Invalid or unauthorized API key. Check CONFIG.API_KEY.');
+          }
+          if (response.status === 429) {
+            throw new Error('Rate limit reached. Please wait a moment and try again.');
+          }
+          if (response.status >= 500) {
+            throw new Error('NVIDIA API server error. Please retry in a few seconds.');
+          }
+          throw new Error(detail || `API request failed (${response.status})`);
+        }
+
+        return response;
+      }
+    };
+
+    // ----------------------------------------------------------------
+    // 4. RESPONSE PARSER + CODE EXTRACTOR
+    // ----------------------------------------------------------------
+    const CodeExtractor = {
+      /**
+       * Robustly extract the HTML document from a model response
+       * that may contain markdown fences, explanations, or reasoning.
+       */
+      extract(raw) {
+        if (!raw || typeof raw !== 'string') return null;
+
+        let text = raw.trim();
+
+        // Remove common reasoning wrappers if present
+        text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+        text = text.replace(/```reasoning[\s\S]*?```/gi, '').trim();
+
+        // Prefer fenced html / text blocks
+        const fencePatterns = [
+          /```html\s*([\s\S]*?)```/i,
+          /```HTML\s*([\s\S]*?)```/i,
+          /```(?:xml|markup)?\s*(<!DOCTYPE[\s\S]*?<\/html>)\s*```/i,
+          /```\s*(<!DOCTYPE[\s\S]*?<\/html>)\s*```/i
+        ];
+
+        for (const re of fencePatterns) {
+          const m = text.match(re);
+          if (m && m[1]) {
+            const candidate = m[1].trim();
+            if (this.isValidHtml(candidate)) return this.clean(candidate);
+          }
+        }
+
+        // Look for raw <!DOCTYPE or <html
+        const doctypeIdx = text.search(/<!DOCTYPE\s+html/i);
+        const htmlIdx = text.search(/<html[\s>]/i);
+
+        let start = -1;
+        if (doctypeIdx !== -1) start = doctypeIdx;
+        else if (htmlIdx !== -1) start = htmlIdx;
+
+        if (start !== -1) {
+          let end = text.lastIndexOf('</html>');
+          if (end !== -1) end += 7;
+          else end = text.length;
+
+          const candidate = text.slice(start, end).trim();
+          if (this.isValidHtml(candidate)) return this.clean(candidate);
+        }
+
+        // Last resort: if the whole thing looks like HTML
+        if (this.isValidHtml(text)) return this.clean(text);
+
+        return null;
+      },
+
+      isValidHtml(str) {
+        if (!str || str.length < 40) return false;
+        const lower = str.toLowerCase();
+        return (
+          (lower.includes('<!doctype') || lower.includes('<html')) &&
+          lower.includes('</html>')
+        );
+      },
+
+      clean(html) {
+        // Strip any remaining leading/trailing markdown noise
+        return html
+          .replace(/^```html?\s*/i, '')
+          .replace(/\s*```$/i, '')
+          .trim();
+      }
+    };
+
+    // ----------------------------------------------------------------
+    // 5. PREVIEW RENDERER
+    // ----------------------------------------------------------------
+    const PreviewRenderer = {
+      render(html) {
+        const frame = document.getElementById('previewFrame');
+        const empty = document.getElementById('previewEmpty');
+        const liveDot = document.getElementById('liveDot');
+
+        if (!html) {
+          empty.classList.remove('hidden');
+          liveDot.style.opacity = '0.3';
+          // Clear iframe
+          frame.srcdoc = '';
+          return;
+        }
+
+        empty.classList.add('hidden');
+        liveDot.style.opacity = '1';
+
+        // Use srcdoc for isolation + security
+        // sandbox already set on the iframe element
+        frame.srcdoc = html;
+      }
+    };
+
+    // ----------------------------------------------------------------
+    // 6. DOWNLOAD & COPY MANAGERS
+    // ----------------------------------------------------------------
+    const DownloadManager = {
+      download(html, filename = 'index.html') {
+        if (!html) return;
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 100);
+      }
+    };
+
+    const ClipboardManager = {
+      async copy(text) {
+        if (!text) return false;
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch {
+          // Fallback
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          const ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          return ok;
+        }
+      }
+    };
+
+    // ----------------------------------------------------------------
+    // 7. UI CONTROLLER
+    // ----------------------------------------------------------------
+    const UI = {
+      setStatus(status, message) {
+        ProjectState.status = status;
+        const pill = document.getElementById('statusPill');
+        const text = document.getElementById('statusText');
+        pill.className = 'status-pill ' + status;
+        text.textContent = message || {
+          idle: 'Ready to build',
+          generating: 'AI is building your project…',
+          success: 'Generation complete',
+          error: 'Generation failed'
+        }[status];
+      },
+
+      showError(msg) {
+        const banner = document.getElementById('errorBanner');
+        document.getElementById('errorMessage').textContent = msg;
+        banner.classList.add('show');
+        this.setStatus('error', 'Generation failed');
+      },
+
+      hideError() {
+        document.getElementById('errorBanner').classList.remove('show');
+      },
+
+      setCode(html) {
+        const pre = document.getElementById('codeOutput');
+        const placeholder = document.getElementById('codePlaceholder');
+        const meta = document.getElementById('codeMeta');
+
+        if (html) {
+          pre.textContent = html;
+          placeholder.classList.add('hidden');
+          const lines = html.split('\n').length;
+          const kb = (new Blob([html]).size / 1024).toFixed(1);
+          meta.textContent = `${lines.toLocaleString()} lines · ${kb} KB`;
+        } else {
+          pre.textContent = '';
+          placeholder.classList.remove('hidden');
+          meta.textContent = '';
+        }
+      },
+
+      setStreaming(active) {
+        document.getElementById('streamingIndicator').classList.toggle('show', active);
+      },
+
+      setButtonsEnabled(hasCode, isGenerating) {
+        document.getElementById('generateBtn').disabled = isGenerating;
+        document.getElementById('regenerateBtn').disabled = isGenerating || !ProjectState.lastPrompt;
+        document.getElementById('copyBtn').disabled = !hasCode;
+        document.getElementById('downloadBtn').disabled = !hasCode;
+      },
+
+      toast(message, type = 'success') {
+        const el = document.getElementById('toast');
+        el.textContent = message;
+        el.className = 'toast ' + type + ' show';
+        clearTimeout(this._toastTimer);
+        this._toastTimer = setTimeout(() => {
+          el.classList.remove('show');
+        }, 2600);
+      },
+
+      openClearModal() {
+        document.getElementById('clearModal').classList.add('open');
+      },
+
+      closeClearModal() {
+        document.getElementById('clearModal').classList.remove('open');
+      }
+    };
+
+    // ----------------------------------------------------------------
+    // 8. GENERATION MANAGER
+    // ----------------------------------------------------------------
+    const GenerationManager = {
+      async run(userPrompt, { isRegenerate = false } = {}) {
+        if (ProjectState.isGenerating) return;
+
+        const prompt = (userPrompt || '').trim();
+        if (!prompt) {
+          UI.toast('Please enter a project description', 'error');
+          return;
+        }
+
+        // Branch: Large Project Mode → V3 Architect first, then V2 pipeline
+        if (ProjectState.mode === 'large') {
+          return ArchitectManager.start(prompt);
+        }
+
+        // === V1 Quick Generation (unchanged behaviour) ===
+        ProjectState.isGenerating = true;
+        ProjectState.lastPrompt = prompt;
+        ProjectState.abortController = new AbortController();
+        UI.hideError();
+        UI.setStatus('generating', 'AI is building your project…');
+        UI.setStreaming(true);
+        UI.setButtonsEnabled(!!ProjectState.currentCode, true);
+        hideBlueprintPanel();
+
+        const messages = [{ role: 'system', content: SYSTEM_PROMPT }];
+        const history = ProjectState.conversation.slice(-6);
+        for (const turn of history) messages.push(turn);
+
+        let userContent = prompt;
+        if (ProjectState.currentCode && !isRegenerate) {
+          userContent = `Here is the current project HTML that you previously generated:\n\n${ProjectState.currentCode}\n\n---\n\nNow apply the following changes / new requirements while keeping a complete working single-file HTML document:\n\n${prompt}`;
+        }
+        messages.push({ role: 'user', content: userContent });
+
+        let fullResponse = '';
+
+        try {
+          const response = await ApiClient.generate(messages, {
+            stream: CONFIG.STREAM,
+            signal: ProjectState.abortController.signal
+          });
+
+          if (CONFIG.STREAM && response.body) {
+            fullResponse = await this.consumeStream(response);
+          } else {
+            const data = await response.json();
+            fullResponse =
+              data.choices?.[0]?.message?.content ||
+              data.choices?.[0]?.message?.reasoning_content ||
+              '';
+          }
+
+          if (!fullResponse || fullResponse.trim().length < 20) {
+            throw new Error('Empty or incomplete response from the model.');
+          }
+
+          const html = CodeExtractor.extract(fullResponse);
+          if (!html) {
+            console.warn('Raw model response (truncated):', fullResponse.slice(0, 800));
+            throw new Error('Could not extract valid HTML from the model response. Try regenerating or rephrasing the prompt.');
+          }
+
+          ProjectState.currentCode = html;
+          ProjectState.lastSuccessfulCode = html;
+          ProjectState.conversation.push(
+            { role: 'user', content: userContent },
+            { role: 'assistant', content: html }
+          );
+          if (ProjectState.conversation.length > 10) {
+            ProjectState.conversation = ProjectState.conversation.slice(-8);
+          }
+
+          UI.setCode(html);
+          PreviewRenderer.render(html);
+          UI.setStatus('success', 'Generation complete');
+          UI.toast('Project generated successfully');
+
+        } catch (err) {
+          if (err.name === 'AbortError') {
+            UI.setStatus('idle', 'Ready to build');
+            return;
+          }
+          console.error('Generation error:', err);
+          if (ProjectState.lastSuccessfulCode) {
+            ProjectState.currentCode = ProjectState.lastSuccessfulCode;
+            UI.setCode(ProjectState.lastSuccessfulCode);
+            PreviewRenderer.render(ProjectState.lastSuccessfulCode);
+          }
+          let msg = err.message || 'Generation failed. Please check your API configuration and try again.';
+          if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Network request failed')) {
+            msg = 'Cannot reach the API. Make sure the local CORS proxy is running:\n\nnpx local-cors-proxy --proxyUrl https://integrate.api.nvidia.com --port 8010\n\nThen keep that terminal open and try again.';
+          }
+          ProjectState.lastError = msg;
+          UI.showError(msg);
+          UI.toast(msg, 'error');
+        } finally {
+          ProjectState.isGenerating = false;
+          ProjectState.abortController = null;
+          UI.setStreaming(false);
+          UI.setButtonsEnabled(!!ProjectState.currentCode, false);
+        }
+      },
+
+      // V2 Part 1 — Create Project Blueprint only
+      async runPlanner(prompt, { isRegenerate = false } = {}) {
+        ProjectState.isGenerating = true;
+        ProjectState.lastPrompt = prompt;
+        ProjectState.abortController = new AbortController();
+        ProjectState.blueprintApproved = false;
+        UI.hideError();
+        UI.setStatus('generating', 'Analyzing request & creating blueprint…');
+        UI.setStreaming(true);
+        UI.setButtonsEnabled(false, true);
+
+        const messages = [
+          { role: 'system', content: PLANNER_SYSTEM_PROMPT },
+          { role: 'user', content: prompt }
+        ];
+
+        let fullResponse = '';
+
+        try {
+          const response = await ApiClient.generate(messages, {
+            stream: CONFIG.STREAM,
+            signal: ProjectState.abortController.signal
+          });
+
+          if (CONFIG.STREAM && response.body) {
+            fullResponse = await this.consumeStream(response);
+          } else {
+            const data = await response.json();
+            fullResponse =
+              data.choices?.[0]?.message?.content ||
+              data.choices?.[0]?.message?.reasoning_content ||
+              '';
+          }
+
+          if (!fullResponse || fullResponse.trim().length < 30) {
+            throw new Error('Empty or incomplete blueprint from the model.');
+          }
+
+          // Clean any accidental fences
+          let blueprint = fullResponse.trim()
+            .replace(/^```[\w]*\n?/, '')
+            .replace(/\n?```$/, '')
+            .trim();
+
+          ProjectState.blueprint = blueprint;
+          ProjectState.manifest = parseBlueprintToManifest(blueprint, prompt);
+
+          showBlueprintPanel(blueprint);
+          UI.setStatus('success', 'Blueprint ready — review & approve');
+          UI.toast('Project blueprint created');
+
+        } catch (err) {
+          if (err.name === 'AbortError') {
+            UI.setStatus('idle', 'Ready to build');
+            return;
+          }
+          console.error('Planner error:', err);
+          let msg = err.message || 'Failed to create project blueprint.';
+          if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Network request failed')) {
+            msg = 'Cannot reach the API. Make sure the local CORS proxy is running.';
+          }
+          ProjectState.lastError = msg;
+          UI.showError(msg);
+          UI.toast(msg, 'error');
+        } finally {
+          ProjectState.isGenerating = false;
+          ProjectState.abortController = null;
+          UI.setStreaming(false);
+          UI.setButtonsEnabled(!!ProjectState.currentCode, false);
+        }
+      },
+
+      async consumeStream(response) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+        let content = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed === 'data: [DONE]') continue;
+            if (!trimmed.startsWith('data: ')) continue;
+
+            try {
+              const json = JSON.parse(trimmed.slice(6));
+              const delta = json.choices?.[0]?.delta;
+              if (delta?.content) content += delta.content;
+            } catch { /* skip */ }
+          }
+        }
+        return content;
+      },
+
+      abort() {
+        if (ProjectState.abortController) {
+          ProjectState.abortController.abort();
+        }
+      }
+    };
+
+    // ----------------------------------------------------------------
+    // Blueprint helpers (V2 Part 1)
+    // ----------------------------------------------------------------
+    function parseBlueprintToManifest(blueprintText, originalPrompt) {
+      // Lightweight structured extraction for Part 2
+      const manifest = {
+        version: '2.1',
+        createdAt: new Date().toISOString(),
+        originalPrompt: originalPrompt,
+        projectName: '',
+        mainObjective: '',
+        features: [],
+        sections: [],
+        components: [],
+        modules: [],
+        jsSystems: [],
+        cssSystems: [],
+        dependencies: [],
+        generationOrder: [],
+        rawBlueprint: blueprintText
+      };
+
+      const lines = blueprintText.split('\n');
+      let currentSection = null;
+
+      for (const raw of lines) {
+        const line = raw.trim();
+        if (!line) continue;
+
+        if (/^Project Name:/i.test(line)) {
+          manifest.projectName = line.replace(/^Project Name:\s*/i, '').trim();
+        } else if (/^Main Objective:/i.test(line)) {
+          manifest.mainObjective = line.replace(/^Main Objective:\s*/i, '').trim();
+        } else if (/^Required Features/i.test(line)) currentSection = 'features';
+        else if (/^Pages\s*\/\s*Sections/i.test(line)) currentSection = 'sections';
+        else if (/^Components/i.test(line)) currentSection = 'components';
+        else if (/^Functional Modules/i.test(line)) currentSection = 'modules';
+        else if (/^JavaScript Systems/i.test(line)) currentSection = 'jsSystems';
+        else if (/^CSS\s*\/\s*UI Systems/i.test(line)) currentSection = 'cssSystems';
+        else if (/^Dependencies/i.test(line)) currentSection = 'dependencies';
+        else if (/^Generation Order/i.test(line)) currentSection = 'generationOrder';
+        else if (/^Integration Requirements/i.test(line)) currentSection = null;
+        else if (currentSection && (line.startsWith('-') || /^\d+\./.test(line))) {
+          const item = line.replace(/^[-\d.]+\s*/, '').trim();
+          if (item && manifest[currentSection]) manifest[currentSection].push(item);
+        }
+      }
+
+      if (!manifest.projectName) manifest.projectName = 'Untitled Project';
+      return manifest;
+    }
+
+    function showBlueprintPanel(text) {
+      const panel = document.getElementById('blueprintPanel');
+      document.getElementById('blueprintContent').textContent = text;
+      document.getElementById('blueprintStatus').textContent =
+        'Review the plan above. Click “Approve & Build” to lock this manifest for Part 2 generation.';
+      panel.style.display = 'flex';
+      document.getElementById('previewEmpty').classList.add('hidden');
+    }
+
+    function hideBlueprintPanel() {
+      const panel = document.getElementById('blueprintPanel');
+      if (panel) panel.style.display = 'none';
+    }
+
+    function setMode(mode) {
+      ProjectState.mode = mode;
+      const quickBtn = document.getElementById('modeQuick');
+      const largeBtn = document.getElementById('modeLarge');
+      const hint = document.getElementById('modeHint');
+      const genLabel = document.getElementById('generateBtnLabel');
+
+      if (mode === 'large') {
+        quickBtn.className = 'btn btn-ghost';
+        largeBtn.className = 'btn btn-secondary';
+        hint.textContent = 'Large Project = Requirements → Architecture → Structure → Modules → Final build';
+        genLabel.textContent = 'Analyze Requirements';
+        hideBlueprintPanel();
+        hideBuildPanel();
+        hideRequirementsPanel();
+        hideArchitecturePanel();
+        hideStructurePanel();
+      } else {
+        quickBtn.className = 'btn btn-secondary';
+        largeBtn.className = 'btn btn-ghost';
+        hint.textContent = 'Quick = generate full website immediately (V1)';
+        genLabel.textContent = 'Generate';
+        hideBlueprintPanel();
+        hideBuildPanel();
+        hideRequirementsPanel();
+        hideArchitecturePanel();
+        hideStructurePanel();
+      }
+    }
+
+    function hideRequirementsPanel() {
+      const p = document.getElementById('requirementsPanel');
+      if (p) p.style.display = 'none';
+    }
+    function showRequirementsPanel() {
+      hideArchitecturePanel();
+      hideBlueprintPanel();
+      hideBuildPanel();
+      const p = document.getElementById('requirementsPanel');
+      if (p) p.style.display = 'flex';
+      document.getElementById('previewEmpty')?.classList.add('hidden');
+    }
+    function hideArchitecturePanel() {
+      const p = document.getElementById('architecturePanel');
+      if (p) p.style.display = 'none';
+    }
+    function showArchitecturePanel() {
+      hideRequirementsPanel();
+      hideBlueprintPanel();
+      hideBuildPanel();
+      const p = document.getElementById('architecturePanel');
+      if (p) p.style.display = 'flex';
+      document.getElementById('previewEmpty')?.classList.add('hidden');
+    }
+
+    function hideBuildPanel() {
+      const p = document.getElementById('buildPanel');
+      if (p) p.style.display = 'none';
+    }
+
+    function showBuildPanel() {
+      hideBlueprintPanel();
+      const p = document.getElementById('buildPanel');
+      if (p) p.style.display = 'flex';
+      document.getElementById('previewEmpty').classList.add('hidden');
+    }
+
+    // ----------------------------------------------------------------
+    // V3 Part 1 — Intelligent Project Architect
+    // ----------------------------------------------------------------
+    const ArchitectManager = {
+      async start(prompt) {
+        ProjectState.lastPrompt = prompt;
+        ProjectState.architectStage = 'requirements';
+        ProjectState.requirements = null;
+        ProjectState.architecture = null;
+        ProjectState.architectureManifest = null;
+        await this.analyzeRequirements(prompt);
+      },
+
+      async analyzeRequirements(prompt) {
+        if (ProjectState.isGenerating) return;
+        ProjectState.isGenerating = true;
+        ProjectState.abortController = new AbortController();
+        UI.hideError();
+        UI.setStatus('generating', 'Analyzing requirements…');
+        UI.setStreaming(true);
+        UI.setButtonsEnabled(false, true);
+
+        try {
+          const messages = [
+            { role: 'system', content: REQUIREMENTS_SYSTEM_PROMPT },
+            { role: 'user', content: prompt }
+          ];
+          const response = await ApiClient.generate(messages, {
+            stream: CONFIG.STREAM,
+            signal: ProjectState.abortController.signal
+          });
+          let raw = '';
+          if (CONFIG.STREAM && response.body) raw = await GenerationManager.consumeStream(response);
+          else {
+            const data = await response.json();
+            raw = data.choices?.[0]?.message?.content || '';
+          }
+          if (!raw || raw.trim().length < 30) throw new Error('Empty requirements analysis.');
+
+          ProjectState.requirements = this.parseRequirements(raw, prompt);
+          this.renderRequirements();
+          showRequirementsPanel();
+          UI.setStatus('success', 'Requirements ready — review & continue');
+          UI.toast('Requirements analyzed');
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            console.error(err);
+            UI.showError(err.message || 'Requirements analysis failed');
+            UI.toast(err.message || 'Analysis failed', 'error');
+          }
+        } finally {
+          ProjectState.isGenerating = false;
+          ProjectState.abortController = null;
+          UI.setStreaming(false);
+          UI.setButtonsEnabled(!!ProjectState.currentCode, false);
+        }
+      },
+
+      parseRequirements(raw, prompt) {
+        const text = raw.trim().replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '');
+        const result = {
+          projectName: '',
+          summary: '',
+          core: [],
+          recommended: [],
+          optional: [],
+          assumptions: [],
+          raw: text,
+          originalPrompt: prompt,
+          // user-editable enabled flags
+          enabled: { core: {}, recommended: {}, optional: {} }
+        };
+        let section = null;
+        for (const line of text.split('\n')) {
+          const t = line.trim();
+          if (!t) continue;
+          if (/^PROJECT NAME:/i.test(t)) result.projectName = t.replace(/^PROJECT NAME:\s*/i, '').trim();
+          else if (/^SUMMARY:/i.test(t)) result.summary = t.replace(/^SUMMARY:\s*/i, '').trim();
+          else if (/^CORE REQUIREMENTS/i.test(t)) section = 'core';
+          else if (/^RECOMMENDED FEATURES/i.test(t)) section = 'recommended';
+          else if (/^OPTIONAL FEATURES/i.test(t)) section = 'optional';
+          else if (/^ASSUMPTIONS/i.test(t)) section = 'assumptions';
+          else if (section && (t.startsWith('-') || /^\d+\./.test(t))) {
+            const item = t.replace(/^[-\d.]+\s*/, '').trim();
+            if (item && result[section]) {
+              result[section].push(item);
+              if (section !== 'assumptions') result.enabled[section][item] = section !== 'optional';
+            }
+          }
+        }
+        if (!result.projectName) result.projectName = 'Untitled Project';
+        return result;
+      },
+
+      renderRequirements() {
+        const req = ProjectState.requirements;
+        if (!req) return;
+        const box = document.getElementById('requirementsContent');
+        const sectionHtml = (title, key, color) => {
+          const items = req[key] || [];
+          if (!items.length) return '';
+          return `<div style="margin-bottom:16px;">
+            <div style="font-size:12px;font-weight:600;color:${color};margin-bottom:8px;">${title}</div>
+            ${items.map(item => {
+              const checked = req.enabled[key][item] !== false;
+              const id = 'req_' + key + '_' + btoa(unescape(encodeURIComponent(item))).slice(0, 12);
+              return `<label style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;cursor:pointer;font-size:13px;color:var(--text-primary);">
+                <input type="checkbox" data-req-key="${key}" data-req-item="${item.replace(/"/g, '&quot;')}" ${checked ? 'checked' : ''} style="margin-top:3px;" />
+                <span>${item}</span>
+              </label>`;
+            }).join('')}
+          </div>`;
+        };
+        box.innerHTML = `
+          <div style="margin-bottom:14px;padding:12px 14px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);">
+            <div style="font-size:15px;font-weight:600;">${req.projectName}</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">${req.summary || ''}</div>
+          </div>
+          ${sectionHtml('CORE REQUIREMENTS (User Requested / Essential)', 'core', 'var(--success)')}
+          ${sectionHtml('RECOMMENDED FEATURES (AI Suggested)', 'recommended', 'var(--accent)')}
+          ${sectionHtml('OPTIONAL FEATURES', 'optional', 'var(--text-muted)')}
+          ${req.assumptions.length ? `<div style="margin-top:8px;font-size:12px;color:var(--text-muted);"><strong>Assumptions:</strong><br>${req.assumptions.map(a => '• ' + a).join('<br>')}</div>` : ''}
+        `;
+        box.querySelectorAll('input[type=checkbox]').forEach(cb => {
+          cb.addEventListener('change', () => {
+            const key = cb.getAttribute('data-req-key');
+            const item = cb.getAttribute('data-req-item');
+            if (ProjectState.requirements?.enabled?.[key]) {
+              ProjectState.requirements.enabled[key][item] = cb.checked;
+            }
+          });
+        });
+      },
+
+      getSelectedFeatures() {
+        const req = ProjectState.requirements;
+        if (!req) return { core: [], recommended: [], optional: [] };
+        const pick = (key) => (req[key] || []).filter(i => req.enabled[key][i] !== false);
+        return { core: pick('core'), recommended: pick('recommended'), optional: pick('optional') };
+      },
+
+      async designArchitecture() {
+        if (ProjectState.isGenerating) return;
+        const selected = this.getSelectedFeatures();
+        if (!selected.core.length && !selected.recommended.length) {
+          UI.toast('Select at least some requirements', 'error');
+          return;
+        }
+
+        ProjectState.isGenerating = true;
+        ProjectState.abortController = new AbortController();
+        ProjectState.architectStage = 'architecture';
+        UI.hideError();
+        UI.setStatus('generating', 'Designing architecture…');
+        UI.setStreaming(true);
+        UI.setButtonsEnabled(false, true);
+
+        const userMsg = `Original idea: ${ProjectState.requirements.originalPrompt}
+
+Project: ${ProjectState.requirements.projectName}
+Summary: ${ProjectState.requirements.summary}
+
+Confirmed CORE requirements:
+${selected.core.map(f => '- ' + f).join('\n') || '- none'}
+
+Confirmed RECOMMENDED features:
+${selected.recommended.map(f => '- ' + f).join('\n') || '- none'}
+
+Confirmed OPTIONAL features:
+${selected.optional.map(f => '- ' + f).join('\n') || '- none'}
+
+Design a practical architecture for this application.`;
+
+        try {
+          const messages = [
+            { role: 'system', content: ARCHITECTURE_SYSTEM_PROMPT },
+            { role: 'user', content: userMsg }
+          ];
+          const response = await ApiClient.generate(messages, {
+            stream: CONFIG.STREAM,
+            signal: ProjectState.abortController.signal
+          });
+          let raw = '';
+          if (CONFIG.STREAM && response.body) raw = await GenerationManager.consumeStream(response);
+          else {
+            const data = await response.json();
+            raw = data.choices?.[0]?.message?.content || '';
+          }
+          if (!raw || raw.trim().length < 40) throw new Error('Empty architecture design.');
+
+          const cleaned = raw.trim().replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '').trim();
+          ProjectState.architecture = cleaned;
+          ProjectState.architectureManifest = this.buildArchitectureManifest(cleaned, selected);
+          document.getElementById('architectureContent').textContent = cleaned;
+          showArchitecturePanel();
+          UI.setStatus('success', 'Architecture ready — review & approve');
+          UI.toast('Architecture designed');
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            console.error(err);
+            UI.showError(err.message || 'Architecture design failed');
+            UI.toast(err.message || 'Architecture failed', 'error');
+          }
+        } finally {
+          ProjectState.isGenerating = false;
+          ProjectState.abortController = null;
+          UI.setStreaming(false);
+          UI.setButtonsEnabled(!!ProjectState.currentCode, false);
+        }
+      },
+
+      buildArchitectureManifest(archText, selected) {
+        const m = {
+          version: '3.1',
+          createdAt: new Date().toISOString(),
+          projectName: ProjectState.requirements?.projectName || 'Untitled',
+          summary: ProjectState.requirements?.summary || '',
+          originalPrompt: ProjectState.requirements?.originalPrompt || '',
+          requirements: selected,
+          rawArchitecture: archText,
+          generationOrder: [],
+          components: [],
+          pages: [],
+          technicalDecisions: [],
+          featureDependencies: []
+        };
+        let section = null;
+        for (const line of archText.split('\n')) {
+          const t = line.trim();
+          if (/^GENERATION ORDER/i.test(t)) section = 'generationOrder';
+          else if (/^COMPONENTS/i.test(t)) section = 'components';
+          else if (/^PAGES/i.test(t)) section = 'pages';
+          else if (/^TECHNICAL DECISIONS/i.test(t)) section = 'technicalDecisions';
+          else if (/^FEATURE DEPENDENCIES/i.test(t)) section = 'featureDependencies';
+          else if (section && (t.startsWith('-') || /^\d+\./.test(t))) {
+            const item = t.replace(/^[-\d.]+\s*/, '').trim();
+            if (item && m[section]) m[section].push(item);
+          }
+        }
+        return m;
+      },
+
+      async approveArchitecture() {
+        if (!ProjectState.architectureManifest) {
+          UI.toast('No architecture to approve', 'error');
+          return;
+        }
+        ProjectState.architectStage = 'approved';
+
+        // Convert architecture → V2-compatible blueprint + manifest, then continue existing pipeline
+        const selected = this.getSelectedFeatures();
+        const arch = ProjectState.architectureManifest;
+
+        // Build a V2-style blueprint text from architecture so existing planner/parser still works
+        const genOrder = arch.generationOrder.length
+          ? arch.generationOrder
+          : [...selected.core, ...selected.recommended].slice(0, 12);
+
+        const blueprintText = `PROJECT BLUEPRINT
+
+Project Name: ${arch.projectName}
+Main Objective: ${arch.summary || ProjectState.requirements?.summary || ''}
+
+Required Features:
+${[...selected.core, ...selected.recommended, ...selected.optional].map(f => '- ' + f).join('\n')}
+
+Pages / Sections:
+${(arch.pages.length ? arch.pages : genOrder).map((p, i) => `${i + 1}. ${p}`).join('\n')}
+
+Components:
+${(arch.components.length ? arch.components : genOrder).map(c => '- ' + c).join('\n')}
+
+Functional Modules:
+${genOrder.map((m, i) => `${i + 1}. ${m}`).join('\n')}
+
+JavaScript Systems:
+- Application state
+- Event handling
+- UI interactions
+
+CSS / UI Systems:
+- Layout system
+- Component styles
+- Responsive rules
+
+Dependencies:
+- none
+
+Integration Requirements:
+- Single-file assembly of modules into index.html
+
+Generation Order:
+${genOrder.map((m, i) => `${i + 1}. ${m}`).join('\n')}
+`;
+
+        ProjectState.blueprint = blueprintText;
+        ProjectState.manifest = parseBlueprintToManifest(blueprintText, arch.originalPrompt || ProjectState.lastPrompt);
+        ProjectState.manifest.architectureManifest = arch;
+        ProjectState.manifest.projectName = arch.projectName;
+        ProjectState.blueprintApproved = true;
+
+        hideArchitecturePanel();
+        UI.setStatus('success', 'Architecture approved — generating structure');
+        UI.toast('Architecture approved');
+        console.log('Architecture Manifest:', arch);
+
+        // V3 Part 2: generate project structure before code generation
+        await StructureManager.generate();
+      }
+    };
+
+    // ----------------------------------------------------------------
+    // V3 Part 2 — Project Structure & Dependency Graph
+    // ----------------------------------------------------------------
+    const StructureManager = {
+      async generate() {
+        if (ProjectState.isGenerating) return;
+        if (!ProjectState.architectureManifest) {
+          UI.toast('Approve architecture first', 'error');
+          return;
+        }
+
+        ProjectState.isGenerating = true;
+        ProjectState.abortController = new AbortController();
+        ProjectState.architectStage = 'structure';
+        ProjectState.structureValidated = false;
+        UI.hideError();
+        UI.setStatus('generating', 'Generating project structure…');
+        UI.setStreaming(true);
+        UI.setButtonsEnabled(false, true);
+
+        const arch = ProjectState.architectureManifest;
+        const selected = arch.requirements || ArchitectManager.getSelectedFeatures();
+
+        const userMsg = `Project: ${arch.projectName}
+Summary: ${arch.summary || ''}
+
+Architecture:
+${arch.rawArchitecture || ProjectState.architecture || ''}
+
+Confirmed features:
+CORE:
+${(selected.core || []).map(f => '- ' + f).join('\n')}
+RECOMMENDED:
+${(selected.recommended || []).map(f => '- ' + f).join('\n')}
+OPTIONAL:
+${(selected.optional || []).map(f => '- ' + f).join('\n')}
+
+Create the detailed project structure, component registry, feature registry, dependency graph, and generation order.`;
+
+        try {
+          const messages = [
+            { role: 'system', content: STRUCTURE_SYSTEM_PROMPT },
+            { role: 'user', content: userMsg }
+          ];
+          const response = await ApiClient.generate(messages, {
+            stream: CONFIG.STREAM,
+            signal: ProjectState.abortController.signal
+          });
+          let raw = '';
+          if (CONFIG.STREAM && response.body) raw = await GenerationManager.consumeStream(response);
+          else {
+            const data = await response.json();
+            raw = data.choices?.[0]?.message?.content || '';
+          }
+          if (!raw || raw.trim().length < 40) throw new Error('Empty project structure response.');
+
+          const cleaned = raw.trim().replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '').trim();
+          const parsed = this.parseStructure(cleaned);
+          ProjectState.projectStructure = parsed;
+          ProjectState.componentRegistry = parsed.components;
+          ProjectState.featureRegistry = parsed.features;
+          ProjectState.dependencyGraph = parsed.dependencies;
+
+          // Validate dependencies
+          const validation = this.validate(parsed);
+          ProjectState.structureValidated = validation.ok;
+
+          // Consistency vs architecture features
+          const consistency = this.checkConsistency(parsed, selected);
+
+          this.render(parsed, validation, consistency);
+          showStructurePanel();
+          UI.setStatus(validation.ok ? 'success' : 'error', validation.ok ? 'Structure ready' : 'Structure has issues');
+          UI.toast(validation.ok ? 'Project structure generated' : 'Structure generated with warnings');
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            console.error(err);
+            UI.showError(err.message || 'Structure generation failed');
+            UI.toast(err.message || 'Structure failed', 'error');
+          }
+        } finally {
+          ProjectState.isGenerating = false;
+          ProjectState.abortController = null;
+          UI.setStreaming(false);
+          UI.setButtonsEnabled(!!ProjectState.currentCode, false);
+        }
+      },
+
+      parseStructure(text) {
+        const result = {
+          raw: text,
+          tree: '',
+          components: [],
+          features: [],
+          dependencies: [],
+          generationOrder: [],
+          validationNotes: []
+        };
+
+        // TREE section
+        const treeMatch = text.match(/TREE\s*([\s\S]*?)(?=COMPONENT REGISTRY|FEATURE REGISTRY|DEPENDENCY GRAPH|GENERATION ORDER|$)/i);
+        if (treeMatch) result.tree = treeMatch[1].trim();
+
+        // Components
+        const compSection = text.match(/COMPONENT REGISTRY\s*([\s\S]*?)(?=FEATURE REGISTRY|DEPENDENCY GRAPH|GENERATION ORDER|$)/i);
+        if (compSection) {
+          const blocks = compSection[1].split(/---+/);
+          for (const b of blocks) {
+            const name = (b.match(/NAME:\s*(.+)/i) || [])[1];
+            if (!name) continue;
+            result.components.push({
+              name: name.trim(),
+              type: ((b.match(/TYPE:\s*(.+)/i) || [])[1] || 'UI').trim(),
+              purpose: ((b.match(/PURPOSE:\s*(.+)/i) || [])[1] || '').trim(),
+              dependencies: ((b.match(/DEPENDENCIES:\s*(.+)/i) || [])[1] || 'none').split(',').map(s => s.trim()).filter(s => s && s.toLowerCase() !== 'none'),
+              priority: ((b.match(/PRIORITY:\s*(.+)/i) || [])[1] || 'Medium').trim(),
+              status: 'planned'
+            });
+          }
+        }
+
+        // Features
+        const featSection = text.match(/FEATURE REGISTRY\s*([\s\S]*?)(?=DEPENDENCY GRAPH|GENERATION ORDER|VALIDATION|$)/i);
+        if (featSection) {
+          const blocks = featSection[1].split(/---+/);
+          for (const b of blocks) {
+            const name = (b.match(/NAME:\s*(.+)/i) || [])[1];
+            if (!name) continue;
+            result.features.push({
+              name: name.trim(),
+              status: 'Planned',
+              components: ((b.match(/COMPONENTS:\s*(.+)/i) || [])[1] || '').split(',').map(s => s.trim()).filter(Boolean),
+              dependencies: ((b.match(/DEPENDENCIES:\s*(.+)/i) || [])[1] || 'none').split(',').map(s => s.trim()).filter(s => s && s.toLowerCase() !== 'none'),
+              priority: ((b.match(/PRIORITY:\s*(.+)/i) || [])[1] || 'Medium').trim()
+            });
+          }
+        }
+
+        // Dependency graph lines: A -> B
+        const depSection = text.match(/DEPENDENCY GRAPH\s*([\s\S]*?)(?=GENERATION ORDER|VALIDATION NOTES|$)/i);
+        if (depSection) {
+          for (const line of depSection[1].split('\n')) {
+            const m = line.match(/(.+?)\s*->\s*(.+)/);
+            if (m) result.dependencies.push({ from: m[1].trim(), to: m[2].trim() });
+          }
+        }
+
+        // Generation order
+        const orderSection = text.match(/GENERATION ORDER\s*([\s\S]*?)(?=VALIDATION NOTES|$)/i);
+        if (orderSection) {
+          for (const line of orderSection[1].split('\n')) {
+            const t = line.trim();
+            if (/^\d+\./.test(t) || t.startsWith('-')) {
+              result.generationOrder.push(t.replace(/^[-\d.]+\s*/, '').trim());
+            }
+          }
+        }
+
+        // Validation notes
+        const notesSection = text.match(/VALIDATION NOTES\s*([\s\S]*?)$/i);
+        if (notesSection) {
+          for (const line of notesSection[1].split('\n')) {
+            const t = line.trim();
+            if (t.startsWith('-')) {
+              const note = t.replace(/^-\s*/, '').trim();
+              if (note && note.toLowerCase() !== 'none') result.validationNotes.push(note);
+            }
+          }
+        }
+
+        return result;
+      },
+
+      validate(parsed) {
+        const issues = [];
+        const defined = new Set(parsed.components.map(c => c.name.toLowerCase()));
+        // Also allow features/services named in tree
+        for (const f of parsed.features) defined.add(f.name.toLowerCase());
+
+        for (const c of parsed.components) {
+          for (const dep of c.dependencies) {
+            if (!defined.has(dep.toLowerCase()) && !/^(none|app|state|dom|browser)$/i.test(dep)) {
+              issues.push(`${c.name} depends on "${dep}" which is not defined`);
+            }
+          }
+        }
+
+        // Circular dependency (simple)
+        const adj = {};
+        for (const d of parsed.dependencies) {
+          const a = d.from.toLowerCase(), b = d.to.toLowerCase();
+          if (!adj[a]) adj[a] = [];
+          adj[a].push(b);
+        }
+        const visiting = new Set(), visited = new Set();
+        const hasCycle = (n) => {
+          if (visiting.has(n)) return true;
+          if (visited.has(n)) return false;
+          visiting.add(n);
+          for (const m of (adj[n] || [])) if (hasCycle(m)) return true;
+          visiting.delete(n);
+          visited.add(n);
+          return false;
+        };
+        for (const n of Object.keys(adj)) {
+          if (hasCycle(n)) {
+            issues.push('Circular dependency detected in graph');
+            break;
+          }
+        }
+
+        issues.push(...(parsed.validationNotes || []));
+        return { ok: issues.length === 0, issues };
+      },
+
+      checkConsistency(parsed, selected) {
+        const allReq = [...(selected.core || []), ...(selected.recommended || [])];
+        const featNames = parsed.features.map(f => f.name.toLowerCase());
+        const missing = [];
+        for (const r of allReq) {
+          const key = r.toLowerCase();
+          // loose match
+          const found = featNames.some(f => key.includes(f) || f.includes(key.split(' ')[0]));
+          if (!found && key.length > 3) missing.push(r);
+        }
+        return {
+          ok: missing.length === 0,
+          missing: missing.slice(0, 8)
+        };
+      },
+
+      render(parsed, validation, consistency) {
+        document.getElementById('structureTree').textContent =
+          parsed.tree || parsed.components.map(c => `○ ${c.name} (${c.type})`).join('\n') || 'No structure';
+
+        const depLines = parsed.dependencies.length
+          ? parsed.dependencies.map(d => `${d.from}  →  ${d.to}`).join('\n')
+          : 'No explicit edges';
+        const order = parsed.generationOrder.length
+          ? '\n\nGENERATION ORDER\n' + parsed.generationOrder.map((g, i) => `${i + 1}. ${g}`).join('\n')
+          : '';
+        document.getElementById('structureDeps').textContent = depLines + order;
+
+        const valEl = document.getElementById('structureValidation');
+        if (validation.ok) {
+          valEl.innerHTML = '<span style="color:var(--success)">✓ Dependency validation passed</span>';
+        } else {
+          valEl.innerHTML = '<span style="color:var(--warning)">⚠ Issues:</span><br>' +
+            validation.issues.slice(0, 6).map(i => '• ' + i).join('<br>');
+        }
+
+        const consEl = document.getElementById('structureConsistency');
+        if (consistency.ok) {
+          consEl.innerHTML = '<span style="color:var(--success)">Architecture Consistent ✓</span>';
+        } else {
+          consEl.innerHTML = '<span style="color:var(--warning)">Architecture Changes Detected ⚠</span> — possible missing features: ' +
+            consistency.missing.slice(0, 4).join(', ');
+        }
+      },
+
+      async approve() {
+        if (!ProjectState.projectStructure) {
+          UI.toast('No structure to approve', 'error');
+          return;
+        }
+
+        const parsed = ProjectState.projectStructure;
+
+        // Update generation order on V2 manifest from dependency-aware order
+        if (parsed.generationOrder.length && ProjectState.manifest) {
+          ProjectState.manifest.generationOrder = parsed.generationOrder;
+        }
+        ProjectState.manifest = ProjectState.manifest || {};
+        ProjectState.manifest.projectStructure = parsed;
+        ProjectState.manifest.componentRegistry = ProjectState.componentRegistry;
+        ProjectState.manifest.featureRegistry = ProjectState.featureRegistry;
+        ProjectState.manifest.dependencyGraph = ProjectState.dependencyGraph;
+        ProjectState.architectStage = 'approved';
+        ProjectState.structureValidated = true;
+
+        hideStructurePanel();
+        UI.setStatus('success', 'Structure approved — starting module generation');
+        UI.toast('Structure approved — building modules');
+        console.log('Project Structure Manifest:', parsed);
+
+        await ModuleBuildManager.start();
+      }
+    };
+
+    function hideStructurePanel() {
+      const p = document.getElementById('structurePanel');
+      if (p) p.style.display = 'none';
+    }
+    function showStructurePanel() {
+      hideRequirementsPanel();
+      hideArchitecturePanel();
+      hideBlueprintPanel();
+      hideBuildPanel();
+      const p = document.getElementById('structurePanel');
+      if (p) p.style.display = 'flex';
+      document.getElementById('previewEmpty')?.classList.add('hidden');
+    }
+
+    // ----------------------------------------------------------------
+    // V2 Part 2 — Module-by-Module Build Engine
+    // ----------------------------------------------------------------
+    const ModuleBuildManager = {
+      async start() {
+        if (!ProjectState.manifest) {
+          UI.toast('No approved manifest', 'error');
+          return;
+        }
+
+        // Build ordered module list from generationOrder or modules
+        let list = ProjectState.manifest.generationOrder || [];
+        if (!list.length) list = ProjectState.manifest.modules || [];
+        if (!list.length) {
+          // Fallback: create reasonable defaults from sections
+          list = (ProjectState.manifest.sections || []).map(s => s.split('—')[0].trim() || s);
+        }
+        if (!list.length) {
+          UI.toast('Blueprint has no modules to generate', 'error');
+          return;
+        }
+
+        // Clean module names
+        ProjectState.moduleList = list.map(m => m.replace(/^\d+\.\s*/, '').split('—')[0].trim()).filter(Boolean);
+        ProjectState.modules = {};
+        ProjectState.currentModuleIndex = 0;
+        ProjectState.buildStatus = 'building';
+        ProjectState.buildPaused = false;
+        ProjectState.totalLinesGenerated = 0;
+
+        ProjectState.moduleList.forEach(name => {
+          const key = this.toKey(name);
+          ProjectState.modules[key] = {
+            name,
+            code: '',
+            status: 'pending', // pending | generating | completed | failed
+            meta: {}
+          };
+        });
+
+        showBuildPanel();
+        this.renderProgress();
+        UI.setStatus('generating', 'Building project modules…');
+        UI.toast('Starting module-by-module generation');
+
+        await this.runNext();
+      },
+
+      toKey(name) {
+        return name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+      },
+
+      renderProgress() {
+        const total = ProjectState.moduleList.length;
+        let completed = 0;
+        let lines = 0;
+        const listEl = document.getElementById('moduleListUI');
+        let html = '';
+
+        ProjectState.moduleList.forEach((name, idx) => {
+          const key = this.toKey(name);
+          const mod = ProjectState.modules[key];
+          const status = mod ? mod.status : 'pending';
+          if (status === 'completed') {
+            completed++;
+            if (mod.code) lines += mod.code.split('\n').length;
+          }
+
+          let icon = '○';
+          let color = 'var(--text-muted)';
+          if (status === 'completed') { icon = '✓'; color = 'var(--success)'; }
+          else if (status === 'generating') { icon = '⟳'; color = 'var(--accent)'; }
+          else if (status === 'failed') { icon = '✕'; color = 'var(--error)'; }
+
+          html += `<div style="color:${color};padding:4px 0;">${icon} Module ${idx + 1} — ${name}</div>`;
+        });
+
+        listEl.innerHTML = html || '<div style="color:var(--text-muted)">No modules</div>';
+        document.getElementById('buildProgressText').textContent = `${completed} / ${total} modules`;
+        document.getElementById('buildLinesText').textContent = `${lines.toLocaleString()} lines`;
+        ProjectState.totalLinesGenerated = lines;
+
+        const retryBtn = document.getElementById('retryModuleBtn');
+        const hasFailed = Object.values(ProjectState.modules).some(m => m.status === 'failed');
+        retryBtn.style.display = hasFailed ? 'inline-flex' : 'none';
+
+        const pauseBtn = document.getElementById('pauseBuildBtn');
+        if (ProjectState.buildPaused) {
+          pauseBtn.textContent = 'Resume Build';
+        } else {
+          pauseBtn.textContent = 'Pause Build';
+        }
+      },
+
+      async runNext() {
+        if (ProjectState.buildPaused || ProjectState.buildStatus !== 'building') return;
+
+        const idx = ProjectState.currentModuleIndex;
+        if (idx >= ProjectState.moduleList.length) {
+          this.finish();
+          return;
+        }
+
+        const name = ProjectState.moduleList[idx];
+        const key = this.toKey(name);
+        const mod = ProjectState.modules[key];
+        mod.status = 'generating';
+        this.renderProgress();
+
+        document.getElementById('buildStatusMsg').textContent =
+          `Generating Module ${idx + 1} of ${ProjectState.moduleList.length}: ${name}`;
+        document.getElementById('buildTitle').textContent = `Building: ${name}`;
+
+        try {
+          const code = await this.generateModule(name, key);
+          if (!code || code.trim().length < 10) {
+            throw new Error('Module returned empty or incomplete code');
+          }
+
+          mod.code = code;
+          mod.status = 'completed';
+          ProjectState.currentModuleIndex++;
+          this.renderProgress();
+
+          // Small delay so UI can breathe, then continue
+          await new Promise(r => setTimeout(r, 400));
+          await this.runNext();
+
+        } catch (err) {
+          console.error('Module generation failed:', name, err);
+          mod.status = 'failed';
+          mod.error = err.message || 'Generation failed';
+          this.renderProgress();
+          document.getElementById('buildStatusMsg').textContent =
+            `Module "${name}" failed: ${mod.error}. You can Retry Module or continue later.`;
+          UI.setStatus('error', 'Module generation failed');
+          // Do not auto-advance on failure
+        }
+      },
+
+      async generateModule(moduleName, moduleKey) {
+        const completed = ProjectState.moduleList
+          .slice(0, ProjectState.currentModuleIndex)
+          .map(n => {
+            const k = this.toKey(n);
+            const m = ProjectState.modules[k];
+            return m && m.status === 'completed' ? n : null;
+          })
+          .filter(Boolean);
+
+        const remaining = ProjectState.moduleList.slice(ProjectState.currentModuleIndex + 1);
+
+        // V3 architecture-aware context (compact)
+        const arch = ProjectState.architectureManifest || {};
+        const comps = ProjectState.componentRegistry || [];
+        const feats = ProjectState.featureRegistry || [];
+        const deps = ProjectState.dependencyGraph || [];
+
+        const relatedComp = comps.find(c =>
+          c.name.toLowerCase() === moduleName.toLowerCase() ||
+          moduleName.toLowerCase().includes(c.name.toLowerCase()) ||
+          c.name.toLowerCase().includes(moduleName.toLowerCase().split(' ')[0])
+        );
+
+        const inbound = deps.filter(d => d.to.toLowerCase() === moduleName.toLowerCase() ||
+          moduleName.toLowerCase().includes(d.to.toLowerCase()));
+        const outbound = deps.filter(d => d.from.toLowerCase() === moduleName.toLowerCase() ||
+          moduleName.toLowerCase().includes(d.from.toLowerCase()));
+
+        // Interface hints from completed dependency modules (names only + short code head)
+        const depInterfaces = [];
+        for (const d of [...inbound, ...outbound]) {
+          const other = inbound.includes(d) ? d.from : d.to;
+          const k = this.toKey(other);
+          const mod = ProjectState.modules[k];
+          if (mod && mod.status === 'completed' && mod.code) {
+            const head = mod.code.slice(0, 500).replace(/\s+/g, ' ');
+            depInterfaces.push(`- ${other}: ${head}…`);
+          } else {
+            depInterfaces.push(`- ${other}: (planned)`);
+          }
+        }
+
+        const contract = `
+ARCHITECTURE CONTRACT
+Module: ${moduleName}
+Purpose: ${relatedComp?.purpose || 'Implement this module as defined by the architecture'}
+Required Components: ${relatedComp?.name || moduleName}
+Dependencies: ${(relatedComp?.dependencies || outbound.map(d => d.to) || ['none']).join(', ') || 'none'}
+Expected Outputs: functional UI/logic for ${moduleName}
+Constraints: Keep naming consistent with architecture. Do not rename this module. Do not invent parallel components for the same role.
+`.trim();
+
+        const context = `
+PROJECT: ${ProjectState.manifest?.projectName || arch.projectName || 'Untitled'}
+OBJECTIVE: ${ProjectState.manifest?.mainObjective || arch.summary || ''}
+
+${contract}
+
+COMPLETED MODULES:
+${completed.length ? completed.map(c => '- ' + c).join('\n') : '- none yet'}
+
+CURRENT MODULE TO GENERATE:
+${moduleName}
+
+REMAINING MODULES:
+${remaining.length ? remaining.map(r => '- ' + r).join('\n') : '- none'}
+
+DEPENDENCY EDGES (relevant):
+${[...inbound, ...outbound].length ? [...inbound, ...outbound].map(d => `- ${d.from} → ${d.to}`).join('\n') : '- none listed'}
+
+INTERFACE HINTS FROM DEPENDENCIES:
+${depInterfaces.length ? depInterfaces.join('\n') : '- none yet'}
+
+FEATURE REGISTRY (approved):
+${feats.length ? feats.slice(0, 12).map(f => `- ${f.name} [${f.priority || 'Medium'}]`).join('\n') : '- see architecture'}
+
+COMPONENT REGISTRY (sample):
+${comps.slice(0, 12).map(c => `- ${c.name} (${c.type}) deps: ${(c.dependencies || []).join(', ') || 'none'}`).join('\n') || '- none'}
+`.trim();
+
+        const userMsg = context + `\n\nGenerate the complete code for the CURRENT MODULE only ("${moduleName}"). Follow the MODULE output format and Architecture Contract exactly.`;
+
+        let full = await this.callModel(userMsg);
+
+        // Auto-continuation if response looks truncated (preserve contract)
+        let attempts = 0;
+        while (attempts < 3 && this.looksIncomplete(full)) {
+          attempts++;
+          document.getElementById('buildStatusMsg').textContent =
+            `Module "${moduleName}" incomplete — continuing (${attempts})…`;
+          const cont = await this.callModel(
+            `Continue the previous module code for "${moduleName}" exactly from where you left off. Keep the same Architecture Contract and naming. Do NOT repeat any code already generated. Output only the continuation of the CODE section.`
+          );
+          full = this.mergeContinuation(full, cont);
+        }
+
+        const code = this.extractModuleCode(full, moduleName);
+
+        // Update feature registry status loosely when module completes
+        this.markFeaturesForModule(moduleName);
+
+        return code;
+      },
+
+      markFeaturesForModule(moduleName) {
+        const feats = ProjectState.featureRegistry || [];
+        const key = moduleName.toLowerCase();
+        for (const f of feats) {
+          if (f.name.toLowerCase().includes(key) || key.includes(f.name.toLowerCase()) ||
+              (f.components || []).some(c => key.includes(c.toLowerCase()) || c.toLowerCase().includes(key.split(' ')[0]))) {
+            f.status = 'Implemented';
+          }
+        }
+      },
+
+      async callModel(userContent) {
+        ProjectState.abortController = new AbortController();
+        const messages = [
+          { role: 'system', content: MODULE_SYSTEM_PROMPT },
+          { role: 'user', content: userContent }
+        ];
+
+        const response = await ApiClient.generate(messages, {
+          stream: CONFIG.STREAM,
+          signal: ProjectState.abortController.signal
+        });
+
+        let fullResponse = '';
+        if (CONFIG.STREAM && response.body) {
+          fullResponse = await GenerationManager.consumeStream(response);
+        } else {
+          const data = await response.json();
+          fullResponse = data.choices?.[0]?.message?.content || '';
+        }
+        return fullResponse || '';
+      },
+
+      looksIncomplete(text) {
+        if (!text || text.length < 80) return true;
+        // Heuristic: ends mid-tag or mid-function without proper close
+        const trimmed = text.trim();
+        if (/CODE:\s*$/i.test(trimmed)) return true;
+        if (/\{\s*$/.test(trimmed) || /\(\s*$/.test(trimmed)) return true;
+        // If it contains CODE: but very short after it
+        const codeIdx = trimmed.search(/CODE:\s*/i);
+        if (codeIdx !== -1) {
+          const after = trimmed.slice(codeIdx + 5).trim();
+          if (after.length < 40) return true;
+        }
+        return false;
+      },
+
+      mergeContinuation(prev, cont) {
+        // Avoid duplicating the last few lines
+        const prevLines = prev.split('\n');
+        const contLines = cont.split('\n').filter(l => !/^MODULE|^NAME:|^PURPOSE:|^DEPENDENCIES:|^COMPONENTS|^FUNCTIONS|^CODE:/i.test(l.trim()));
+        // Simple merge
+        return prev + '\n' + contLines.join('\n');
+      },
+
+      extractModuleCode(raw, moduleName) {
+        if (!raw) return '';
+        let text = raw.trim()
+          .replace(/^```[\w]*\n?/, '')
+          .replace(/\n?```$/, '')
+          .trim();
+
+        // Prefer content after CODE:
+        const codeMatch = text.match(/CODE:\s*([\s\S]*)/i);
+        if (codeMatch && codeMatch[1]) {
+          return codeMatch[1].trim();
+        }
+
+        // Fallback: whole response if it looks like code
+        if (text.includes('<') || text.includes('{') || text.includes('function') || text.includes('const ')) {
+          return text;
+        }
+        return text;
+      },
+
+      pause() {
+        if (ProjectState.buildStatus !== 'building' && !ProjectState.buildPaused) return;
+        ProjectState.buildPaused = !ProjectState.buildPaused;
+        if (ProjectState.buildPaused) {
+          ProjectState.buildStatus = 'paused';
+          document.getElementById('buildStatusMsg').textContent = 'Build paused. Completed modules are preserved.';
+          UI.setStatus('idle', 'Build paused');
+          this.renderProgress();
+        } else {
+          ProjectState.buildStatus = 'building';
+          document.getElementById('buildStatusMsg').textContent = 'Resuming build…';
+          UI.setStatus('generating', 'Building project modules…');
+          this.renderProgress();
+          this.runNext();
+        }
+      },
+
+      cancel() {
+        ProjectState.buildStatus = 'idle';
+        ProjectState.buildPaused = false;
+        if (ProjectState.abortController) ProjectState.abortController.abort();
+        document.getElementById('buildStatusMsg').textContent =
+          'Build cancelled. Completed modules are still saved in memory.';
+        UI.setStatus('idle', 'Build cancelled');
+        this.renderProgress();
+        UI.toast('Build cancelled — completed modules kept');
+      },
+
+      async retryFailed() {
+        // Find first failed module and retry only that one
+        const idx = ProjectState.moduleList.findIndex(name => {
+          const k = this.toKey(name);
+          return ProjectState.modules[k] && ProjectState.modules[k].status === 'failed';
+        });
+        if (idx === -1) {
+          UI.toast('No failed module to retry', 'error');
+          return;
+        }
+        ProjectState.currentModuleIndex = idx;
+        ProjectState.buildStatus = 'building';
+        ProjectState.buildPaused = false;
+        UI.setStatus('generating', 'Retrying module…');
+        await this.runNext();
+      },
+
+      async finish() {
+        ProjectState.buildStatus = 'completed';
+        ProjectState.buildPaused = false;
+        this.renderProgress();
+        document.getElementById('buildTitle').textContent = 'Architecture Review…';
+        document.getElementById('buildStatusMsg').textContent = 'Modules complete. Running architecture review…';
+        UI.setStatus('generating', 'Architecture review…');
+        console.log('Saved modules:', ProjectState.modules);
+
+        // V3 Part 3: architecture review before V2 integration
+        const review = this.architectureReview();
+        if (review.warnings.length) {
+          document.getElementById('buildStatusMsg').innerHTML =
+            '⚠ Architecture review warnings:<br>' + review.warnings.slice(0, 5).map(w => '• ' + w).join('<br>');
+          UI.toast('Architecture drift warnings detected', 'error');
+        } else {
+          document.getElementById('buildStatusMsg').textContent =
+            'Architecture review passed. Starting integration & final assembly…';
+        }
+
+        // Hand off to existing V2 Integration Engine
+        await IntegrationEngine.run();
+      },
+
+      architectureReview() {
+        const warnings = [];
+        const completedNames = ProjectState.moduleList.filter(n => {
+          const m = ProjectState.modules[this.toKey(n)];
+          return m && m.status === 'completed';
+        });
+        const failed = ProjectState.moduleList.filter(n => {
+          const m = ProjectState.modules[this.toKey(n)];
+          return m && m.status === 'failed';
+        });
+        if (failed.length) warnings.push(`Failed modules: ${failed.join(', ')}`);
+
+        // Feature protection: approved features with no matching completed module
+        const feats = ProjectState.featureRegistry || [];
+        for (const f of feats) {
+          if ((f.priority || '').toLowerCase() === 'high' || (ProjectState.architectureManifest?.requirements?.core || []).some(c => c.toLowerCase().includes(f.name.toLowerCase()))) {
+            const matched = completedNames.some(n =>
+              n.toLowerCase().includes(f.name.toLowerCase()) || f.name.toLowerCase().includes(n.toLowerCase().split(' ')[0])
+            );
+            if (!matched && f.status !== 'Implemented') {
+              warnings.push(`Feature "${f.name}" may be missing from completed modules`);
+            }
+          }
+        }
+
+        // Dashboard summary
+        const el = document.getElementById('moduleListUI');
+        if (el) {
+          const featLines = feats.slice(0, 10).map(f => {
+            const icon = f.status === 'Implemented' ? '✓' : '○';
+            return `${icon} ${f.name}`;
+          }).join('<br>');
+          el.innerHTML += `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:var(--text-secondary);">
+            <div style="font-weight:600;margin-bottom:6px;color:var(--text-primary);">ARCHITECTURE DASHBOARD</div>
+            <div>Modules: ${completedNames.length}/${ProjectState.moduleList.length}</div>
+            <div>Components: ${(ProjectState.componentRegistry || []).length}</div>
+            <div>Features:</div>
+            <div style="margin-left:8px;">${featLines || '—'}</div>
+            <div style="margin-top:6px;">${warnings.length ? '⚠ ' + warnings.length + ' warning(s)' : '✓ Review ready'}</div>
+          </div>`;
+        }
+
+        return { ok: warnings.length === 0, warnings };
+      }
+    };
+
+    // ----------------------------------------------------------------
+    // V2 Part 3 — Integration & Final Assembly Engine
+    // ----------------------------------------------------------------
+    const INTEGRATION_REVIEW_PROMPT = `You are a senior frontend integration engineer.
+
+You will receive a project blueprint summary and the list of generated modules (names + short code previews).
+
+Your job: identify real integration problems that would prevent the modules from working together as a single HTML page.
+
+Look for:
+- Missing functions or undefined variables that other modules call
+- Duplicate IDs or conflicting function names
+- Broken references between modules
+- Conflicting CSS that would break layout
+- Missing event listeners or wiring
+- Features from the blueprint that appear completely missing
+- Obvious incomplete code markers
+
+Return a concise report in this exact format (no markdown fences, no chain-of-thought):
+
+INTEGRATION REPORT
+STATUS: OK | WARNINGS | CRITICAL
+ISSUES:
+- [issue 1]
+- [issue 2]
+FIXES_NEEDED:
+- [specific targeted fix description 1]
+- [specific targeted fix description 2]
+
+If everything looks reasonably integrable, return STATUS: OK and empty ISSUES / FIXES_NEEDED lists.
+Be practical. Do not invent problems.`;
+
+    const ASSEMBLY_SYSTEM_PROMPT = `You are an elite frontend engineer performing final assembly of a multi-module web application into one self-contained index.html file.
+
+You will receive:
+- Project name and objective
+- The list of modules with their generated code
+- Any known integration warnings
+
+Your task: produce ONE complete, valid HTML document that intelligently combines all modules.
+
+STRICT OUTPUT RULES:
+1. Output ONLY the final HTML. First characters must be "<!DOCTYPE html>".
+2. No markdown fences, no explanations, no metadata.
+3. Combine HTML structure, CSS (in <style>), and JavaScript (in <script>) cleanly.
+4. Resolve obvious naming conflicts and wire components together.
+5. Prefer a coherent single-page or multi-section layout consistent with the blueprint.
+6. Make interactive features actually work.
+7. Do not leave TODOs or placeholder comments that say "module X goes here".
+8. The file must be directly openable in a browser.
+
+Return only the complete HTML document.`;
+
+    const IntegrationEngine = {
+      maxFixAttempts: 3,
+
+      async run() {
+        const previousSuccessful = ProjectState.lastSuccessfulCode;
+
+        try {
+          // 1. Collect completed modules
+          const completed = [];
+          for (const name of ProjectState.moduleList) {
+            const key = ModuleBuildManager.toKey(name);
+            const mod = ProjectState.modules[key];
+            if (mod && mod.status === 'completed' && mod.code) {
+              completed.push({ name, code: mod.code, meta: mod.meta || {} });
+            }
+          }
+
+          if (!completed.length) {
+            throw new Error('No completed modules available for integration.');
+          }
+
+          document.getElementById('buildStatusMsg').textContent =
+            `Integration review of ${completed.length} modules…`;
+
+          // 2. Integration AI review
+          const review = await this.reviewIntegration(completed);
+          let warnings = review.issues || [];
+          let fixes = review.fixes || [];
+
+          // 3. Targeted fix attempts (max 3)
+          let fixAttempt = 0;
+          while (fixes.length > 0 && fixAttempt < this.maxFixAttempts) {
+            fixAttempt++;
+            document.getElementById('buildStatusMsg').textContent =
+              `Applying integration fix ${fixAttempt}/${this.maxFixAttempts}…`;
+            await this.applyTargetedFixes(completed, fixes);
+            const recheck = await this.reviewIntegration(completed);
+            warnings = recheck.issues || [];
+            fixes = recheck.fixes || [];
+            if (recheck.status === 'OK') break;
+          }
+
+          // 4. Final assembly
+          document.getElementById('buildStatusMsg').textContent = 'Assembling final index.html…';
+          let finalHtml = await this.assemble(completed, warnings);
+
+          // Fallback deterministic assembly if AI assembly fails
+          if (!finalHtml || !this.isValidHtml(finalHtml)) {
+            document.getElementById('buildStatusMsg').textContent =
+              'AI assembly incomplete — using deterministic combiner…';
+            finalHtml = this.deterministicAssemble(completed);
+          }
+
+          // Clean
+          finalHtml = this.cleanFinal(finalHtml);
+
+          // 5. Validation
+          const validation = this.validate(finalHtml);
+          if (!validation.ok && !this.isValidHtml(finalHtml)) {
+            throw new Error('Final validation failed: ' + (validation.errors.join('; ') || 'invalid HTML'));
+          }
+
+          // 6. Success — replace previous build only after validation
+          ProjectState.currentCode = finalHtml;
+          ProjectState.lastSuccessfulCode = finalHtml;
+
+          // Stats
+          const stats = this.computeStats(finalHtml, completed.length);
+
+          // UI
+          hideBuildPanel();
+          UI.setCode(finalHtml);
+          PreviewRenderer.render(finalHtml);
+          UI.setButtonsEnabled(true, false);
+
+          const warnText = warnings.length
+            ? `<br><span style="color:var(--warning)">Integration warnings: ${warnings.length}</span><br>${warnings.slice(0, 5).map(w => '• ' + w).join('<br>')}`
+            : '';
+
+          document.getElementById('buildStatusMsg').innerHTML = ''; // panel may be hidden
+          UI.setStatus('success', warnings.length ? 'Build complete with warnings' : 'Build complete');
+          UI.toast(warnings.length ? 'Build complete with warnings' : 'Final project assembled successfully');
+
+          // Show summary in code meta area + status
+          const meta = document.getElementById('codeMeta');
+          if (meta) {
+            meta.textContent = `${stats.totalLines.toLocaleString()} lines · HTML ${stats.htmlLines} · CSS ${stats.cssLines} · JS ${stats.jsLines}`;
+          }
+
+          // Persist a short summary toast-level message via status pill
+          console.log('BUILD COMPLETE', {
+            project: ProjectState.manifest?.projectName,
+            modules: completed.length,
+            stats,
+            warnings
+          });
+
+          // Re-show a lightweight summary on the build panel for a moment then keep final in preview
+          showBuildPanel();
+          document.getElementById('buildTitle').textContent = warnings.length
+            ? 'BUILD COMPLETE WITH WARNINGS'
+            : 'BUILD COMPLETE ✓';
+          document.getElementById('buildProgressText').textContent = `${completed.length} / ${completed.length} modules`;
+          document.getElementById('buildLinesText').textContent = `${stats.totalLines.toLocaleString()} lines`;
+          document.getElementById('moduleListUI').innerHTML = `
+            <div style="line-height:1.7;font-size:13px;">
+              <div><strong>Project:</strong> ${ProjectState.manifest?.projectName || 'Untitled'}</div>
+              <div><strong>Modules:</strong> ${completed.length}</div>
+              <div><strong>Total Lines:</strong> ${stats.totalLines.toLocaleString()}</div>
+              <div><strong>HTML:</strong> ${stats.htmlLines.toLocaleString()} · <strong>CSS:</strong> ${stats.cssLines.toLocaleString()} · <strong>JS:</strong> ${stats.jsLines.toLocaleString()}</div>
+              <div style="margin-top:8px;color:${warnings.length ? 'var(--warning)' : 'var(--success)'}">
+                ${warnings.length ? 'Integration Status: Completed with warnings' : 'Integration Status: Passed'}
+              </div>
+              ${warnText}
+              <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+                <button type="button" class="btn btn-primary" style="font-size:12px;padding:8px 14px;" onclick="hideBuildPanel()">Open Preview</button>
+              </div>
+            </div>`;
+          document.getElementById('buildStatusMsg').textContent = '';
+
+        } catch (err) {
+          console.error('IntegrationEngine error:', err);
+          // Preserve previous successful build
+          if (previousSuccessful) {
+            ProjectState.currentCode = previousSuccessful;
+            ProjectState.lastSuccessfulCode = previousSuccessful;
+            UI.setCode(previousSuccessful);
+            PreviewRenderer.render(previousSuccessful);
+            UI.setButtonsEnabled(true, false);
+          }
+          document.getElementById('buildTitle').textContent = 'Integration Failed';
+          document.getElementById('buildStatusMsg').textContent =
+            (err.message || 'Integration failed') + '. Previous successful build was preserved.';
+          UI.setStatus('error', 'Integration failed');
+          UI.showError(err.message || 'Integration failed');
+          UI.toast('Integration failed — previous build kept', 'error');
+        }
+      },
+
+      async reviewIntegration(completed) {
+        const preview = completed.map(m => {
+          const snippet = (m.code || '').slice(0, 600).replace(/\s+/g, ' ');
+          return `MODULE: ${m.name}\nCODE PREVIEW: ${snippet}…`;
+        }).join('\n\n');
+
+        const userMsg = `
+Project: ${ProjectState.manifest?.projectName || 'Untitled'}
+Objective: ${ProjectState.manifest?.mainObjective || ''}
+
+Features expected:
+${(ProjectState.manifest?.features || []).slice(0, 15).map(f => '- ' + f).join('\n')}
+
+Generated modules (${completed.length}):
+${preview}
+`.trim();
+
+        try {
+          const raw = await this.callModel(INTEGRATION_REVIEW_PROMPT, userMsg);
+          return this.parseReview(raw);
+        } catch (e) {
+          console.warn('Review call failed, treating as OK', e);
+          return { status: 'OK', issues: [], fixes: [] };
+        }
+      },
+
+      parseReview(raw) {
+        const text = (raw || '').trim();
+        const statusMatch = text.match(/STATUS:\s*(OK|WARNINGS|CRITICAL)/i);
+        const status = statusMatch ? statusMatch[1].toUpperCase() : 'OK';
+        const issues = [];
+        const fixes = [];
+        let section = null;
+        for (const line of text.split('\n')) {
+          const t = line.trim();
+          if (/^ISSUES:/i.test(t)) { section = 'issues'; continue; }
+          if (/^FIXES_NEEDED:/i.test(t)) { section = 'fixes'; continue; }
+          if (/^STATUS:/i.test(t) || /^INTEGRATION REPORT/i.test(t)) continue;
+          if (section && (t.startsWith('-') || /^\d+\./.test(t))) {
+            const item = t.replace(/^[-\d.]+\s*/, '').trim();
+            if (item) {
+              if (section === 'issues') issues.push(item);
+              else if (section === 'fixes') fixes.push(item);
+            }
+          }
+        }
+        return { status, issues, fixes };
+      },
+
+      async applyTargetedFixes(completed, fixes) {
+        if (!fixes.length) return;
+        // Ask model for a compact patch description applied into module codes
+        const fixList = fixes.slice(0, 5).map((f, i) => `${i + 1}. ${f}`).join('\n');
+        const moduleSummary = completed.map(m => `--- MODULE: ${m.name} ---\n${(m.code || '').slice(0, 2500)}`).join('\n\n');
+
+        const userMsg = `Apply only these targeted integration fixes:\n${fixList}\n\nCurrent modules:\n${moduleSummary}\n\nReturn the corrected modules in this format for each changed module:\n\nMODULE_FIX\nNAME: [exact name]\nCODE:\n[full updated module code]\n\nOnly include modules that actually need changes.`;
+
+        try {
+          const raw = await this.callModel(
+            'You are a precise frontend integration fixer. Apply only the requested fixes. Output only MODULE_FIX blocks. No explanations.',
+            userMsg
+          );
+          this.applyModuleFixes(completed, raw);
+        } catch (e) {
+          console.warn('Targeted fix failed', e);
+        }
+      },
+
+      applyModuleFixes(completed, raw) {
+        if (!raw) return;
+        const blocks = raw.split(/MODULE_FIX/i).slice(1);
+        for (const block of blocks) {
+          const nameMatch = block.match(/NAME:\s*(.+)/i);
+          const codeMatch = block.match(/CODE:\s*([\s\S]*)/i);
+          if (!nameMatch || !codeMatch) continue;
+          const name = nameMatch[1].trim();
+          let code = codeMatch[1].trim()
+            .replace(/^```[\w]*\n?/, '')
+            .replace(/\n?```$/, '')
+            .trim();
+          const target = completed.find(m => m.name.toLowerCase() === name.toLowerCase());
+          if (target && code.length > 20) {
+            target.code = code;
+            // also update ProjectState
+            const key = ModuleBuildManager.toKey(name);
+            if (ProjectState.modules[key]) {
+              ProjectState.modules[key].code = code;
+            }
+          }
+        }
+      },
+
+      async assemble(completed, warnings) {
+        const modulesPayload = completed.map(m =>
+          `===== MODULE: ${m.name} =====\n${m.code}`
+        ).join('\n\n');
+
+        const userMsg = `
+Project Name: ${ProjectState.manifest?.projectName || 'Web App'}
+Objective: ${ProjectState.manifest?.mainObjective || ''}
+
+Known warnings:
+${warnings.length ? warnings.map(w => '- ' + w).join('\n') : '- none'}
+
+Modules to assemble (${completed.length}):
+${modulesPayload}
+
+Produce the complete final index.html now.
+`.trim();
+
+        const raw = await this.callModel(ASSEMBLY_SYSTEM_PROMPT, userMsg);
+        return CodeExtractor.extract(raw) || raw;
+      },
+
+      deterministicAssemble(completed) {
+        // Safe fallback: combine HTML/CSS/JS fragments without AI
+        const htmlParts = [];
+        const cssParts = [];
+        const jsParts = [];
+
+        for (const m of completed) {
+          const code = m.code || '';
+          // Extract <style> blocks
+          const styleRe = new RegExp('<style[^>]*>([\\s\\S]*?)<\\/style>', 'gi');
+          let match;
+          while ((match = styleRe.exec(code)) !== null) cssParts.push('/* ' + m.name + ' */\n' + match[1]);
+          // Extract <script> blocks
+          const scriptRe = new RegExp('<script[^>]*>([\\s\\S]*?)<\\/script>', 'gi');
+          while ((match = scriptRe.exec(code)) !== null) jsParts.push('/* ' + m.name + ' */\n' + match[1]);
+          // Remaining markup (strip style/script)
+          let markup = code
+            .replace(new RegExp('<style[^>]*>[\\s\\S]*?<\\/style>', 'gi'), '')
+            .replace(new RegExp('<script[^>]*>[\\s\\S]*?<\\/script>', 'gi'), '')
+            .replace(/<!DOCTYPE[\s\S]*?>/i, '')
+            .replace(new RegExp('<\\/?html[^>]*>', 'gi'), '')
+            .replace(new RegExp('<\\/?head[^>]*>', 'gi'), '')
+            .replace(new RegExp('<\\/?body[^>]*>', 'gi'), '')
+            .trim();
+          if (markup) htmlParts.push(`<!-- Module: ${m.name} -->\n` + markup);
+        }
+
+        const title = ProjectState.manifest?.projectName || 'Generated App';
+        // Note: closing script/style tags must be split so the outer HTML parser
+        // does not terminate this script block early.
+        return '<!DOCTYPE html>\n' +
+          '<html lang="en">\n' +
+          '<head>\n' +
+          '  <meta charset="UTF-8" />\n' +
+          '  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n' +
+          '  <title>' + title + '</title>\n' +
+          '  <style>\n' +
+          cssParts.join('\n\n') + '\n' +
+          '  </sty' + 'le>\n' +
+          '</head>\n' +
+          '<body>\n' +
+          htmlParts.join('\n\n') + '\n' +
+          '  <script>\n' +
+          jsParts.join('\n\n') + '\n' +
+          '  </scr' + 'ipt>\n' +
+          '</body>\n' +
+          '</html>';
+      },
+
+      cleanFinal(html) {
+        if (!html) return html;
+        return html
+          .replace(/^```html?\s*/i, '')
+          .replace(/\s*```$/i, '')
+          .replace(/MODULE\s*\nNAME:[\s\S]*?CODE:\s*/gi, '')
+          .trim();
+      },
+
+      isValidHtml(str) {
+        if (!str || str.length < 50) return false;
+        const lower = str.toLowerCase();
+        return (lower.includes('<!doctype') || lower.includes('<html')) && lower.includes('</html>');
+      },
+
+      validate(html) {
+        const errors = [];
+        if (!html) errors.push('Empty document');
+        else {
+          const lower = html.toLowerCase();
+          if (!lower.includes('<!doctype') && !lower.includes('<html')) errors.push('Missing html root');
+          if (!lower.includes('<head')) errors.push('Missing <head>');
+          if (!lower.includes('<body')) errors.push('Missing <body>');
+          if (!lower.includes('</html>')) errors.push('Missing closing </html>');
+          if (html.includes('```')) errors.push('Contains markdown fences');
+          if (/TODO:|FIXME:|module x goes here/i.test(html)) errors.push('Contains placeholder markers');
+        }
+        return { ok: errors.length === 0, errors };
+      },
+
+      computeStats(html, moduleCount) {
+        const lines = html.split('\n');
+        const totalLines = lines.length;
+        let htmlLines = 0, cssLines = 0, jsLines = 0;
+        let mode = 'html';
+        for (const line of lines) {
+          const t = line.trim().toLowerCase();
+          if (t.includes('<style')) { mode = 'css'; continue; }
+          if (t.includes('</sty' + 'le>')) { mode = 'html'; continue; }
+          if (t.includes('<script')) { mode = 'js'; continue; }
+          if (t.includes('</scr' + 'ipt>')) { mode = 'html'; continue; }
+          if (mode === 'css') cssLines++;
+          else if (mode === 'js') jsLines++;
+          else htmlLines++;
+        }
+        return { totalLines, htmlLines, cssLines, jsLines, moduleCount };
+      },
+
+      async callModel(systemPrompt, userContent) {
+        ProjectState.abortController = new AbortController();
+        const messages = [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userContent }
+        ];
+        const response = await ApiClient.generate(messages, {
+          stream: CONFIG.STREAM,
+          signal: ProjectState.abortController.signal
+        });
+        if (CONFIG.STREAM && response.body) {
+          return await GenerationManager.consumeStream(response);
+        }
+        const data = await response.json();
+        return data.choices?.[0]?.message?.content || '';
+      }
+    };
+
+    // ----------------------------------------------------------------
+    // 9. EVENT WIRING
+    // ----------------------------------------------------------------
+    function init() {
+      const promptInput = document.getElementById('promptInput');
+
+      // Generate
+      document.getElementById('generateBtn').addEventListener('click', () => {
+        GenerationManager.run(promptInput.value);
+      });
+
+      // Ctrl/Cmd + Enter to generate
+      promptInput.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          e.preventDefault();
+          GenerationManager.run(promptInput.value);
+        }
+      });
+
+      // Regenerate
+      document.getElementById('regenerateBtn').addEventListener('click', () => {
+        if (ProjectState.lastPrompt) {
+          GenerationManager.run(ProjectState.lastPrompt, { isRegenerate: true });
+        }
+      });
+
+      // Retry from error banner
+      document.getElementById('retryBtn').addEventListener('click', () => {
+        UI.hideError();
+        if (ProjectState.lastPrompt) {
+          GenerationManager.run(ProjectState.lastPrompt, { isRegenerate: true });
+        }
+      });
+
+      // Copy
+      document.getElementById('copyBtn').addEventListener('click', async () => {
+        const ok = await ClipboardManager.copy(ProjectState.currentCode);
+        UI.toast(ok ? 'Code copied to clipboard' : 'Copy failed', ok ? 'success' : 'error');
+      });
+
+      // Download
+      document.getElementById('downloadBtn').addEventListener('click', () => {
+        DownloadManager.download(ProjectState.currentCode);
+        UI.toast('Downloading index.html');
+      });
+
+      // Clear
+      document.getElementById('clearBtn').addEventListener('click', () => {
+        if (ProjectState.currentCode || ProjectState.blueprint || ProjectState.requirements || promptInput.value.trim()) {
+          UI.openClearModal();
+        } else {
+          doClear();
+        }
+      });
+
+      document.getElementById('cancelClearBtn').addEventListener('click', () => UI.closeClearModal());
+      document.getElementById('confirmClearBtn').addEventListener('click', () => {
+        doClear();
+        UI.closeClearModal();
+      });
+
+      // Example chips
+      document.getElementById('examples').addEventListener('click', (e) => {
+        const chip = e.target.closest('.example-chip');
+        if (!chip) return;
+        promptInput.value = chip.dataset.prompt || '';
+        promptInput.focus();
+      });
+
+      // Close modal on overlay click
+      document.getElementById('clearModal').addEventListener('click', (e) => {
+        if (e.target.id === 'clearModal') UI.closeClearModal();
+      });
+
+      // Dismiss proxy tip
+      document.getElementById('dismissProxyTip')?.addEventListener('click', () => {
+        document.getElementById('proxyTip').style.display = 'none';
+      });
+
+      // Mode switching
+      document.getElementById('modeQuick').addEventListener('click', () => setMode('quick'));
+      document.getElementById('modeLarge').addEventListener('click', () => setMode('large'));
+
+      // V3 Architect actions
+      document.getElementById('regenRequirementsBtn')?.addEventListener('click', () => {
+        if (ProjectState.lastPrompt) ArchitectManager.analyzeRequirements(ProjectState.lastPrompt);
+      });
+      document.getElementById('continueArchitectureBtn')?.addEventListener('click', () => {
+        ArchitectManager.designArchitecture();
+      });
+      document.getElementById('regenArchitectureBtn')?.addEventListener('click', () => {
+        ArchitectManager.designArchitecture();
+      });
+      document.getElementById('approveArchitectureBtn')?.addEventListener('click', () => {
+        ArchitectManager.approveArchitecture();
+      });
+
+      // V3 Part 2 structure actions
+      document.getElementById('regenStructureBtn')?.addEventListener('click', () => {
+        StructureManager.generate();
+      });
+      document.getElementById('approveStructureBtn')?.addEventListener('click', () => {
+        StructureManager.approve();
+      });
+
+      // Blueprint actions (legacy path still available)
+      document.getElementById('regeneratePlanBtn')?.addEventListener('click', () => {
+        if (ProjectState.lastPrompt) {
+          GenerationManager.run(ProjectState.lastPrompt, { isRegenerate: true });
+        }
+      });
+
+      document.getElementById('approveBuildBtn')?.addEventListener('click', () => {
+        if (!ProjectState.manifest) {
+          UI.toast('No blueprint to approve', 'error');
+          return;
+        }
+        ProjectState.blueprintApproved = true;
+        console.log('Saved Project Manifest:', ProjectState.manifest);
+        ModuleBuildManager.start();
+      });
+
+      // Build controls
+      document.getElementById('pauseBuildBtn')?.addEventListener('click', () => ModuleBuildManager.pause());
+      document.getElementById('cancelBuildBtn')?.addEventListener('click', () => ModuleBuildManager.cancel());
+      document.getElementById('retryModuleBtn')?.addEventListener('click', () => ModuleBuildManager.retryFailed());
+
+      // Initial UI state
+      setMode('quick');
+      UI.setButtonsEnabled(false, false);
+      UI.setStatus('idle');
+    }
+
+    function doClear() {
+      ProjectState.currentCode = null;
+      ProjectState.lastSuccessfulCode = null;
+      ProjectState.conversation = [];
+      ProjectState.lastPrompt = '';
+      ProjectState.lastError = null;
+      ProjectState.blueprint = null;
+      ProjectState.manifest = null;
+      ProjectState.blueprintApproved = false;
+      ProjectState.modules = {};
+      ProjectState.moduleList = [];
+      ProjectState.currentModuleIndex = -1;
+      ProjectState.buildStatus = 'idle';
+      ProjectState.buildPaused = false;
+      ProjectState.totalLinesGenerated = 0;
+      ProjectState.requirements = null;
+      ProjectState.architecture = null;
+      ProjectState.architectureManifest = null;
+      ProjectState.architectStage = 'idle';
+      ProjectState.projectStructure = null;
+      ProjectState.componentRegistry = [];
+      ProjectState.featureRegistry = [];
+      ProjectState.dependencyGraph = [];
+      ProjectState.structureValidated = false;
+      document.getElementById('promptInput').value = '';
+      UI.setCode(null);
+      PreviewRenderer.render(null);
+      hideBlueprintPanel();
+      hideBuildPanel();
+      hideRequirementsPanel();
+      hideArchitecturePanel();
+      hideStructurePanel();
+      UI.hideError();
+      UI.setStatus('idle', 'Ready to build');
+      UI.setButtonsEnabled(false, false);
+      UI.toast('Project cleared');
+    }
+
+    // Boot
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
