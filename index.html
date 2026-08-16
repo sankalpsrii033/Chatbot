@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Code Builder — V1</title>
+  <meta name="description" content="Premium AI-powered code generator using NVIDIA Nemotron. Generate complete self-contained websites from natural language." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-deep: #0a0b0f;
+      --bg-panel: #12141a;
+      --bg-elevated: #1a1d27;
+      --bg-hover: #222633;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.14);
+      --text-primary: #f0f2f8;
+      --text-secondary: #9aa3b5;
+      --text-muted: #6b7385;
+      --accent: #6c8cff;
+      --accent-hover: #8aa4ff;
+      --accent-soft: rgba(108, 140, 255, 0.15);
+      --success: #34d399;
+      --success-soft: rgba(52, 211, 153, 0.15);
+      --error: #f87171;
+      --error-soft: rgba(248, 113, 113, 0.15);
+      --warning: #fbbf24;
+      --glass: rgba(18, 20, 26, 0.72);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+      --font: 'Inter', system-ui, -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font);
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(108, 140, 255, 0.08), transparent),
+        radial-gradient(ellipse 60% 40% at 90% 10%, rgba(52, 211, 153, 0.05), transparent);
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      height: 56px;
+      border-bottom: 1px solid var(--border);
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      flex-shrink: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #6c8cff, #34d399);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 13px;
+      color: #0a0b0f;
+    }
+
+    .brand-text {
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-version {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg-elevated);
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+    }
+
+    .status-pill .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    .status-pill.idle .dot { background: var(--text-muted); }
+    .status-pill.generating {
+      background: var(--accent-soft);
+      border-color: rgba(108, 140, 255, 0.3);
+      color: var(--accent);
+    }
+    .status-pill.generating .dot {
+      background: var(--accent);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .status-pill.success {
+      background: var(--success-soft);
+      border-color: rgba(52, 211, 153, 0.3);
+      color: var(--success);
+    }
+    .status-pill.success .dot { background: var(--success); }
+    .status-pill.error {
+      background: var(--error-soft);
+      border-color: rgba(248, 113, 113, 0.3);
+      color: var(--error);
+    }
+    .status-pill.error .dot { background: var(--error); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.85); }
+    }
+
+    /* Main layout */
+    .workspace {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(320px, 380px) 1fr;
+      grid-template-rows: 1fr auto;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    @media (max-width: 900px) {
+      .workspace {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+      }
+    }
+
+    /* Left panel */
+    .panel-left {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      background: var(--bg-panel);
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .panel-section {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-section:last-child { border-bottom: none; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .prompt-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    #promptInput {
+      width: 100%;
+      flex: 1;
+      min-height: 140px;
+      resize: none;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.55;
+      padding: 14px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    #promptInput:focus {
+      border-color: rgba(108, 140, 255, 0.5);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    #promptInput::placeholder { color: var(--text-muted); }
+
+    .examples {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .example-chip {
+      font-size: 12px;
+      padding: 6px 11px;
+      border-radius: 999px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .example-chip:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 560;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      padding: 10px 16px;
+      white-space: nowrap;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6c8cff, #5a7aef);
+      color: white;
+      flex: 1;
+      box-shadow: 0 2px 12px rgba(108, 140, 255, 0.25);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #8aa4ff, #6c8cff);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border-color: var(--border-strong);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid transparent;
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+
+    /* Preview panel */
+    .panel-preview {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: #0d0e12;
+      position: relative;
+    }
+
+    .preview-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      height: 40px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-panel);
+      flex-shrink: 0;
+    }
+
+    .preview-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .preview-title .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    .preview-frame-wrap {
+      flex: 1;
+      position: relative;
+      min-height: 0;
+      background: #111;
+    }
+
+    #previewFrame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+      display: block;
+    }
+
+    .preview-empty {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--text-muted);
+      background: var(--bg-deep);
+      z-index: 2;
+    }
+
+    .preview-empty.hidden { display: none; }
+
+    .preview-empty svg {
+      width: 48px;
+      height: 48px;
+      opacity: 0.35;
+    }
+
+    .preview-empty p {
+      font-size: 14px;
+      max-width: 260px;
+      text-align: center;
+    }
+
+    /* Code output area */
+    .panel-code {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      border-top: 1px solid var(--border);
+      background: var(--bg-panel);
+      height: 280px;
+      min-height: 160px;
+      max-height: 45vh;
+      resize: vertical;
+      overflow: hidden;
+    }
+
+    .code-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      height: 42px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .code-toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .code-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .code-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--mono);
+    }
+
+    .code-toolbar-right {
+      display: flex;
+      gap: 8px;
+    }
+
+    .code-body {
+      flex: 1;
+      overflow: auto;
+      position: relative;
+      background: #0c0d11;
+    }
+
+    #codeOutput {
+      margin: 0;
+      padding: 16px 18px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: #c8d0e0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 100%;
+    }
+
+    .code-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    .code-placeholder.hidden { display: none; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 18px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-strong);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: var(--shadow);
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: all 0.25s ease;
+      pointer-events: none;
+      max-width: 320px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .toast.success { border-color: rgba(52, 211, 153, 0.4); }
+    .toast.error { border-color: rgba(248, 113, 113, 0.4); }
+
+    /* Spinner */
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 24px;
+      width: 90%;
+      max-width: 380px;
+      box-shadow: var(--shadow);
+    }
+
+    .modal h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .modal p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    /* Error banner */
+    .error-banner {
+      display: none;
+      padding: 12px 16px;
+      background: var(--error-soft);
+      border-bottom: 1px solid rgba(248, 113, 113, 0.25);
+      color: var(--error);
+      font-size: 13px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .error-banner.show { display: flex; }
+
+    .error-banner button {
+      background: transparent;
+      border: 1px solid rgba(248, 113, 113, 0.4);
+      color: var(--error);
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* Streaming indicator in code area */
+    .streaming-indicator {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      font-size: 12px;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-bottom: 1px solid rgba(108, 140, 255, 0.2);
+    }
+
+    .streaming-indicator.show { display: flex; }
+
+    /* Config note */
+    .config-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      line-height: 1.4;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.12);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+  </style>
+</head>
+<body>
+  <!-- ============================================================
+       CONFIGURATION — Replace the API key here only.
+       For production / public deployment, proxy requests through
+       your own backend so the key is never exposed in the browser.
+       ============================================================ -->
+  <script>
+    const CONFIG = {
+      // ★★★ NVIDIA API KEY — change only this value ★★★
+      API_KEY: "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",
+
+      API_ENDPOINT: "https://integrate.api.nvidia.com/v1/chat/completions",
+      MODEL: "nvidia/nemotron-3-ultra-550b-a55b",
+
+      // Generation defaults
+      MAX_TOKENS: 16384,
+      TEMPERATURE: 0.4,
+      TOP_P: 0.9,
+      STREAM: true,
+
+      // Disable model "thinking" mode for cleaner code output
+      ENABLE_THINKING: false
+    };
+  </script>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-logo">AI</div>
+      <span class="brand-text">AI Code Builder</span>
+      <span class="brand-version">V1</span>
+    </div>
+    <div class="header-right">
+      <div id="statusPill" class="status-pill idle">
+        <span class="dot"></span>
+        <span id="statusText">Ready to build</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Error banner -->
+  <div id="errorBanner" class="error-banner">
+    <span id="errorMessage"></span>
+    <button type="button" id="retryBtn">Retry</button>
+  </div>
+
+  <!-- Workspace -->
+  <div class="workspace">
+    <!-- Left: Prompt -->
+    <aside class="panel-left">
+      <div class="panel-section prompt-area">
+        <div class="section-label">Describe your project</div>
+        <textarea
+          id="promptInput"
+          placeholder="e.g. Create a premium music streaming website with a dark glassmorphism UI, search, music cards, playlist section, responsive mobile layout and audio player."
+          spellcheck="false"
+        ></textarea>
+
+        <div class="actions-row">
+          <button type="button" id="generateBtn" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            Generate
+          </button>
+          <button type="button" id="regenerateBtn" class="btn btn-secondary" disabled title="Regenerate with same prompt / context">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-label">Example prompts</div>
+        <div class="examples" id="examples">
+          <button type="button" class="example-chip" data-prompt="Create a premium SaaS landing page with a bold hero section, feature grid, pricing table with three tiers, testimonials, and a responsive mobile layout. Use a dark modern aesthetic with subtle gradients.">SaaS Landing</button>
+          <button type="button" class="example-chip" data-prompt="Build a modern analytics dashboard with a collapsible sidebar, top stats cards showing key metrics, a large line chart area, recent activity list, and fully responsive mobile layout. Dark theme.">Dashboard</button>
+          <button type="button" class="example-chip" data-prompt="Create a premium music streaming interface with search bar, album/track cards, playlist section, now-playing bottom bar with progress and controls, and a dark glassmorphism UI. Make it fully interactive with sample data.">Music Player</button>
+          <button type="button" class="example-chip" data-prompt="Design a clean personal portfolio website for a product designer. Include hero with photo placeholder, about section, project grid with hover effects, skills, and contact form. Light modern aesthetic, fully responsive.">Portfolio</button>
+          <button type="button" class="example-chip" data-prompt="Build a modern e-commerce product listing page with filter sidebar, product cards (image, title, price, rating), sort dropdown, and a sticky cart button. Clean minimal design, responsive.">E-commerce</button>
+          <button type="button" class="example-chip" data-prompt="Create a fully functional interactive calculator with a modern dark UI, support for basic operations, percentage, clear, and keyboard support. Large readable display.">Calculator</button>
+          <button type="button" class="example-chip" data-prompt="Build a polished todo application with add/edit/delete tasks, mark complete, filter by All/Active/Completed, local persistence via localStorage, and a clean minimal UI.">Todo App</button>
+          <button type="button" class="example-chip" data-prompt="Create a multi-section SaaS marketing site: navigation, hero with CTA, logos bar, features with icons, how-it-works steps, pricing, FAQ accordion, and footer. Premium dark theme with glassmorphism accents.">Complex SaaS</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right: Preview -->
+    <section class="panel-preview">
+      <div class="preview-toolbar">
+        <div class="preview-title">
+          <span class="live-dot" id="liveDot" style="opacity:0.3"></span>
+          Live Preview
+        </div>
+        <div style="font-size:11px;color:var(--text-muted)">iframe sandbox</div>
+      </div>
+      <div class="preview-frame-wrap">
+        <div id="previewEmpty" class="preview-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          <p>Generate a project to see the live preview here</p>
+        </div>
+        <iframe
+          id="previewFrame"
+          title="Generated website preview"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"
+          referrerpolicy="no-referrer"
+        ></iframe>
+      </div>
+    </section>
+
+    <!-- Bottom: Code -->
+    <section class="panel-code">
+      <div class="streaming-indicator" id="streamingIndicator">
+        <div class="spinner"></div>
+        <span>AI is generating… streaming response</span>
+      </div>
+      <div class="code-toolbar">
+        <div class="code-toolbar-left">
+          <span class="code-label">Generated Code</span>
+          <span class="code-meta" id="codeMeta"></span>
+        </div>
+        <div class="code-toolbar-right">
+          <button type="button" id="copyBtn" class="btn btn-ghost" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+          <button type="button" id="downloadBtn" class="btn btn-secondary" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download index.html
+          </button>
+          <button type="button" id="clearBtn" class="btn btn-ghost">
+            Clear
+          </button>
+        </div>
+      </div>
+      <div class="code-body">
+        <div id="codePlaceholder" class="code-placeholder">Generated HTML will appear here</div>
+        <pre id="codeOutput"></pre>
+      </div>
+    </section>
+  </div>
+
+  <!-- Confirm Clear Modal -->
+  <div id="clearModal" class="modal-overlay">
+    <div class="modal">
+      <h3>Clear current project?</h3>
+      <p>This will reset the prompt, generated code, and preview. This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="cancelClearBtn">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirmClearBtn" style="background:#ef4444;box-shadow:none;">Clear Project</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    /* ================================================================
+       AI CODE BUILDER V1 — Core Application
+       Modular architecture for reliability and future extensibility
+       ================================================================ */
+
+    // ----------------------------------------------------------------
+    // 1. PROJECT STATE
+    // ----------------------------------------------------------------
+    const ProjectState = {
+      currentCode: null,          // last successfully extracted HTML
+      lastSuccessfulCode: null,   // preserved across failed regenerations
+      conversation: [],           // multi-turn context (user + assistant pairs)
+      isGenerating: false,
+      abortController: null,
+      status: 'idle',             // idle | generating | success | error
+      lastError: null,
+      lastPrompt: ''
+    };
+
+    // ----------------------------------------------------------------
+    // 2. SYSTEM PROMPT — Expert software engineer instructions
+    // ----------------------------------------------------------------
+    const SYSTEM_PROMPT = `You are an elite senior frontend software engineer and UI designer specializing in production-quality, self-contained single-file websites.
+
+Your sole task: given a user's natural-language request, generate a COMPLETE, working HTML document that fully implements every requested feature.
+
+STRICT OUTPUT RULES:
+1. Output ONLY the raw HTML source. Nothing else.
+2. Do NOT wrap the code in markdown fences (\`\`\`html or \`\`\`).
+3. Do NOT include any introductory text, explanations, comments about the code, or trailing notes.
+4. The very first characters of your response must be "<!DOCTYPE html>" (or "<html").
+5. The very last characters must be the closing "</html>" tag.
+6. The HTML must be fully self-contained: all CSS in <style>, all JavaScript in <script>, SVG inline, no external file dependencies (except optional Google Fonts or trusted CDNs if truly needed for the design).
+7. Implement every feature the user asked for. Do not leave placeholders, TODOs, or fake "coming soon" sections when the feature can be built with HTML/CSS/JS.
+8. Use semantic HTML5, clean modern CSS (Flexbox/Grid), vanilla JavaScript, responsive design (mobile-first where sensible), and good accessibility (labels, contrast, keyboard support).
+9. Prefer glassmorphism, dark themes, premium spacing and typography when the user requests a modern/premium look.
+10. Make interactive elements actually work (buttons, forms, players, filters, etc.).
+11. If the user is asking for a modification of a previous project, treat it as an iteration: start from the previous HTML and apply the requested changes cleanly.
+
+You are generating production-ready code, not a demo. Quality, completeness, and correctness are mandatory.`;
+
+    // ----------------------------------------------------------------
+    // 3. API CLIENT
+    // ----------------------------------------------------------------
+    const ApiClient = {
+      async generate(messages, { stream = CONFIG.STREAM, signal } = {}) {
+        if (!CONFIG.API_KEY || CONFIG.API_KEY.includes('YOUR_') || CONFIG.API_KEY.length < 20) {
+          throw new Error('Missing or invalid NVIDIA API key. Update CONFIG.API_KEY at the top of the file.');
+        }
+
+        const body = {
+          model: CONFIG.MODEL,
+          messages,
+          temperature: CONFIG.TEMPERATURE,
+          top_p: CONFIG.TOP_P,
+          max_tokens: CONFIG.MAX_TOKENS,
+          stream
+        };
+
+        // Disable thinking for cleaner code generation
+        if (CONFIG.ENABLE_THINKING === false) {
+          body.chat_template_kwargs = { enable_thinking: false };
+        }
+
+        const response = await fetch(CONFIG.API_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${CONFIG.API_KEY}`,
+            'Accept': stream ? 'text/event-stream' : 'application/json'
+          },
+          body: JSON.stringify(body),
+          signal
+        });
+
+        if (!response.ok) {
+          let detail = '';
+          try {
+            const errJson = await response.json();
+            detail = errJson.error?.message || errJson.message || JSON.stringify(errJson);
+          } catch {
+            detail = await response.text().catch(() => '');
+          }
+
+          if (response.status === 401 || response.status === 403) {
+            throw new Error('Invalid or unauthorized API key. Check CONFIG.API_KEY.');
+          }
+          if (response.status === 429) {
+            throw new Error('Rate limit reached. Please wait a moment and try again.');
+          }
+          if (response.status >= 500) {
+            throw new Error('NVIDIA API server error. Please retry in a few seconds.');
+          }
+          throw new Error(detail || `API request failed (${response.status})`);
+        }
+
+        return response;
+      }
+    };
+
+    // ----------------------------------------------------------------
+    // 4. RESPONSE PARSER + CODE EXTRACTOR
+    // ----------------------------------------------------------------
+    const CodeExtractor = {
+      /**
+       * Robustly extract the HTML document from a model response
+       * that may contain markdown fences, explanations, or reasoning.
+       */
+      extract(raw) {
+        if (!raw || typeof raw !== 'string') return null;
+
+        let text = raw.trim();
+
+        // Remove common reasoning wrappers if present
+        text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+        text = text.replace(/```reasoning[\s\S]*?```/gi, '').trim();
+
+        // Prefer fenced html / text blocks
+        const fencePatterns = [
+          /```html\s*([\s\S]*?)```/i,
+          /```HTML\s*([\s\S]*?)```/i,
+          /```(?:xml|markup)?\s*(<!DOCTYPE[\s\S]*?<\/html>)\s*```/i,
+          /```\s*(<!DOCTYPE[\s\S]*?<\/html>)\s*```/i
+        ];
+
+        for (const re of fencePatterns) {
+          const m = text.match(re);
+          if (m && m[1]) {
+            const candidate = m[1].trim();
+            if (this.isValidHtml(candidate)) return this.clean(candidate);
+          }
+        }
+
+        // Look for raw <!DOCTYPE or <html
+        const doctypeIdx = text.search(/<!DOCTYPE\s+html/i);
+        const htmlIdx = text.search(/<html[\s>]/i);
+
+        let start = -1;
+        if (doctypeIdx !== -1) start = doctypeIdx;
+        else if (htmlIdx !== -1) start = htmlIdx;
+
+        if (start !== -1) {
+          let end = text.lastIndexOf('</html>');
+          if (end !== -1) end += 7;
+          else end = text.length;
+
+          const candidate = text.slice(start, end).trim();
+          if (this.isValidHtml(candidate)) return this.clean(candidate);
+        }
+
+        // Last resort: if the whole thing looks like HTML
+        if (this.isValidHtml(text)) return this.clean(text);
+
+        return null;
+      },
+
+      isValidHtml(str) {
+        if (!str || str.length < 40) return false;
+        const lower = str.toLowerCase();
+        return (
+          (lower.includes('<!doctype') || lower.includes('<html')) &&
+          lower.includes('</html>')
+        );
+      },
+
+      clean(html) {
+        // Strip any remaining leading/trailing markdown noise
+        return html
+          .replace(/^```html?\s*/i, '')
+          .replace(/\s*```$/i, '')
+          .trim();
+      }
+    };
+
+    // ----------------------------------------------------------------
+    // 5. PREVIEW RENDERER
+    // ----------------------------------------------------------------
+    const PreviewRenderer = {
+      render(html) {
+        const frame = document.getElementById('previewFrame');
+        const empty = document.getElementById('previewEmpty');
+        const liveDot = document.getElementById('liveDot');
+
+        if (!html) {
+          empty.classList.remove('hidden');
+          liveDot.style.opacity = '0.3';
+          // Clear iframe
+          frame.srcdoc = '';
+          return;
+        }
+
+        empty.classList.add('hidden');
+        liveDot.style.opacity = '1';
+
+        // Use srcdoc for isolation + security
+        // sandbox already set on the iframe element
+        frame.srcdoc = html;
+      }
+    };
+
+    // ----------------------------------------------------------------
+    // 6. DOWNLOAD & COPY MANAGERS
+    // ----------------------------------------------------------------
+    const DownloadManager = {
+      download(html, filename = 'index.html') {
+        if (!html) return;
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 100);
+      }
+    };
+
+    const ClipboardManager = {
+      async copy(text) {
+        if (!text) return false;
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch {
+          // Fallback
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          const ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          return ok;
+        }
+      }
+    };
+
+    // ----------------------------------------------------------------
+    // 7. UI CONTROLLER
+    // ----------------------------------------------------------------
+    const UI = {
+      setStatus(status, message) {
+        ProjectState.status = status;
+        const pill = document.getElementById('statusPill');
+        const text = document.getElementById('statusText');
+        pill.className = 'status-pill ' + status;
+        text.textContent = message || {
+          idle: 'Ready to build',
+          generating: 'AI is building your project…',
+          success: 'Generation complete',
+          error: 'Generation failed'
+        }[status];
+      },
+
+      showError(msg) {
+        const banner = document.getElementById('errorBanner');
+        document.getElementById('errorMessage').textContent = msg;
+        banner.classList.add('show');
+        this.setStatus('error', 'Generation failed');
+      },
+
+      hideError() {
+        document.getElementById('errorBanner').classList.remove('show');
+      },
+
+      setCode(html) {
+        const pre = document.getElementById('codeOutput');
+        const placeholder = document.getElementById('codePlaceholder');
+        const meta = document.getElementById('codeMeta');
+
+        if (html) {
+          pre.textContent = html;
+          placeholder.classList.add('hidden');
+          const lines = html.split('\n').length;
+          const kb = (new Blob([html]).size / 1024).toFixed(1);
+          meta.textContent = `${lines.toLocaleString()} lines · ${kb} KB`;
+        } else {
+          pre.textContent = '';
+          placeholder.classList.remove('hidden');
+          meta.textContent = '';
+        }
+      },
+
+      setStreaming(active) {
+        document.getElementById('streamingIndicator').classList.toggle('show', active);
+      },
+
+      setButtonsEnabled(hasCode, isGenerating) {
+        document.getElementById('generateBtn').disabled = isGenerating;
+        document.getElementById('regenerateBtn').disabled = isGenerating || !ProjectState.lastPrompt;
+        document.getElementById('copyBtn').disabled = !hasCode;
+        document.getElementById('downloadBtn').disabled = !hasCode;
+      },
+
+      toast(message, type = 'success') {
+        const el = document.getElementById('toast');
+        el.textContent = message;
+        el.className = 'toast ' + type + ' show';
+        clearTimeout(this._toastTimer);
+        this._toastTimer = setTimeout(() => {
+          el.classList.remove('show');
+        }, 2600);
+      },
+
+      openClearModal() {
+        document.getElementById('clearModal').classList.add('open');
+      },
+
+      closeClearModal() {
+        document.getElementById('clearModal').classList.remove('open');
+      }
+    };
+
+    // ----------------------------------------------------------------
+    // 8. GENERATION MANAGER
+    // ----------------------------------------------------------------
+    const GenerationManager = {
+      async run(userPrompt, { isRegenerate = false } = {}) {
+        if (ProjectState.isGenerating) return;
+
+        const prompt = (userPrompt || '').trim();
+        if (!prompt) {
+          UI.toast('Please enter a project description', 'error');
+          return;
+        }
+
+        ProjectState.isGenerating = true;
+        ProjectState.lastPrompt = prompt;
+        ProjectState.abortController = new AbortController();
+        UI.hideError();
+        UI.setStatus('generating', 'AI is building your project…');
+        UI.setStreaming(true);
+        UI.setButtonsEnabled(!!ProjectState.currentCode, true);
+
+        // Build messages with conversation context
+        const messages = [
+          { role: 'system', content: SYSTEM_PROMPT }
+        ];
+
+        // Previous turns (keep recent context, avoid unbounded growth)
+        const history = ProjectState.conversation.slice(-6); // last 3 pairs
+        for (const turn of history) {
+          messages.push(turn);
+        }
+
+        // Current user request
+        let userContent = prompt;
+        if (ProjectState.currentCode && !isRegenerate) {
+          // Modification request — give the model the previous code
+          userContent = `Here is the current project HTML that you previously generated:\n\n${ProjectState.currentCode}\n\n---\n\nNow apply the following changes / new requirements while keeping a complete working single-file HTML document:\n\n${prompt}`;
+        }
+
+        messages.push({ role: 'user', content: userContent });
+
+        let fullResponse = '';
+
+        try {
+          const response = await ApiClient.generate(messages, {
+            stream: CONFIG.STREAM,
+            signal: ProjectState.abortController.signal
+          });
+
+          if (CONFIG.STREAM && response.body) {
+            fullResponse = await this.consumeStream(response);
+          } else {
+            const data = await response.json();
+            fullResponse =
+              data.choices?.[0]?.message?.content ||
+              data.choices?.[0]?.message?.reasoning_content ||
+              '';
+          }
+
+          if (!fullResponse || fullResponse.trim().length < 20) {
+            throw new Error('Empty or incomplete response from the model.');
+          }
+
+          // Extract HTML
+          const html = CodeExtractor.extract(fullResponse);
+
+          if (!html) {
+            console.warn('Raw model response (truncated):', fullResponse.slice(0, 800));
+            throw new Error('Could not extract valid HTML from the model response. The model may have returned explanations instead of pure code. Try regenerating or rephrasing the prompt.');
+          }
+
+          // Success path
+          ProjectState.currentCode = html;
+          ProjectState.lastSuccessfulCode = html;
+
+          // Update conversation memory
+          ProjectState.conversation.push(
+            { role: 'user', content: userContent },
+            { role: 'assistant', content: html }
+          );
+          // Keep memory reasonable
+          if (ProjectState.conversation.length > 10) {
+            ProjectState.conversation = ProjectState.conversation.slice(-8);
+          }
+
+          UI.setCode(html);
+          PreviewRenderer.render(html);
+          UI.setStatus('success', 'Generation complete');
+          UI.toast('Project generated successfully');
+
+        } catch (err) {
+          if (err.name === 'AbortError') {
+            UI.setStatus('idle', 'Ready to build');
+            return;
+          }
+
+          console.error('Generation error:', err);
+
+          // Preserve previous successful code
+          if (ProjectState.lastSuccessfulCode) {
+            ProjectState.currentCode = ProjectState.lastSuccessfulCode;
+            UI.setCode(ProjectState.lastSuccessfulCode);
+            PreviewRenderer.render(ProjectState.lastSuccessfulCode);
+          }
+
+          let msg = err.message || 'Generation failed. Please check your API configuration and try again.';
+          if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+            msg = 'Network error. Check your connection and try again.';
+          }
+
+          ProjectState.lastError = msg;
+          UI.showError(msg);
+          UI.toast(msg, 'error');
+
+        } finally {
+          ProjectState.isGenerating = false;
+          ProjectState.abortController = null;
+          UI.setStreaming(false);
+          UI.setButtonsEnabled(!!ProjectState.currentCode, false);
+        }
+      },
+
+      async consumeStream(response) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+        let content = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed === 'data: [DONE]') continue;
+            if (!trimmed.startsWith('data: ')) continue;
+
+            try {
+              const json = JSON.parse(trimmed.slice(6));
+              const delta = json.choices?.[0]?.delta;
+              if (delta?.content) {
+                content += delta.content;
+              }
+              // Some NVIDIA models put reasoning in a separate field
+              if (delta?.reasoning_content) {
+                // We ignore pure reasoning for final code extraction
+              }
+            } catch {
+              // skip malformed chunks
+            }
+          }
+        }
+
+        return content;
+      },
+
+      abort() {
+        if (ProjectState.abortController) {
+          ProjectState.abortController.abort();
+        }
+      }
+    };
+
+    // ----------------------------------------------------------------
+    // 9. EVENT WIRING
+    // ----------------------------------------------------------------
+    function init() {
+      const promptInput = document.getElementById('promptInput');
+
+      // Generate
+      document.getElementById('generateBtn').addEventListener('click', () => {
+        GenerationManager.run(promptInput.value);
+      });
+
+      // Ctrl/Cmd + Enter to generate
+      promptInput.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          e.preventDefault();
+          GenerationManager.run(promptInput.value);
+        }
+      });
+
+      // Regenerate
+      document.getElementById('regenerateBtn').addEventListener('click', () => {
+        if (ProjectState.lastPrompt) {
+          GenerationManager.run(ProjectState.lastPrompt, { isRegenerate: true });
+        }
+      });
+
+      // Retry from error banner
+      document.getElementById('retryBtn').addEventListener('click', () => {
+        UI.hideError();
+        if (ProjectState.lastPrompt) {
+          GenerationManager.run(ProjectState.lastPrompt, { isRegenerate: true });
+        }
+      });
+
+      // Copy
+      document.getElementById('copyBtn').addEventListener('click', async () => {
+        const ok = await ClipboardManager.copy(ProjectState.currentCode);
+        UI.toast(ok ? 'Code copied to clipboard' : 'Copy failed', ok ? 'success' : 'error');
+      });
+
+      // Download
+      document.getElementById('downloadBtn').addEventListener('click', () => {
+        DownloadManager.download(ProjectState.currentCode);
+        UI.toast('Downloading index.html');
+      });
+
+      // Clear
+      document.getElementById('clearBtn').addEventListener('click', () => {
+        if (ProjectState.currentCode || promptInput.value.trim()) {
+          UI.openClearModal();
+        } else {
+          doClear();
+        }
+      });
+
+      document.getElementById('cancelClearBtn').addEventListener('click', () => UI.closeClearModal());
+      document.getElementById('confirmClearBtn').addEventListener('click', () => {
+        doClear();
+        UI.closeClearModal();
+      });
+
+      // Example chips
+      document.getElementById('examples').addEventListener('click', (e) => {
+        const chip = e.target.closest('.example-chip');
+        if (!chip) return;
+        promptInput.value = chip.dataset.prompt || '';
+        promptInput.focus();
+      });
+
+      // Close modal on overlay click
+      document.getElementById('clearModal').addEventListener('click', (e) => {
+        if (e.target.id === 'clearModal') UI.closeClearModal();
+      });
+
+      // Initial UI state
+      UI.setButtonsEnabled(false, false);
+      UI.setStatus('idle');
+    }
+
+    function doClear() {
+      ProjectState.currentCode = null;
+      ProjectState.lastSuccessfulCode = null;
+      ProjectState.conversation = [];
+      ProjectState.lastPrompt = '';
+      ProjectState.lastError = null;
+      document.getElementById('promptInput').value = '';
+      UI.setCode(null);
+      PreviewRenderer.render(null);
+      UI.hideError();
+      UI.setStatus('idle', 'Ready to build');
+      UI.setButtonsEnabled(false, false);
+      UI.toast('Project cleared');
+    }
+
+    // Boot
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
